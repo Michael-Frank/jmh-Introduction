@@ -132,7 +132,7 @@ indentConcurrentHashMapCache        128  avgt  10   173,846  ±   2,002  ns/op
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
-@Fork(2)
+@Fork(3)
 public class IndentationJMH {
 
     /**
@@ -398,14 +398,13 @@ public class IndentationJMH {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(IndentationJMH.class.getName())
-                .forks(2)
                 // #########
                 // COMPILER
                 // #########
                 // make sure we dont see compiling of our benchmark code during
                 // measurement.
                 // if you see compiling => more warmup
-                //.jvmArgsAppend("-XX:+UnlockDiagnosticVMOptions")
+                .jvmArgsAppend("-XX:+UnlockDiagnosticVMOptions")
                 //.jvmArgsAppend("-XX:+PrintCompilation")
                 // .jvmArgsAppend("-XX:+PrintInlining")
                 // .jvmArgsAppend("-XX:+PrintAssembly")
@@ -435,7 +434,7 @@ public class IndentationJMH {
                 //
                 // required for external profilers like "perf" to show java
                 // frames in their traces
-                // .jvmArgsAppend("-XX:+PerserveFramePointer")
+                .jvmArgsAppend("-XX:+PerserveFramePointer")
                 .build();
         new Runner(opt).run();
 

@@ -33,12 +33,7 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Thread)
 public class FastUUIDImplBenchJMH {
 
-    public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-                .include(FastUUIDImplBenchJMH.class.getName())
-                .build();
-        new Runner(opt).run();
-    }
+
 
     private ThreadLocalRandom r;
     private char[] buffer = new char[UUID.UUID_STRING_LEN];
@@ -79,6 +74,12 @@ public class FastUUIDImplBenchJMH {
         bh.consume(buffer);
     }
 
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()
+                .include(FastUUIDImplBenchJMH.class.getName())
+                .build();
+        new Runner(opt).run();
+    }
 
     /**
      * Version 4 UUIDs are defined by RFC 4122 ("Leach-Salz"). <br>

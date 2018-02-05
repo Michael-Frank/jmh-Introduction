@@ -132,7 +132,7 @@ import java.util.stream.Collectors;
  * @author Michael Frank
  * @version 1.0 21.01.2017
  */
-@Fork(2)
+@Fork(3)
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @BenchmarkMode(Mode.AverageTime)
@@ -355,8 +355,6 @@ public class LoopingAndStreamsJMH {
 
 
     public static void main(String[] args) throws RunnerException {
-        // System.getProperties().forEach( (k,v) -> System.out.println(k +
-        // "="+v));
         Options opt = new OptionsBuilder()
                 // runs all tests
                 .include(LoopingAndStreamsJMH.class.getName())
