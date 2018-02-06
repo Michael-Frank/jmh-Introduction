@@ -15,29 +15,29 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**--
- Zeilenbeschriftungen	                  10	1000	100000	   1000000	Gesamtergebnis
- stream_List_sumCollector	            0,04	 1,31	 112,30	   3.638,44		 938,02
- stream_List_mapToIntSum_parallel   	7,63	15,46	 138,48	   1.220,34		 345,48
- stream_List_mapToIntSum	            0,05	 0,88	 592,99	   6.896,60	   1.872,63
- stream_List_mapToIntReduce_parallel	8,08	15,28	 138,84	   1.216,95		 344,79
- stream_List_mapToIntReduce	            0,05	 0,88	 106,80	   1.964,14		 517,97
- stream_intArray_sum_parallel	        7,96	13,89	   21,16 	  84,47		  31,87
- stream_intArray_sum	                0,04	 2,31	   30,25 	 312,93		  86,38
- stream_intArray_reduce_parallel	    7,41	13,89	   21,10 	  84,56		  31,74
- stream_intArray_reduce	                0,04	 2,62	   30,51 	 316,12		  87,32
- stream_complexList_map	                0,21	17,05	2.462,19  31.589,82	   8.517,31
- stream_complexList_foreach	            0,17	15,06	2.336,5   30.482,10	   8.208,47
- stream_complexArray_map	            0,21	17,21	2.462,45  31.645,96	   8.531,46
- stream_complexArray_foreach	        0,16	15,08	2.324,87  30.511,15	   8.212,82
- idioticLoop	                        0,01	 0,31	   30,49     314,25		  86,27
- forI_List	                            0,01	 0,71	   87,01   1.893,46		 495,30
- forI_intArray	                        0,01	 0,31	   30,33	 313,31		  85,99
- forI_complexList	                    0,14	15,24	2.365,01  31.435,36	   8.453,94
- forI_complexArray	                    0,12	13,63	2.368,53  31.311,63	   8.423,48
- forEach_List	                        0,02	 0,78	   89,79   1.939,27		 507,46
- forEach_intArray	                    0,01	 0,31	   30,44	 313,21		  85,99
- forEach_complexList	                0,15	16,56	2.450,98  32.373,94	   8.710,41
- forEach_complexArray	                0,14	14,75	2.440,92  32.145,45	   8.650,31
+ Benchmark               /ListSize->    10   1000    100000    1000000    Average
+ stream_List_sumCollector             0,04   1,31    112,30   3.638,44     938,02
+ stream_List_mapToIntSum_parallel     7,63  15,46    138,48   1.220,34     345,48
+ stream_List_mapToIntSum              0,05   0,88    592,99   6.896,60   1.872,63
+ stream_List_mapToIntReduce_parallel  8,08  15,28    138,84   1.216,95     344,79
+ stream_List_mapToIntReduce           0,05   0,88    106,80   1.964,14     517,97
+ stream_intArray_sum_parallel         7,96  13,89     21,16      84,47      31,87
+ stream_intArray_sum                  0,04   2,31     30,25     312,93      86,38
+ stream_intArray_reduce_parallel      7,41  13,89     21,10      84,56      31,74
+ stream_intArray_reduce               0,04   2,62     30,51     316,12      87,32
+ stream_complexList_map               0,21  17,05  2.462,19  31.589,82   8.517,31
+ stream_complexList_foreach           0,17  15,06  2.336,5   30.482,10   8.208,47
+ stream_complexArray_map              0,21  17,21  2.462,45  31.645,96   8.531,46
+ stream_complexArray_foreach          0,16  15,08  2.324,87  30.511,15   8.212,82
+ idioticLoop                          0,01   0,31     30,49     314,25      86,27
+ forI_List                            0,01   0,71     87,01   1.893,46     495,30
+ forI_intArray                        0,01   0,31     30,33     313,31      85,99
+ forI_complexList                     0,14  15,24  2.365,01  31.435,36   8.453,94
+ forI_complexArray                    0,12  13,63  2.368,53  31.311,63   8.423,48
+ forEach_List                         0,02   0,78     89,79   1.939,27     507,46
+ forEach_intArray                     0,01   0,31     30,44     313,21      85,99
+ forEach_complexList                  0,15  16,56  2.450,98  32.373,94   8.710,41
+ forEach_complexArray                 0,14  14,75  2.440,92  32.145,45   8.650,31
 
  Benchmark                             (size)  Mode  Cnt      Score      Error  Units
  forEach_List                              10  avgt   10      0,016 ±    0,001  us/op

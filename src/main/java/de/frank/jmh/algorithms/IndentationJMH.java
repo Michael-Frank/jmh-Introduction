@@ -16,7 +16,7 @@ Evaluation Results
 #########################
 nanoseconds/operation (lower is better)
                                    indentation(number of spaces to the left)
-                                    0   2   8   16   31   32   64   128
+                                    0   2   8   16   31   32   64    128
 indentOriginal_                     35  30  31  188  327  362  640  1205  complex and still not good
 indentRefactoredStringBuilderFixed_ 29  36  35  119  157  187  291   545  still with builder but got a lot better by eliminating the obvious bugs
 indentRefactoredCharArray_          24  29  30   83   88  122  148   257  *winner?* how it should have been (if you want to keep the switch)

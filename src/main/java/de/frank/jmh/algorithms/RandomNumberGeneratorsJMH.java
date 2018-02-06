@@ -12,16 +12,16 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /*--
-												 double      double        int          int        long
-									 bool       bounded   unbounded	   bounded    unbounded   unbounded        Average Comment
-dsi.SplitMix64Random*	      164.888.581	128.711.540	139.440.578	47.260.915	191.480.592	177.678.470		141.576.779	# essentially same as JDKSplitableRandom again. But nextInt(bound) calls nextLong(bound) instead of using custom code for bounded integers
-dsi.XoRoShiRo128PlusRandom*	  176.258.478	134.030.350	158.181.138	47.812.503	197.133.471	187.870.341		150.214.380	# current state of the art in super fast high period PRNG's
-dsi.XorShift1024StarPhiRandom 134.219.586	103.387.804	116.970.967	43.576.749	128.155.110	135.300.280		110.268.416	# tbd
-dsi.XorShift1024StarRandom*	  131.331.083	104.839.167	118.124.601	44.632.823	147.003.966	132.848.090		113.129.955	# *DEPRECATED* essentially xorshift64* wich a much larger period.
-dsi.XorShift64StarRandom*	  173.209.529	131.579.301	160.454.976	56.002.236	189.603.417	195.882.252		151.121.952	# *DEPRECATED* super simplistic and fast, but splitMix64 and XoRoShiRo128Plus are superior. based on George Marsaglia's Xorshift generators.
-JDK.Random	                   78.244.683	 39.934.486	 39.382.213	72.609.536	 78.327.461	 36.250.151		 57.458.088	# DONT EVER USE! - this is just plain bad.. Use ThreadLocalRandom as dropin replacement.
-JDK.SplitableRandom	          155.059.804	117.591.638	126.638.107	80.447.532	176.014.167	157.978.204		135.621.575	# splitMix64 - but lacks the "Random" interface and a few shortcommings
-JDK.ThreadLocalRandom	      182.488.055	144.093.446	146.105.065	99.245.675	199.520.206	185.023.505		159.412.659	# splitMix64 - VERY good
+                                                 double       double         int          int       long
+                                      bool      bounded    unbounded     bounded    unbounded   unbounded        Average Comment
+dsi.SplitMix64Random*          164.888.581  128.711.540  139.440.578  47.260.915  191.480.592  177.678.470    141.576.779  # essentially same as JDKSplitableRandom again. But nextInt(bound) calls nextLong(bound) instead of using custom code for bounded integers
+dsi.XoRoShiRo128PlusRandom*    176.258.478  134.030.350  158.181.138  47.812.503  197.133.471  187.870.341    150.214.380  # current state of the art in super fast high period PRNG's
+dsi.XorShift1024StarPhiRandom  134.219.586  103.387.804  116.970.967  43.576.749  128.155.110  135.300.280    110.268.416  # tbd
+dsi.XorShift1024StarRandom*    131.331.083  104.839.167  118.124.601  44.632.823  147.003.966  132.848.090    113.129.955  # *DEPRECATED* essentially xorshift64* wich a much larger period.
+dsi.XorShift64StarRandom*      173.209.529  131.579.301  160.454.976  56.002.236  189.603.417  195.882.252    151.121.952  # *DEPRECATED* super simplistic and fast, but splitMix64 and XoRoShiRo128Plus are superior. based on George Marsaglia's Xorshift generators.
+JDK.Random                      78.244.683   39.934.486   39.382.213  72.609.536   78.327.461   36.250.151     57.458.088  # DONT EVER USE! - this is just plain bad.. Use ThreadLocalRandom as dropin replacement.
+JDK.SplitableRandom            155.059.804  117.591.638  126.638.107  80.447.532  176.014.167  157.978.204    135.621.575  # splitMix64 - but lacks the "Random" interface and a few shortcommings
+JDK.ThreadLocalRandom          182.488.055  144.093.446  146.105.065  99.245.675  199.520.206  185.023.505    159.412.659  # splitMix64 - VERY good
 
 RAW:
 
