@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 /*--
 ##########################
-Evaluation Results
+Evaluation of results
 #########################
 nanoseconds/operation (lower is better)
                                    indentation(number of spaces to the left)

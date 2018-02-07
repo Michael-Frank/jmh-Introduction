@@ -82,6 +82,11 @@ public class FastUUIDImplBenchJMH {
     }
 
     /**
+     * Disclaimer:
+     * This Implementation is for generating Random (Version 4) UUID's very fast.
+     * Its main purpose is for test data generation.
+     * This version does not guarantee uniqueness or good randomness.
+     *
      * Version 4 UUIDs are defined by RFC 4122 ("Leach-Salz"). <br>
      * These UUIDs depend primarily on random numbers. This algorithm sets the
      * version number (4 bits) as well as two reserved bits. All other bits (the

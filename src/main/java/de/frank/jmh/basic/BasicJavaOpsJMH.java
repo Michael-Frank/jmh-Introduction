@@ -1824,7 +1824,7 @@ public class BasicJavaOpsJMH {
 
 	@CompilerControl(CompilerControl.Mode.DONT_INLINE)
 	private void callMe() {
-
+		//baseline measure
 	}
 
 	@Benchmark
@@ -1834,6 +1834,7 @@ public class BasicJavaOpsJMH {
 
 	@CompilerControl(CompilerControl.Mode.DONT_INLINE)
 	private void callMe2(int xI2, int yI2) {
+		//baseline measure
 
 	}
 
