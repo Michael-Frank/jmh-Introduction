@@ -167,7 +167,7 @@ public class RightBasicBenchJMH {
 
     }
     /*--
-Bonus: generated assembly with profiling information
+Bonus: generated assembly with profiling information   .addProfiler(WinPerfAsmProfiler.class)
 Hottest code regions (>10,00% "SampledProfile" events):
 
 ....[Hottest Region 1]..............................................................................

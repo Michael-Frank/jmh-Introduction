@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 ##########################
 Evaluation of results
 #########################
-nanoseconds/operation (lower is better)
+all values in ns/operation (lower is better)
                                    indentation(number of spaces to the left)
                                     0   2   8   16   31   32   64    128
 indentOriginal_                     35  30  31  188  327  362  640  1205  complex and still not good

@@ -1,4 +1,4 @@
-package de.frank.jmh.basic;
+package de.frank.jmh.intro;
 
 
 import java.util.Arrays;

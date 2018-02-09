@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 /*--
 
 Disclaimer:
-This benchmark settles for "drop in" replacesments for java.util.Random and its interface.
-Some generators have special methods to generate bounded doubles, flots, ints, longs correct and efficiently, which
+This benchmark settles for "drop in" replacement's for java.util.Random and its interface.
+Some generators have special methods to generate bounded doubles, floats, ints, longs correct and efficiently, which
 are not included in this benchmark.
 
 

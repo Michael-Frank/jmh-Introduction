@@ -8,37 +8,52 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-/**--
- Benchmark               /ListSize->    10   1000    100000    1000000    Average
- stream_List_sumCollector             0,04   1,31    112,30   3.638,44     938,02
- stream_List_mapToIntSum_parallel     7,63  15,46    138,48   1.220,34     345,48
- stream_List_mapToIntSum              0,05   0,88    592,99   6.896,60   1.872,63
- stream_List_mapToIntReduce_parallel  8,08  15,28    138,84   1.216,95     344,79
- stream_List_mapToIntReduce           0,05   0,88    106,80   1.964,14     517,97
- stream_intArray_sum_parallel         7,96  13,89     21,16      84,47      31,87
- stream_intArray_sum                  0,04   2,31     30,25     312,93      86,38
- stream_intArray_reduce_parallel      7,41  13,89     21,10      84,56      31,74
- stream_intArray_reduce               0,04   2,62     30,51     316,12      87,32
- stream_complexList_map               0,21  17,05  2.462,19  31.589,82   8.517,31
- stream_complexList_foreach           0,17  15,06  2.336,5   30.482,10   8.208,47
- stream_complexArray_map              0,21  17,21  2.462,45  31.645,96   8.531,46
- stream_complexArray_foreach          0,16  15,08  2.324,87  30.511,15   8.212,82
- idioticLoop                          0,01   0,31     30,49     314,25      86,27
- forI_List                            0,01   0,71     87,01   1.893,46     495,30
- forI_intArray                        0,01   0,31     30,33     313,31      85,99
+/*--
+ * DANGER! This benchmark is heavily flawed!
+ *
+ *
+ Benchmark               /ListSize->    10  1.000   10.0000  1.000.000    Average
  forI_complexList                     0,14  15,24  2.365,01  31.435,36   8.453,94
  forI_complexArray                    0,12  13,63  2.368,53  31.311,63   8.423,48
- forEach_List                         0,02   0,78     89,79   1.939,27     507,46
- forEach_intArray                     0,01   0,31     30,44     313,21      85,99
  forEach_complexList                  0,15  16,56  2.450,98  32.373,94   8.710,41
  forEach_complexArray                 0,14  14,75  2.440,92  32.145,45   8.650,31
+ stream_complexList_map               0,21  17,05  2.462,19  31.589,82   8.517,31
+ stream_complexList_foreach           0,17  15,06  2.336,50  30.482,10   8.208,47
+ stream_complexArray_map              0,21  17,21  2.462,45  31.645,96   8.531,46
+ stream_complexArray_foreach          0,16  15,08  2.324,87  30.511,15   8.212,82
 
+
+ ##DANGER## this only shows how well the JVM can optimize very! simplistic loops
+ # note the 0.01ns which is not possible.
+ forI_List                            0,01   0,71     87,01   1.893,46     495,30
+ forI_intArray                        0,01   0,31     30,33     313,31      85,99
+ forEach_List                         0,02   0,78     89,79   1.939,27     507,46
+ forEach_intArray                     0,01   0,31     30,44     313,21      85,99
+
+
+ stream_List_sumCollector             0,04   1,31    112,30   3.638,44     938,02
+ stream_List_mapToIntSum              0,05   0,88    592,99   6.896,60   1.872,63
+ stream_List_mapToIntSum_parallel     7,63  15,46    138,48   1.220,34     345,48
+ stream_List_mapToIntReduce           0,05   0,88    106,80   1.964,14     517,97
+ stream_List_mapToIntReduce_parallel  8,08  15,28    138,84   1.216,95     344,79
+ stream_intArray_sum                  0,04   2,31     30,25     312,93      86,38
+ stream_intArray_sum_parallel         7,96  13,89     21,16      84,47      31,87
+ stream_intArray_reduce               0,04   2,62     30,51     316,12      87,32
+ stream_intArray_reduce_parallel      7,41  13,89     21,10      84,56      31,74
+
+ idioticLoop                          0,01   0,31     30,49     314,25      86,27
+
+ RAW
  Benchmark                             (size)  Mode  Cnt      Score      Error  Units
  forEach_List                              10  avgt   10      0,016 ±    0,001  us/op
  forEach_List                            1000  avgt   10      0,779 ±    0,024  us/op
@@ -139,11 +154,12 @@ import java.util.stream.Collectors;
 @Warmup(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 public class LoopingAndStreamsJMH {
-    /**--
+    /**
+     * --
      * ######### WARNING ##############
-     * Do not confuse this benchmark with JMHSample_11_Loops
-     * This benchmark will foremost show you how well (very simple) loops are optimized by the jvm and how bad streams are.
-     *
+     * Do not confuse this benchmark with the anti pattern in JMHSample_11_Loops
+     * This benchmark should show you on purpose how you how well (very simple) loops are optimized by the jvm
+     * <data>
      * You will get totally different results with complex operations arrays/lists of objects
      */
     @Param({"10", "1000", "100000", "1000000"})
@@ -154,25 +170,21 @@ public class LoopingAndStreamsJMH {
     private ComplexData[] complexData;
     private List<ComplexData> complexDataList;
 
-    private String key="1";
 
-    static class ComplexData{
-        private static final Map<String,String> DEF=new HashMap<>();
-        private static final AtomicInteger INSTANCES=new AtomicInteger();
-        static{
-            for (int i = 0; i < 3; i++) {
-                String k = Integer.toString(i);
-                DEF.put(k,k);
-            }
+    private String key = "1";
+
+    static class ComplexData {
+        private static final AtomicInteger INSTANCES = new AtomicInteger();
+        //just a map of {"0":"0", "1":"1", "2":"2"};
+        private static final Map<String, String> COMMON_DATA = IntStream.rangeClosed(0,3).mapToObj(Integer::toString).collect(Collectors.toMap(x->x,x->x));
+
+        Map<String, String> data;
+
+        public ComplexData() {
+            data = new HashMap<>(COMMON_DATA);
+            String unique = Integer.toString(INSTANCES.incrementAndGet());
+            data.put(unique, unique);
         }
-
-        Map<String,String> p;
-        public ComplexData(){
-           p=new HashMap<String,String>(DEF);
-           String unique=Integer.toString(INSTANCES.incrementAndGet());
-           p.put(unique,unique);
-        }
-
 
     }
 
@@ -189,7 +201,58 @@ public class LoopingAndStreamsJMH {
         for (int i = 0; i < data.length; i++) {
             complexData[i] = new ComplexData();
         }
-        complexDataList  = Arrays.asList(complexData);
+        complexDataList = Arrays.asList(complexData);
+    }
+
+    @SuppressWarnings("ForLoopReplaceableByForEach")
+    @Benchmark
+    public void forI_complexArray(Blackhole b) {
+        for (int i = 0; i < complexData.length; i++) {
+            b.consume(complexData[i].data.get(key));
+        }
+    }
+
+    @Benchmark
+    public void forEach_complexArray(Blackhole b) {
+        for (ComplexData value : complexData) {
+            b.consume(value.data.get(key));
+        }
+    }
+
+
+    @SuppressWarnings("ForLoopReplaceableByForEach")
+    @Benchmark
+    public void forI_complexList(Blackhole b) {
+        for (int i = 0; i < complexDataList.size(); i++) {
+            b.consume(complexDataList.get(i).data.get(key));
+        }
+    }
+
+    @Benchmark
+    public void forEach_complexList(Blackhole b) {
+        for (ComplexData value : complexDataList) {
+            b.consume(value.data.get(key));
+        }
+    }
+
+    @Benchmark
+    public void stream_complexArray_foreach(Blackhole b) {
+        Arrays.stream(complexData).forEach(x -> b.consume(x.data.get(key)));
+    }
+
+    @Benchmark
+    public void stream_complexList_foreach(Blackhole b) {
+        complexDataList.stream().forEach(x -> b.consume(x.data.get(key)));
+    }
+
+    @Benchmark
+    public void stream_complexArray_map(Blackhole b) {
+        Arrays.stream(complexData).map(x -> x.data.get(key)).forEach(b::consume);
+    }
+
+    @Benchmark
+    public void stream_complexList_map(Blackhole b) {
+        complexDataList.stream().map(x -> x.data.get(key)).forEach(b::consume);
     }
 
 
@@ -212,54 +275,23 @@ public class LoopingAndStreamsJMH {
         return sum;
     }
 
-    @SuppressWarnings("ForLoopReplaceableByForEach")
+
     @Benchmark
-    public void forI_complexArray(Blackhole b) {
-        for (int i = 0; i < complexData.length; i++) {
-            b.consume(complexData[i].p.get(key));
+    public int forI_List() {
+        int sum = 0;
+        for (int i = 0; i < dataAsList.size(); i++) {
+            sum += dataAsList.get(i);
         }
+        return sum;
     }
 
     @Benchmark
-    public void forEach_complexArray(Blackhole b) {
-        for (ComplexData value : complexData) {
-            b.consume(value.p.get(key));
+    public int forEach_List() {
+        int sum = 0;
+        for (int value : dataAsList) {
+            sum += value;
         }
-    }
-
-    @SuppressWarnings("ForLoopReplaceableByForEach")
-    @Benchmark
-    public void forI_complexList(Blackhole b) {
-        for (int i = 0; i < complexDataList.size(); i++) {
-            b.consume(complexDataList.get(i).p.get(key));
-        }
-    }
-
-    @Benchmark
-    public void forEach_complexList(Blackhole b) {
-        for (ComplexData value : complexDataList) {
-            b.consume(value.p.get(key));
-        }
-    }
-
-    @Benchmark
-    public void stream_complexArray_foreach(Blackhole b) {
-        Arrays.stream(complexData).forEach(x->b.consume(x.p.get(key)));
-    }
-
-    @Benchmark
-    public void stream_complexList_foreach(Blackhole b) {
-       complexDataList.stream().forEach(x->b.consume(x.p.get(key)));
-    }
-
-    @Benchmark
-    public void stream_complexArray_map(Blackhole b) {
-        Arrays.stream(complexData).map(x->x.p.get(key)).forEach(b::consume);
-    }
-
-    @Benchmark
-    public void stream_complexList_map(Blackhole b) {
-       complexDataList.stream().map(x->x.p.get(key)).forEach(b::consume);
+        return sum;
     }
 
     @Benchmark
@@ -282,24 +314,6 @@ public class LoopingAndStreamsJMH {
         return Arrays.stream(data).parallel().reduce(0, Integer::sum);
     }
 
-
-    @Benchmark
-    public int forI_List() {
-        int sum = 0;
-        for (int i = 0; i < dataAsList.size(); i++) {
-            sum += dataAsList.get(i);
-        }
-        return sum;
-    }
-
-    @Benchmark
-    public int forEach_List() {
-        int sum = 0;
-        for (int value : dataAsList) {
-            sum += value;
-        }
-        return sum;
-    }
 
     @Benchmark
     public int stream_List_mapToIntSum() {
@@ -331,7 +345,7 @@ public class LoopingAndStreamsJMH {
     public int idioticLoop() {
         // seriously, this is fucking stupid.
 
-        //This "habbit" can sometimes be found in very old code
+        //This "habit" can sometimes be found in very old code
         // -> the reasoning was: "java performs array bounds checks for i in each iteration
         // This is INVALID today.
         //
