@@ -15,6 +15,7 @@ public class FlawedBasicBench {
         int x = 0;
         Algo[] implementations = new Algo[]{new AlgoImpl1(), new AlgoImpl2(), new AlgoImpl3()};
         for (Algo algo : implementations) {
+            //HOWTO: run each variant at its own (jvm instance)!
             singleBenchRun_v1(algo, 1_000);
 //            singleBenchRun_v1(algo, 10_000);
 //            singleBenchRun_v1(algo, 100_000);
@@ -22,6 +23,7 @@ public class FlawedBasicBench {
 //            singleBenchRun_v1(algo, 200_000_000);
 //            x += singleBenchRun_v2(algo, 200_000_000);
 //            x += singleBenchRun_v3(algo, 200_000_000);
+//            x += singleBenchRun_v4(algo, 200_000_000);
         }
         System.out.println(x);
     }
@@ -39,7 +41,7 @@ public class FlawedBasicBench {
         System.out.printf("%s %9.3fns/op %.0fops/s%n", algo.getClass().getSimpleName(), nsPerOp, throughputPerS);
     }
 
-
+    // use result, prevent deadcode eliminations ... still sucks
     private static int singleBenchRun_v2(Algo algo, int invocations) {
         long start = System.nanoTime();
         int x = 0;
@@ -51,13 +53,25 @@ public class FlawedBasicBench {
     }
 
 
+    // dont use constant variables ... still sucks (and still constant)
     public static int input3 = 27;
-
     private static int singleBenchRun_v3(Algo algo, int invocations) {
         long start = System.nanoTime();
         int x = 0;
         for (int i = 0; i < invocations; i++) {
             x += algo.doWork(input3);
+        }
+        printBenchmarkReport(algo, invocations, start);
+        return x;
+    }
+
+    // now we got it, eh? ... nope, still sucks (you can continue this for weeks... now switch to JMH already)
+    public static volatile int input4 = 27;
+    private static int singleBenchRun_v4(Algo algo, int invocations) {
+        long start = System.nanoTime();
+        int x = 0;
+        for (int i = 0; i < invocations; i++) {
+            x += algo.doWork(input4);
         }
         printBenchmarkReport(algo, invocations, start);
         return x;

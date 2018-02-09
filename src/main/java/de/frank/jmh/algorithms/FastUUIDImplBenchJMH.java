@@ -12,6 +12,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**--
+ *
+ * DISCLAIMER: This UUID version ist NOT a drop in replacement for jdk UIID (or any other) see description javadoc @ customUUID class
+ *
  Oracle JDK 1.8.0_161
  Run complete. Total time: 00:13:52
  Benchmark               Mode  Cnt         Score        Error  Units

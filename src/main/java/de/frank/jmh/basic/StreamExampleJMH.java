@@ -2,6 +2,8 @@ package de.frank.jmh.basic;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.profile.GCProfiler;
+import org.openjdk.jmh.profile.WinPerfAsmProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
@@ -20,9 +22,9 @@ Intro
 This is not a rant or a case against streams.
 It is an reminder that it is an additional tool in your box, not the only one, not an replacement and maybe not even your first choice.
 Know the implications and carefully weight them in your specific context.
-  Run once glue-code: streams are fine.
-  Performancecritical thight inner loop: classic loops
-  Dont require a .filter or any other fancy option, just one simple .map()? maybe stick to loops
+  Run once glue-code -> streams are fine.
+  Performance critical tight inner loop -> classic loops
+  Dont require a .filter() or any other fancy option? just one simple .map()? -> maybe stick to loops
 
 
 Disclaimer:
@@ -130,10 +132,10 @@ StreamExampleJMH.stream_fixed          1000000  thrpt   30       50,717 ±      
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Threads(16)
-@Fork(3)
-@Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Threads(1)
+@Fork(1)
+@Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 public class StreamExampleJMH {
 
@@ -255,7 +257,8 @@ public class StreamExampleJMH {
                 //.addProfiler(HotspotRuntimeProfiler.class)
                 //.addProfiler(HotspotMemoryProfiler.class)
                 //.addProfiler(HotspotCompilationProfiler.class)
-                //
+                //.addProfiler(WinPerfAsmProfiler.class)
+
                 // full list of built in profilers:
                 //("cl",       ClassloaderProfiler.class);
                 //("comp",     CompilerProfiler.class);
