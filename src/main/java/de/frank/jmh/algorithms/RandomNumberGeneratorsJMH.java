@@ -21,9 +21,10 @@ import java.util.concurrent.TimeUnit;
 
 Disclaimer:
 This benchmark settles for "drop in" replacement's for java.util.Random and its interface.
-Some generators have special methods to generate bounded doubles, floats, ints, longs correct and efficiently, which
-are not included in this benchmark.
+Some generators have special methods to generate bounded doubles, floats, ints and longs correct and efficiently but theses are not included in this benchmark - only measuring methods in common.
 
+@ VM version: JDK 1.8.0_161, VM 25.161-b12
+@ Single Threaded
                                                  double       double          int          int        long
                                       bool      bounded    unbounded      bounded    unbounded    unbounded        Average  Comment
 JDK.Random                      84.530.322   40.726.804   41.015.961   71.972.563   83.968.432   41.933.529    60.691.269 # DONT EVER USE! - this is just plain bad. Use ThreadLocalRandom as dropin replacement.
@@ -37,13 +38,28 @@ commons.Well44497b              77.605.088   34.802.570   35.024.216   55.943.94
 commons.Well512a               105.534.028   59.444.862   59.526.684   66.699.357  107.752.658   57.129.972    76.014.594 # well known but special - long period
 dsi.XoRoShiRo128PlusRandom*    229.216.318  181.556.846  201.642.720   56.639.801  240.527.720  261.998.544   195.263.658 # current state of the art in super fast medium period PRNG's
 dsi.XorShift1024StarPhiRandom  184.317.442  150.684.543  159.733.854   51.764.245  195.200.861  206.921.179   158.103.688 # current state of the art in super fast high period PRNG's
-dsi.XorShift1024StarRandom*    131.331.083  104.839.167  118.124.601  44.632.823  147.003.966  132.848.090    113.129.955 # *DEPRECATED* essentially xorshift64* wich a much larger period.
-dsi.XorShift64StarRandom*      173.209.529  131.579.301  160.454.976  56.002.236  189.603.417  195.882.252    151.121.952 # *DEPRECATED* super simplistic and fast, but splitMix64 and XoRoShiRo128Plus are superior. based on George Marsaglia's Xorshift generators.
-Remarks: Interestingly all generators have performance issues generating bounded integers
+dsi.XorShift1024StarRandom*    131.331.083  104.839.167  118.124.601   44.632.823  147.003.966  132.848.090   113.129.955 # *DEPRECATED* essentially xorshift64* wich a much larger period.
+dsi.XorShift64StarRandom*      173.209.529  131.579.301  160.454.976   56.002.236  189.603.417  195.882.252   151.121.952 # *DEPRECATED* super simplistic and fast, but splitMix64 and XoRoShiRo128Plus are superior. based on George Marsaglia's Xorshift generators.
 
+Remarks: Interestingly all PRNG's have performance issues generating bounded integers
 
-RAW:
+@ VM version: JDK 10, VM 10+46
+@ Single Threaded
+                                                 double       double          int          int        long
+                                      bool      bounded    unbounded      bounded    unbounded    unbounded        Average  Comment
+JDK.Random                      84.688.418   42.648.737   37.877.992   69.664.586   75.352.850   42.498.463     58.788.508
+JDK.SplitableRandom            219.565.640  166.783.275  142.240.708  102.144.697  185.627.930  231.352.310    174.619.093
+JDK.ThreadLocalRandom          227.544.151  194.500.916  160.835.113   87.871.808  180.509.087  227.958.946    179.870.003
+JDK.SecureRandom_SHA1           32.716.090    4.432.020    4.649.020    9.601.989    9.065.637    5.512.551     10.996.218
+JDK.SecureRandom_STRONG             12.746        4.766        5.588       12.005       10.605        6.627          8.723
 
+commons.MerseneTwister         130.539.263   63.523.568   64.603.732   65.960.251  129.267.386   89.266.765     90.526.828
+commons.Well44497b              83.922.486   30.177.240   31.733.013   53.928.039   70.456.861   36.337.797     51.092.573
+commons.Well512a               103.263.483   51.662.151   52.029.243   67.210.906   86.372.272   64.045.734     70.763.965
+dsi.XoRoShiRo128PlusRandom*    228.149.480  162.502.615  168.092.234   55.604.014  227.019.846  253.364.841    182.455.505
+dsi.XorShift1024StarPhiRandom  192.542.221  119.665.989  130.277.979   49.274.933  183.984.705  202.520.136    146.377.660
+
+RAW:(JDK 1.8)
 # Run complete. Total time: 00:25:40
 
 Benchmark                                                      (implName)  (int_bound)   Mode  Cnt          Score          Error  Units
@@ -107,6 +123,70 @@ RandomNumberGeneratorsJMH.long_unbounded               commons.Well44497b       
 RandomNumberGeneratorsJMH.long_unbounded           commons.MerseneTwister           10  thrpt   15   92389524,415 ±   895551,536  ops/s
 RandomNumberGeneratorsJMH.long_unbounded      dsi.XoRoShiRo128PlusRandom*           10  thrpt   15  261998543,635 ±  3258166,001  ops/s
 RandomNumberGeneratorsJMH.long_unbounded    dsi.XorShift1024StarPhiRandom           10  thrpt   15  206921179,168 ±  4039445,073  ops/s
+
+RAW JDK10
+Benchmark                                                      (implName)  (int_bound)   Mode  Cnt          Score          Error  Units
+RandomNumberGeneratorsJMH.bool                                 JDK.Random           10  thrpt   15   84688418,405 ±  1259515,276  ops/s
+RandomNumberGeneratorsJMH.bool                      JDK.ThreadLocalRandom           10  thrpt   15  227544150,529 ±  2476219,786  ops/s
+RandomNumberGeneratorsJMH.bool                        JDK.SplitableRandom           10  thrpt   15  219565640,085 ±  1121089,511  ops/s
+RandomNumberGeneratorsJMH.bool                      JDK.SecureRandom_SHA1           10  thrpt   15   32716090,160 ±   516714,051  ops/s
+RandomNumberGeneratorsJMH.bool                    JDK.SecureRandom_STRONG           10  thrpt   15      12746,197 ±      963,469  ops/s
+RandomNumberGeneratorsJMH.bool                           commons.Well512a           10  thrpt   15  103263482,995 ±  1079972,765  ops/s
+RandomNumberGeneratorsJMH.bool                         commons.Well44497b           10  thrpt   15   83922485,683 ±  1064346,966  ops/s
+RandomNumberGeneratorsJMH.bool                     commons.MerseneTwister           10  thrpt   15  130539262,518 ±  2131901,376  ops/s
+RandomNumberGeneratorsJMH.bool                dsi.XoRoShiRo128PlusRandom*           10  thrpt   15  228149479,925 ±  3028435,682  ops/s
+RandomNumberGeneratorsJMH.bool              dsi.XorShift1024StarPhiRandom           10  thrpt   15  192542220,967 ±  1366178,306  ops/s
+RandomNumberGeneratorsJMH.double_bounded                       JDK.Random           10  thrpt   15   42648737,256 ±   202742,077  ops/s
+RandomNumberGeneratorsJMH.double_bounded            JDK.ThreadLocalRandom           10  thrpt   15  194500915,861 ±  3469885,315  ops/s
+RandomNumberGeneratorsJMH.double_bounded              JDK.SplitableRandom           10  thrpt   15  166783275,470 ±  1125519,430  ops/s
+RandomNumberGeneratorsJMH.double_bounded            JDK.SecureRandom_SHA1           10  thrpt   15    4432019,661 ±   845434,217  ops/s
+RandomNumberGeneratorsJMH.double_bounded          JDK.SecureRandom_STRONG           10  thrpt   15       4766,083 ±      278,191  ops/s
+RandomNumberGeneratorsJMH.double_bounded                 commons.Well512a           10  thrpt   15   51662151,253 ±  1346180,132  ops/s
+RandomNumberGeneratorsJMH.double_bounded               commons.Well44497b           10  thrpt   15   30177240,248 ±  1062890,123  ops/s
+RandomNumberGeneratorsJMH.double_bounded           commons.MerseneTwister           10  thrpt   15   63523568,452 ±  2086853,508  ops/s
+RandomNumberGeneratorsJMH.double_bounded      dsi.XoRoShiRo128PlusRandom*           10  thrpt   15  162502614,924 ±  6262641,274  ops/s
+RandomNumberGeneratorsJMH.double_bounded    dsi.XorShift1024StarPhiRandom           10  thrpt   15  119665988,859 ± 10407465,486  ops/s
+RandomNumberGeneratorsJMH.double_unbounded                     JDK.Random           10  thrpt   15   37877992,305 ±   357423,840  ops/s
+RandomNumberGeneratorsJMH.double_unbounded          JDK.ThreadLocalRandom           10  thrpt   15  160835112,640 ± 14856506,791  ops/s
+RandomNumberGeneratorsJMH.double_unbounded            JDK.SplitableRandom           10  thrpt   15  142240707,507 ±  5389029,455  ops/s
+RandomNumberGeneratorsJMH.double_unbounded          JDK.SecureRandom_SHA1           10  thrpt   15    4649019,784 ±   134935,873  ops/s
+RandomNumberGeneratorsJMH.double_unbounded        JDK.SecureRandom_STRONG           10  thrpt   15       5588,318 ±      237,901  ops/s
+RandomNumberGeneratorsJMH.double_unbounded               commons.Well512a           10  thrpt   15   52029242,883 ±  1488419,031  ops/s
+RandomNumberGeneratorsJMH.double_unbounded             commons.Well44497b           10  thrpt   15   31733013,348 ±  3835925,140  ops/s
+RandomNumberGeneratorsJMH.double_unbounded         commons.MerseneTwister           10  thrpt   15   64603732,148 ±  1890482,187  ops/s
+RandomNumberGeneratorsJMH.double_unbounded    dsi.XoRoShiRo128PlusRandom*           10  thrpt   15  168092234,284 ±  5234738,240  ops/s
+RandomNumberGeneratorsJMH.double_unbounded  dsi.XorShift1024StarPhiRandom           10  thrpt   15  130277979,344 ±  8719801,074  ops/s
+RandomNumberGeneratorsJMH.int_bounded                          JDK.Random           10  thrpt   15   69664586,104 ±  1291495,501  ops/s
+RandomNumberGeneratorsJMH.int_bounded               JDK.ThreadLocalRandom           10  thrpt   15   87871807,516 ± 33148639,137  ops/s
+RandomNumberGeneratorsJMH.int_bounded                 JDK.SplitableRandom           10  thrpt   15  102144696,824 ±  2530162,006  ops/s
+RandomNumberGeneratorsJMH.int_bounded               JDK.SecureRandom_SHA1           10  thrpt   15    9601989,219 ±   222378,458  ops/s
+RandomNumberGeneratorsJMH.int_bounded             JDK.SecureRandom_STRONG           10  thrpt   15      12004,951 ±      634,369  ops/s
+RandomNumberGeneratorsJMH.int_bounded                    commons.Well512a           10  thrpt   15   67210906,459 ±  1625147,443  ops/s
+RandomNumberGeneratorsJMH.int_bounded                  commons.Well44497b           10  thrpt   15   53928038,689 ±  3986968,234  ops/s
+RandomNumberGeneratorsJMH.int_bounded              commons.MerseneTwister           10  thrpt   15   65960251,367 ±  2646366,719  ops/s
+RandomNumberGeneratorsJMH.int_bounded         dsi.XoRoShiRo128PlusRandom*           10  thrpt   15   55604014,493 ±   787242,771  ops/s
+RandomNumberGeneratorsJMH.int_bounded       dsi.XorShift1024StarPhiRandom           10  thrpt   15   49274932,783 ±  1986648,298  ops/s
+RandomNumberGeneratorsJMH.int_unbounded                        JDK.Random           10  thrpt   15   75352850,156 ±   855876,300  ops/s
+RandomNumberGeneratorsJMH.int_unbounded             JDK.ThreadLocalRandom           10  thrpt   15  180509086,747 ±  5895813,516  ops/s
+RandomNumberGeneratorsJMH.int_unbounded               JDK.SplitableRandom           10  thrpt   15  185627929,902 ±  6468386,010  ops/s
+RandomNumberGeneratorsJMH.int_unbounded             JDK.SecureRandom_SHA1           10  thrpt   15    9065636,899 ±   253827,760  ops/s
+RandomNumberGeneratorsJMH.int_unbounded           JDK.SecureRandom_STRONG           10  thrpt   15      10604,615 ±      406,969  ops/s
+RandomNumberGeneratorsJMH.int_unbounded                  commons.Well512a           10  thrpt   15   86372271,895 ±  3120914,507  ops/s
+RandomNumberGeneratorsJMH.int_unbounded                commons.Well44497b           10  thrpt   15   70456860,637 ±  3459014,876  ops/s
+RandomNumberGeneratorsJMH.int_unbounded            commons.MerseneTwister           10  thrpt   15  129267385,921 ±  7169834,133  ops/s
+RandomNumberGeneratorsJMH.int_unbounded       dsi.XoRoShiRo128PlusRandom*           10  thrpt   15  227019845,665 ± 16848263,330  ops/s
+RandomNumberGeneratorsJMH.int_unbounded     dsi.XorShift1024StarPhiRandom           10  thrpt   15  183984704,672 ± 13563924,949  ops/s
+RandomNumberGeneratorsJMH.long_unbounded                       JDK.Random           10  thrpt   15   42498463,041 ±   619625,625  ops/s
+RandomNumberGeneratorsJMH.long_unbounded            JDK.ThreadLocalRandom           10  thrpt   15  227958945,876 ±  1948362,032  ops/s
+RandomNumberGeneratorsJMH.long_unbounded              JDK.SplitableRandom           10  thrpt   15  231352310,088 ±  2779635,121  ops/s
+RandomNumberGeneratorsJMH.long_unbounded            JDK.SecureRandom_SHA1           10  thrpt   15    5512550,821 ±    86196,964  ops/s
+RandomNumberGeneratorsJMH.long_unbounded          JDK.SecureRandom_STRONG           10  thrpt   15       6627,395 ±       56,817  ops/s
+RandomNumberGeneratorsJMH.long_unbounded                 commons.Well512a           10  thrpt   15   64045733,540 ±   933420,070  ops/s
+RandomNumberGeneratorsJMH.long_unbounded               commons.Well44497b           10  thrpt   15   36337796,719 ±   540372,961  ops/s
+RandomNumberGeneratorsJMH.long_unbounded           commons.MerseneTwister           10  thrpt   15   89266765,322 ±   971573,029  ops/s
+RandomNumberGeneratorsJMH.long_unbounded      dsi.XoRoShiRo128PlusRandom*           10  thrpt   15  253364840,628 ±  4085596,678  ops/s
+RandomNumberGeneratorsJMH.long_unbounded    dsi.XorShift1024StarPhiRandom           10  thrpt   15  202520136,135 ±  3526411,477  ops/s
+
 */
 
 /**
