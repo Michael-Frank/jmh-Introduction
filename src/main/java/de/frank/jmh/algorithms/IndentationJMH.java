@@ -1,6 +1,16 @@
 package de.frank.jmh.algorithms;
 
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -10,32 +20,41 @@ import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-/*--
-##########################
-Evaluation of results
-#########################
-all values in ns/operation (lower is better)
-                                   indentation(number of spaces to the left)
+/**--
+Evaluation of a code piece that looked allot like premature optimization. Original Author had good intents but could have
+done better and probably did not have JMH to verify his optimizations.
+
+#######################
+Evaluation of results #
+#######################
+=> all values in ns/operation (lower is better)
+================================================
+                                    indentation(number of spaces to the left)
                                     0   2   8   16   31   32   64    128
-indentOriginal_                     35  30  31  188  327  362  640  1205  complex and still not good
-indentRefactoredStringBuilderFixed_ 29  36  35  119  157  187  291   545  still with builder but got a lot better by eliminating the obvious bugs
-indentRefactoredCharArray_          24  29  30   83   88  122  148   257  *winner?* how it should have been (if you want to keep the switch)
+indentOriginal_                     35  30  31  188  327  362  640  1205  original - complex and but still not good
+
+Refactorings - keeping the original idea
+indentRefactoredStringBuilderFixed_ 29  36  35  119  157  187  291   545  still with builder, but a lot better by eliminating the obvious bugs
+indentRefactoredCharArray_          24  29  30   83   88  122  148   257  **winner/generalPurpose** how it should have been (if you want to keep the switch)
 indentRefactoredFillCharArray_      24  29  30   84   90  118  140   243  use Arrays.fill instead of loop (not much difference :-( )
 indentRefactoredStaticCharArray_    29  34  35   77   79  106  129   219  has limitation on max indentation - currently no fallback
-indentCharArrayFill_                48  52  57   77   84  104  129   235  super simple and scales well - but penatly for small values
-indentStaticCharArray_              26  40  41   62   66   90  111   195  has limitation on max indentation - currently no fallback
-indentStringBuilderLoop_            17  32  49  103  153  188  323   599  *winer @ simple* very simple and ok-ish performance
+
+Redo from scratch
+indentCharArrayFill_                48  52  57   77   84  104  129   235  super simple and scales well - but penalty for small values
+indentStaticCharArray_              26  40  41   62   66   90  111   195  has limitation on max indentation - currently no fallback for big values
+indentStringBuilderLoop_            17  32  49  103  153  188  323   599  **winner/simplicity**  very simple and ok-ish performance
 indentStringBuilderStaticCharArray  27  32  32   56   61   88  106   174  has limitation on max indentation - currently no fallback
 indentConcurrentHashMapCache        44  48  49   71   71   97  111   174  DONT! Use- A great waste of memory - just for comparision what can be done in a time memory tradeoff
-                                                                         bad performance for low values it the caches overhead. uses arrays.fill internally.
+                                                                          bad performance for low values it the caches overhead. uses arrays.fill internally.
 
 
 Conclusion:
-The original version tried to optimize the "common case" of indenting 1-8 spaces. Depending on the usecase it may be worthwhile. But the uncommon case has obvious performance issues. The number of LOC for such a simple task seams to be off.
-If the usecase is really this performance critical, there are better options we now explore.
-First of all, when working with indentation, somwhere a StringBuilder or a stream is probably used.
-Instead of generating intermediate Strings, why not write ' ' characters directly into the buffer?
-To avoid the looping an static char [] filled with spaces can be used as bulk buffer. This gives the overall best performance at the cost of some length restrictions.
+The original version tried to optimize the "common case" of indenting 1-8 spaces. Depending on the usecase it may be worthwhile.#
+But the uncommon case has obvious performance issues. The number of LOC for such a simple task seams to be off.
+If the usecase is really this performance critical, there are better options- which we have explored during this test.
+First of all, challenging the overall design decision: when working with indentation, probably a StringBuilder or stream is used somewhere higher up in the call chain.
+So instead of generating intermediate Strings, why not write the ' ' characters directly into this buffer instead of creating and returning a new String?
+To avoid the looping, an static char [] filled with spaces can be used as bulk buffer. This gives the overall best performance at the cost of some length restrictions.
 
 ##########################
 RAW
@@ -124,8 +143,9 @@ indentConcurrentHashMapCache         32  avgt  10    96,865  ±   2,568  ns/op
 indentConcurrentHashMapCache         64  avgt  10   111,348  ±   2,058  ns/op
 indentConcurrentHashMapCache        128  avgt  10   173,846  ±   2,002  ns/op
 
+ * @author Michael Frank
+ * @version 1.0 13.05.2018
  */
-
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
