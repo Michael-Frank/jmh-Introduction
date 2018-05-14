@@ -196,9 +196,7 @@ RandomNumberGeneratorsJMH.long_unbounded               commons.Well44497b       
 RandomNumberGeneratorsJMH.long_unbounded           commons.MerseneTwister           10  thrpt   15   89266765,322 ±   971573,029  ops/s
 RandomNumberGeneratorsJMH.long_unbounded      dsi.XoRoShiRo128PlusRandom*           10  thrpt   15  253364840,628 ±  4085596,678  ops/s
 RandomNumberGeneratorsJMH.long_unbounded    dsi.XorShift1024StarPhiRandom           10  thrpt   15  202520136,135 ±  3526411,477  ops/s
-
 */
-
 /**
  * @author Michael Frank
  * @version 1.0 21.11.2017

@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-/**--
+/*--
 Evaluation of a code piece that looked allot like premature optimization. Original Author had good intents but could have
 done better and probably did not have JMH to verify his optimizations.
 
@@ -142,11 +142,11 @@ indentConcurrentHashMapCache         31  avgt  10    70,638  ±   1,675  ns/op
 indentConcurrentHashMapCache         32  avgt  10    96,865  ±   2,568  ns/op
 indentConcurrentHashMapCache         64  avgt  10   111,348  ±   2,058  ns/op
 indentConcurrentHashMapCache        128  avgt  10   173,846  ±   2,002  ns/op
-
+*/
+/**
  * @author Michael Frank
  * @version 1.0 13.05.2018
  */
-
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)

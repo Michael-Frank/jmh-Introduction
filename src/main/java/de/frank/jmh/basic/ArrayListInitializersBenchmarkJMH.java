@@ -23,16 +23,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
+/*--
  * This benchmark is biased and only valid if:
- * initialize ArrayList with a SINGLE item
- * AND there is never a second "add()" sometimes later.
- * <p>
+ *   - initialize ArrayList with a SINGLE item
+ *   - AND there is never a second "add()" sometimes later.
+ *
  * If there is more the one initial value, Arrays.asList might win.
  * If there is a second "add()" sometimes later we can expect most variants to behave similarly, except for simpleAddWithInitialCapacity1 and an higher capacity
- * <p>
+ *
  * Benchmark                      Mode  Cnt   Score   Error  Units
- * baseline                       avgt    5   0,302 ± 0,048  ns/op NOOP
+ * baseline                       avgt    5   0,302 ± 0,048  ns/op NO-OP
  * baselineNewArrayList           avgt    5   4,943 ± 0,326  ns/op will contain an static empty object array - final capacity is 0
  * baselineNewArrayList1          avgt    5   8,076 ± 0,182  ns/op
  * arraysAsList                   avgt    5  17,455 ± 0,780  ns/op will copy data32 TWICE- final capacity is 1
@@ -44,7 +44,8 @@ import java.util.stream.Stream;
  * guava                          avgt    5  10,883 ± 1,890  ns/op internal: new ArrayList<>();Collections.addAll
  * java8Stream                    avgt    5  52,589 ± 1,167  ns/op as expected: sucks
  * java8Stream2                   avgt    5  44,616 ± 0,479  ns/op as expected: sucks
- *
+ */
+/**
  * @author Michael Frank
  * @version 1.0 13.05.2018
  */

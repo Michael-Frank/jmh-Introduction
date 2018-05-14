@@ -43,7 +43,7 @@ import static org.openjdk.jmh.annotations.Scope.Thread;
 @Fork(5)
 @OutputTimeUnit(NANOSECONDS)
 @State(Thread)
-public class PolymorphicBenchmark {
+public class PolymorphicCallBenchmarkJMH {
     // Deliberately a field, JMH avoids constant folding
     private double x = Math.PI;
 
@@ -199,8 +199,8 @@ public class PolymorphicBenchmark {
     private static RunResult makeRunner(String method) throws RunnerException {
         return new Runner(new OptionsBuilder()
                 .warmupMode(WarmupMode.BULK)
-                .include(".*" + PolymorphicBenchmark.class.getSimpleName() + ".*" + method + ".*_measure")
-                .includeWarmup(".*" + PolymorphicBenchmark.class.getSimpleName() + ".*" + method + ".*_warmup")
+                .include(".*" + PolymorphicCallBenchmarkJMH.class.getSimpleName() + ".*" + method + ".*_measure")
+                .includeWarmup(".*" + PolymorphicCallBenchmarkJMH.class.getSimpleName() + ".*" + method + ".*_warmup")
                 .build()).runSingle();
     }
 

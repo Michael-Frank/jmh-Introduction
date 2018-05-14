@@ -3,7 +3,18 @@ package de.frank.jmh.intro;
 import java.util.concurrent.TimeUnit;
 
 /**
- * This demonstrates HOW NOT! TO BENCHMARK
+ * This demonstrates HOW NOT! TO BENCHMARK in multiple steps and the "improvements" one could think of to make it "right" (but will not work)
+ *
+ * This is from the live-demo part of the Slides
+ * Walk through of some issues (optimizations the jvm does - which is good) while benchmarking Java.
+ *   * compile threshold c1/c2
+ *   * dead-code elimination
+ *   * constants
+ *   * statics
+ *
+ *
+ * @author Michael Frank
+ * @version 1.0 05.12.2016
  */
 public class FlawedBasicBench {
 

@@ -121,7 +121,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Benchmark) // Important to be Scope.Benchmark
 @Threads(1)
-public class SplitMergeByteArrayJMH {
+public class ByteArraySplitMergeJMH {
 
 	@State(Scope.Thread)
 	public static class MyState {
@@ -150,7 +150,7 @@ public class SplitMergeByteArrayJMH {
 
 	public static void main(String[] args) throws RunnerException {
 		Options opt = new OptionsBuilder()//
-				.include(".*" + SplitMergeByteArrayJMH.class.getSimpleName() + ".*")//
+				.include(".*" + ByteArraySplitMergeJMH.class.getSimpleName() + ".*")//
 				//.addProfiler(GCProfiler.class)//
 				.build();
 		new Runner(opt).run();

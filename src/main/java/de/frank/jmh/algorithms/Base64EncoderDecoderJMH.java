@@ -26,8 +26,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
-/**
- * --
+/*--
  * <p>
  * alloc     alloc      Eden      Eden Survivor Survivor       gc      gc                #
  * rate rate.norm     total      norm    total     norm       gc    time     throughput #
@@ -156,7 +155,8 @@ import java.util.concurrent.TimeUnit;
  * sunMisc_encode_Shared:·gc.churn.PS_Survivor_Space.norm              thrpt   30        0,385 ±      0,092    B/op
  * sunMisc_encode_Shared:·gc.count                                     thrpt   30      320,000               counts
  * sunMisc_encode_Shared:·gc.time                                      thrpt   30      374,000                   ms
- *
+ */
+/**
  * @author Michael Frank
  * @version 1.0 13.05.2018
  */

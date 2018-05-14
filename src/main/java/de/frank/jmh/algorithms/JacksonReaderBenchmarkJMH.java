@@ -22,8 +22,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/**
- *
+/*--
  And the winner is: sharedObjectReader!
  It is totally thread-safe and saleable to reuse the  ObjectReader reader = new ObjectMapper().readerFor(Map.class);
 
@@ -66,7 +65,8 @@ import java.util.concurrent.TimeUnit;
  my_tokensharedObjectReader_4   avgt    5    4,179 ±  0,256  us/op
  my_tokensharedObjectReader_8   avgt    5    6,083 ±  0,216  us/op
  my_tokensharedObjectReader_32  avgt    5   26,405 ±  1,320  us/op
-
+*/
+/**
  * @author Michael Frank
  * @version 1.0 13.05.2018
  */

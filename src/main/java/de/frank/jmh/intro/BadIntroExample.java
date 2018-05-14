@@ -7,6 +7,8 @@ import java.util.Arrays;
 /**
  * How NOT to benchmark
  *
+ * Initial Example from the slides
+ *
  * @author Michael Frank
  * @version 1.0 05.12.2016
  */

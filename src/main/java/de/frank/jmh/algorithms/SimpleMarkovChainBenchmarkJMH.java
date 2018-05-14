@@ -24,6 +24,13 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+
+/**
+ * Demonstrator - Naive implementation of a MarkovChain with two basic optimizations to show some more features of JMH
+ *
+ * @author Michael Frank
+ * @version 1.0 13.05.2018
+ */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Threads(1)
@@ -31,12 +38,14 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 @State(Scope.Thread)//<-very important this time
-public class MoreComplexJMH {
+public class SimpleMarkovChainBenchmarkJMH {
 
     @Param({"10", "1000", "10000"})
     private int numberOfWords;
 
+    //shared buffer - we dont want to measure the noise of crating new buffers
     private StringBuilder sb = new StringBuilder(1014);
+
     private static MarkovChain markov = MarkovChain.fromInput(
             "A rainbow is a meteorological phenomenon that is caused by reflection, refraction and dispersion of light in water droplets resulting in a spectrum of light appearing in the sky. It takes the form of a multicoloured arc. Rainbows caused by sunlight always appear in the section of sky directly opposite the sun.\n" +
                     "Rainbows can be full circles; however, the average observer sees only an arc formed by illuminated droplets above the ground,[1] and centred on a line from the sun to the observer's eye.\n" +
@@ -64,7 +73,7 @@ public class MoreComplexJMH {
     }
 
     @Benchmark
-    public void twoLoops_NewTempArray(Blackhole b) {
+    public void twoLoops_newTempArray(Blackhole b) {
         sb.setLength(0);//reset
         markov.generateTwoLoops(sb, numberOfWords);
         b.consume(sb);
@@ -79,6 +88,7 @@ public class MoreComplexJMH {
 
     static class MarkovChain {
         private static final int NON_WORD = -1;
+        private static final String WHITE_SPACE = " ";
         //BigGram: <wordDictIDX, wordDictIDX>  List<WordDictIDX>
         private Map<BiGram, List<Integer>> stateTrans;
         private List<String> dict;
@@ -101,18 +111,18 @@ public class MoreComplexJMH {
                     continue;
                 }
                 BiGram mutableState = new BiGram(NON_WORD, NON_WORD);//start state
-                for (String word : line.split(" ")) {
-                    String cleandWord = word.trim().toLowerCase();
+                for (String word : line.split(WHITE_SPACE)) {
+                    String cleanedWord = word.trim().toLowerCase();
 
                     //Treat all non letter and digt as tokens
-                    if (!Character.isLetterOrDigit(cleandWord.charAt(cleandWord.length() - 1))) {
-                        String extraToken = Character.toString(cleandWord.charAt(cleandWord.length() - 1));
-                        cleandWord = cleandWord.substring(0, cleandWord.length() - 1);
+                    if (!Character.isLetterOrDigit(cleanedWord.charAt(cleanedWord.length() - 1))) {
+                        String extraToken = Character.toString(cleanedWord.charAt(cleanedWord.length() - 1));
+                        cleanedWord = cleanedWord.substring(0, cleanedWord.length() - 1);
                         Integer wordIDX = wordLookup.computeIfAbsent(extraToken, x -> insertToDict(dict, x));
                         addSample(stateTrans, mutableState, wordIDX);
                     }
                     //Lookup word IDX
-                    Integer wordIDX = wordLookup.computeIfAbsent(cleandWord, x -> insertToDict(dict, x));
+                    Integer wordIDX = wordLookup.computeIfAbsent(cleanedWord, x -> insertToDict(dict, x));
                     addSample(stateTrans, mutableState, wordIDX);
                 }
                 addSample(stateTrans, mutableState, NON_WORD);//terminal state
@@ -165,7 +175,6 @@ public class MoreComplexJMH {
             }
         }
 
-        private static final ThreadLocal<int[]> cache = new ThreadLocal<>();
 
         public void generateTwoLoopsCached(StringBuilder sb, int numberOfWords) {
             int[] words = getWordCache(numberOfWords);
@@ -176,6 +185,8 @@ public class MoreComplexJMH {
             }
 
         }
+
+        private static final ThreadLocal<int[]> cache = new ThreadLocal<>();
 
         private int[] getWordCache(int numberOfWords) {
             int[] words = cache.get();
@@ -258,7 +269,10 @@ public class MoreComplexJMH {
     }
 
     public static void main(String[] args) throws RunnerException {
+        //for xperfas/WinPerfAsmProfiler
         System.setProperty("jmh.perfasm.xperf.dir", "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit");
+
+        //Print statistics and samples
         System.out.printf("ChainStatistics:  states: %d  dictEntries: %d%n", markov.stateTrans.size(), markov.dict.size());
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 10; i++) {
@@ -268,7 +282,7 @@ public class MoreComplexJMH {
         }
 
         new Runner(new OptionsBuilder()
-                .include(MoreComplexJMH.class.getName() + ".*")
+                .include(SimpleMarkovChainBenchmarkJMH.class.getName() + ".*")
                 //##########
                 // Profilers
                 //############

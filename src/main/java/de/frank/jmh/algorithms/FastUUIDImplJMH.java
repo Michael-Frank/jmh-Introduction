@@ -20,7 +20,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-/**--
+/*--
  *
  * DISCLAIMER: This UUID version ist NOT a drop in replacement for jdk UIID (or any other) see description javadoc @ customUUID class
  *
@@ -33,7 +33,8 @@ import java.util.concurrent.TimeUnit;
  customUUIDFrom2Longs   thrpt   30  14821319,244 ± 256184,576  ops/s
  customUUIDProvidedRNG  thrpt   30  14964418,485 ± 428048,918  ops/s
  customUUIDReuseBuffer  thrpt   30  24378762,601 ± 719431,119  ops/s #if possible (re-)use a buffer - then this version runs with ZERO-Allocation
- *
+ */
+/**
  * @author Michael Frank
  * @version 1.0 05.02.2018
  */
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 10, time = 3, timeUnit = TimeUnit.SECONDS)
 @Fork(3)
 @State(Scope.Thread)
-public class FastUUIDImplBenchJMH {
+public class FastUUIDImplJMH {
 
 
 
@@ -88,7 +89,7 @@ public class FastUUIDImplBenchJMH {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(FastUUIDImplBenchJMH.class.getName())
+                .include(FastUUIDImplJMH.class.getName())
                 .build();
         new Runner(opt).run();
     }

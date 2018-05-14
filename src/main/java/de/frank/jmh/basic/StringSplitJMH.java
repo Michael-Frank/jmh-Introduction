@@ -1,10 +1,20 @@
 package de.frank.jmh.basic;
 
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Threads;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-
 
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -28,9 +38,8 @@ TwoChars_compiled    175    461    3.903    1.513
 @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @State(Scope.Thread)
-public class StringSplit {
+public class StringSplitJMH {
 
-    //do not make these two static final
     @Param({"2","10","100"})
     private int stringLen;
 
@@ -65,7 +74,7 @@ public class StringSplit {
 
         System.setProperty("jmh.perfasm.xperf.dir", "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit");
         new Runner(new OptionsBuilder()
-                .include(StringSplit.class.getName() + ".*")
+                .include(StringSplitJMH.class.getName() + ".*")
                 //##########
                 // Profilers
                 //############
