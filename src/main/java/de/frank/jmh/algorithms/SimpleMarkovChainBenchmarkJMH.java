@@ -61,7 +61,6 @@ twoLoops_cachedTemArray:·gc.alloc.rate.norm                         10000  avgt
 
 /**
  * Demonstrator - Naive implementation of a MarkovChain with two basic optimizations to show some more features of JMH
- * T
  *
  * @author Michael Frank
  * @version 1.0 13.05.2018

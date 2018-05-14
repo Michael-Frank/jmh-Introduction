@@ -1,20 +1,33 @@
 package de.frank.jmh.intro;
 
-import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.profile.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Threads;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.concurrent.TimeUnit;
 
 
-/**--
+/*--
  Benchmark                    (algoName)  Mode  Cnt  Score   Error  Units
  RightBasicBenchJMH.testAlgo       algo1  avgt    5  2,444 ± 0,286  ns/op
  RightBasicBenchJMH.testAlgo       algo2  avgt    5  2,399 ± 0,033  ns/op
  RightBasicBenchJMH.testAlgo       algo3  avgt    5  2,426 ± 0,123  ns/op
+ */
+/**
+ * @author Michael Frank
+ * @version 1.0 13.05.2018
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)

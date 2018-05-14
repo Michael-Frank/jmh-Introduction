@@ -1,7 +1,17 @@
 
 package de.frank.jmh.basic;
 
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -19,9 +29,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /*--
- * DANGER! This benchmark is heavily flawed!
- *
- *
+ DANGER! This benchmark is heavily flawed!
+
+
  Benchmark               /ListSize->    10  1.000   10.0000  1.000.000    Average
  forI_complexList                     0,14  15,24  2.365,01  31.435,36   8.453,94
  forI_complexArray                    0,12  13,63  2.368,53  31.311,63   8.423,48
@@ -143,7 +153,8 @@ import java.util.stream.IntStream;
  stream_intArray_sum_parallel            1000  avgt   10     13,890 ±    0,218  us/op
  stream_intArray_sum_parallel          100000  avgt   10     21,155 ±    0,403  us/op
  stream_intArray_sum_parallel         1000000  avgt   10     84,472 ±    0,439  us/op
-
+*/
+/**
  * @author Michael Frank
  * @version 1.0 21.01.2017
  */

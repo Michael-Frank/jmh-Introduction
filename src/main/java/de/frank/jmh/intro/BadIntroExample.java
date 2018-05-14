@@ -12,7 +12,6 @@ import java.util.Arrays;
  * @author Michael Frank
  * @version 1.0 05.12.2016
  */
-
 public class BadIntroExample {
     public static void main(String[] args) {
         final int[] data = new int[10_000_000];

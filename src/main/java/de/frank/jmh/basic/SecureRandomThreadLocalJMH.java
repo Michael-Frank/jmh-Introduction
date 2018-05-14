@@ -21,7 +21,6 @@ import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
  * @author Michael Frank
  * @version 1.0 13.05.2018
  */

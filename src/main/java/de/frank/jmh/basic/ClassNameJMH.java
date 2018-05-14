@@ -16,19 +16,17 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * --
- * <p>
+/*--
  * Benchmark               Mode  Cnt    Score    Error  Units
  * classGetName            avgt    5    4,059 ±  0,687  ns/op
  * classGetSimpleName      avgt    5  102,377 ± 18,462  ns/op *wow expensive!
  * classGetSimpleNameThis  avgt    5   96,000 ±  0,715  ns/op *wow expensive!
  * staticName              avgt    5    4,617 ±  0,353  ns/op
- *
- * @author Michael Frank
- * @version 1.0 13.05.2018
  */
-
+/**
+* @author Michael Frank
+* @version 1.0 13.05.2018
+*/
 @State(Scope.Thread)
 @Warmup(iterations = 3, time = 3, timeUnit = TimeUnit.NANOSECONDS)
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.NANOSECONDS)

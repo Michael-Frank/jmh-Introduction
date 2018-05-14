@@ -28,9 +28,11 @@ SingleChar            82    249    2.189      840
 TwoChars             284    652    5.085    2.007
 TwoChars_compiled    175    461    3.903    1.513
 
+*/
+/**
+ * @author Michael Frank
+ * @version 1.0 13.05.2018
  */
-
-
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Threads(1)

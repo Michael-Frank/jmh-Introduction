@@ -508,10 +508,8 @@ bigInteger_small_shiftR          avgt   5       25,84 ±      0,38 ns/op       2
 bigInteger_small_toString        avgt   5      104,87 ±      1,03 ns/op      102,18
 bigInteger_small_SumLoop100000   avgt   5   2.067.475 ±    20.538 ns/op   2.067.472     20,67
 bigInteger_small_MultLoop100000  avgt   5 480.779.054 ± 1.986.572 ns/op 480.779.052  4.807,79 <--number gets really big (no overflow as wit int/long)
-
- */
+*/
 /**
- * 
  * @author Michael Frank
  * @version 1.0 05.12.2016
  */

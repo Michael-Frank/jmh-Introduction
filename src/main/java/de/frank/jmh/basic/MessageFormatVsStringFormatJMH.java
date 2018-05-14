@@ -1,12 +1,5 @@
 package de.frank.jmh.basic;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -22,10 +15,15 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-
 import sun.misc.SharedSecrets;
 
-/**--
+import java.lang.reflect.Method;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+/*--
 	compare performance of various String-/Message-format implementations
 
     Learnings:  dont use String-/Message-formaters mindlessly in hot code paths. Most of them are fairly expensive!
@@ -69,8 +67,8 @@ import sun.misc.SharedSecrets;
 	concatManualLoop_newStringUnsafe        avgt   30  98,029 ± 1,827  ns/op
 	concatManualPreCalculated_sharedBuffer  avgt   30  66,880 ± 1,333  ns/op
 	concatManualUnrolled_newStringUnsafe    avgt   30  85,798 ± 0,721  ns/op
-	concatString                            avgt   30  64,915 ± 1,280  ns/op
-
+	concatString                            avgt   30  64,915 ± 1,280  ns/op*/
+/**
  * @author Michael Frank
  * @version 1.0 13.05.2018
  */

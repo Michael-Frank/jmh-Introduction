@@ -1,9 +1,5 @@
 package de.frank.jmh.basic;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
-
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -20,7 +16,11 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-/**--
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
+
+/*--
  *What this is about:
  *
  * String (from/to bytes) has an internal threadLocal cache for charset encoders/decoders.
@@ -88,18 +88,18 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
  stringFromBytes_CharsetName:·gc.churn.PS_Survivor_Space.norm      avgt   30     0,017 ±   0,007    B/op
  stringFromBytes_CharsetName:·gc.count                             avgt   30   127,000            counts
  stringFromBytes_CharsetName:·gc.time                              avgt   30   217,000                ms
-
+*/
+/**
  * @author Michael Frank
  * @version 1.0 13.05.2018
  */
-
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(3)
 @BenchmarkMode({ Mode.AverageTime })
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Thread)
-@Threads(16)
+@Threads(16)//important to be high to put pressure on the cache
 public class StringCharsetEncoderCacheJMH {
 
 	@State(Scope.Thread)

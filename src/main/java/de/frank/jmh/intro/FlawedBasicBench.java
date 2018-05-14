@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
  *   * constants
  *   * statics
  *
- *
  * @author Michael Frank
  * @version 1.0 05.12.2016
  */

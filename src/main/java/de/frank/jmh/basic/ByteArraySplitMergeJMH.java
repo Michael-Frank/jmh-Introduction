@@ -26,7 +26,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-/**--
+/*--
  * RAW
  * Benchmark                                                     Mode  Cnt         Score         Error   Units
  * join_ByteArrayStream                                         thrpt   30  18565976,719 ±  466973,000   ops/s
@@ -110,7 +110,8 @@ import java.util.concurrent.TimeUnit;
  * split_systemArrayCopy:·gc.churn.PS_Survivor_Space.norm       thrpt   30         0,002 ±       0,001    B/op
  * split_systemArrayCopy:·gc.count                              thrpt   30       115,000                counts
  * split_systemArrayCopy:·gc.time                               thrpt   30       273,000                    ms
- *
+ * /
+/**
  * @author Michael Frank
  * @version 1.0 13.05.2018
  */
