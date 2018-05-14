@@ -12,7 +12,6 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
-import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
@@ -24,9 +23,45 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+/*--
+Disclaimer: There are ways to really optimize this - but this is out of scope for this showcase.
+
+What this should teach you: "optimizations" can sound good in your head, but can turn out
+ - bad and (like "twoLoops_newTempArray")
+ - provide no improvements - (like twoLoops_cachedTemArray)
+Most of the time, "optimizations" are in reality  a tradeoff, depend on workload (numberOfWords in this case), the the
+negatives may cancel the benefits from the positive.
+
+Please refer to the descriptions provided alongside the implementation for further details.
+
+Benchmark(win7-openjdk-1.8.0_121)                          (numberOfWords)  Mode  Cnt      Score      Error   Units
+base                                                                   10  avgt   15    457,041 ±   21,534   ns/op #base
+twoLoops_newTempArray                                                  10  avgt   15    459,436 ±   23,109   ns/op #small numberOfWords values show no significant effect
+twoLoops_cachedTemArray                                                10  avgt   15    460,761 ±   22,979   ns/op #small numberOfWords values show no significant effect
+
+base                                                                 1000  avgt   15   5058,576 ±  236,098   ns/op #base
+twoLoops_newTempArray                                                1000  avgt   15   5135,198 ±  192,736   ns/op #small numberOfWords values show no significant effect
+twoLoops_cachedTemArray                                              1000  avgt   15   4989,976 ±  275,330   ns/op #small numberOfWords values show no significant effect
+
+base                                                                10000  avgt   15   4760,743 ±  148,249   ns/op #base
+twoLoops_newTempArray                                               10000  avgt   15   7485,091 ±  531,489   ns/op #BAD - performance gets worse -> gc-preasure (See results form gc-profiler)
+twoLoops_cachedTemArray                                             10000  avgt   15   5334,929 ±  449,339   ns/op #Failed to achive improvement.
+
+//GC
+base:·gc.alloc.rate.norm                                               10  avgt   15     24,000 ±    0,001    B/op #base
+twoLoops_newTempArray:·gc.alloc.rate.norm                              10  avgt   15     80,000 ±    0,001    B/op #BAD
+twoLoops_cachedTemArray:·gc.alloc.rate.norm                            10  avgt   15     24,000 ±    0,001    B/op #ok again
+base:·gc.alloc.rate.norm                                             1000  avgt   15     24,001 ±    0,001    B/op #base
+twoLoops_newTempArray:·gc.alloc.rate.norm                            1000  avgt   15   4040,001 ±    0,001    B/op #BAD
+twoLoops_cachedTemArray:·gc.alloc.rate.norm                          1000  avgt   15     24,001 ±    0,001    B/op #ok again
+base:·gc.alloc.rate.norm                                            10000  avgt   15     24,001 ±    0,001    B/op #base
+twoLoops_newTempArray:·gc.alloc.rate.norm                           10000  avgt   15  40040,001 ±    0,001    B/op #BAD
+twoLoops_cachedTemArray:·gc.alloc.rate.norm                         10000  avgt   15     24,001 ±    0,001    B/op #ok again
+ */
 
 /**
  * Demonstrator - Naive implementation of a MarkovChain with two basic optimizations to show some more features of JMH
+ * T
  *
  * @author Michael Frank
  * @version 1.0 13.05.2018
@@ -151,6 +186,7 @@ public class SimpleMarkovChainBenchmarkJMH {
             return dict.size() - 1;
         }
 
+        //two tasks in one loop: 1) walk the state-transitions table and 2) also translate from index to Word using Dict
         public void generate(StringBuilder sb, int numberOfWords) {
             BiGram state = new BiGram(NON_WORD, NON_WORD);
             ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -167,6 +203,14 @@ public class SimpleMarkovChainBenchmarkJMH {
             }
         }
 
+        /* Idea: instead of doing two tasks in one loop (1) state-transitions table walk and 2) Dictionary lookup) split into
+        two separate loops. First fetch all the word indexes then then lookup and append the found words to the builder.
+        Why it *may* be faster: less pressure on the cache. Instead of having to have the state-trans table
+        AND the Dictionary AND the StringBuilder cached (in CPU L3/L2) only one of them is in cache.
+        As the traversal of the state-trans table is "random" it helps to fit as much of it as possible into the cache.
+
+        BEWARE: as a tradeoff we have to create an additional new int [numberOfWords] in every call => gc pressure
+         */
         public void generateTwoLoops(StringBuilder sb, int numberOfWords) {
             int[] words = new int[numberOfWords];
             numberOfWords = generateWordsIndexs(numberOfWords, words);
@@ -176,6 +220,9 @@ public class SimpleMarkovChainBenchmarkJMH {
         }
 
 
+        /* Next iteration of generateTwoLoops - threadLocal cache the new int[numberOfWords] to mitigate the costs of
+           creating this buffer every call
+         */
         public void generateTwoLoopsCached(StringBuilder sb, int numberOfWords) {
             int[] words = getWordCache(numberOfWords);
             numberOfWords = generateWordsIndexs(numberOfWords, words);
@@ -183,7 +230,6 @@ public class SimpleMarkovChainBenchmarkJMH {
             for (int i = 0; i < numberOfWords; i++) {
                 appendWord(sb, dict.get(words[i]));
             }
-
         }
 
         private static final ThreadLocal<int[]> cache = new ThreadLocal<>();
@@ -287,7 +333,7 @@ public class SimpleMarkovChainBenchmarkJMH {
                 // Profilers
                 //############
                 //commonly used profilers:
-                .addProfiler(GCProfiler.class)
+                //.addProfiler(GCProfiler.class)
                 //.addProfiler(StackProfiler.class)
                 //.addProfiler(HotspotRuntimeProfiler.class)
                 //.addProfiler(HotspotMemoryProfiler.class)

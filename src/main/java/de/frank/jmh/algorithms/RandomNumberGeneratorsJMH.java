@@ -69,9 +69,9 @@ commons.Well512a               103.263.483   51.662.151   52.029.243   67.210.90
 dsi.XoRoShiRo128PlusRandom*    228.149.480  162.502.615  168.092.234   55.604.014  227.019.846  253.364.841    182.455.505
 dsi.XorShift1024StarPhiRandom  192.542.221  119.665.989  130.277.979   49.274.933  183.984.705  202.520.136    146.377.660
 
+
 RAW:(JDK 1.8)
 # Run complete. Total time: 00:25:40
-
 Benchmark                                                      (implName)  (int_bound)   Mode  Cnt          Score          Error  Units
 RandomNumberGeneratorsJMH.bool                                 JDK.Random           10  thrpt   15   84530321,930 ±  1259183,160  ops/s
 RandomNumberGeneratorsJMH.bool                      JDK.ThreadLocalRandom           10  thrpt   15  228848173,206 ±  2963717,834  ops/s

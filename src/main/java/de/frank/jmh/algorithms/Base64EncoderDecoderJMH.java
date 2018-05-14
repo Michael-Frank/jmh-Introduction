@@ -27,10 +27,11 @@ import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 /*--
- * <p>
- * alloc     alloc      Eden      Eden Survivor Survivor       gc      gc                #
- * rate rate.norm     total      norm    total     norm       gc    time     throughput #
- * unit->  MB/sec     B/op    MB/sec      B/op   MB/sec     B/op   counts      ms          ops/s #Comment
+ * (win7-openjdk-1.8.0_121)
+ *
+ *                                      alloc     alloc      Eden      Eden Survivor Survivor       gc      gc                #
+ *                                       rate rate.norm     total      norm    total     norm       gc    time     throughput #
+ *                             unit->  MB/sec      B/op    MB/sec      B/op   MB/sec     B/op   counts      ms          ops/s #Comment
  * java8util_decode                     900,8     240,0     890,5     237,0     0,09     0,02    262,0   234,0    5.903.631,9 #winner if >= java8
  * java8util_encode                   1.173,3     192,0   1.181,7     193,4     0,08     0,01    211,0   218,0    9.612.305,5 #winner if >= java8
  * javax_xml_Datatyeconverter_decode    350,5      72,0     360,3      74,3     0,03     0,01     58,0    49,0    7.659.230,5 #winner if < java8
@@ -43,10 +44,11 @@ import java.util.concurrent.TimeUnit;
  * sunMisc_decode_Shared                227,1     784,0     224,2     774,6     0,08     0,27    206,0   189,0      455.591,5 #BAD!
  * sunMisc_encode_New                 6.728,4  25.336,0   6.753,5  25.419,1     0,10     0,37    277,0   476,0      417.641,1 #BAD!
  * sunMisc_encode_Shared              6.912,2  25.320,0   6.918,9  25.337,9     0,11     0,39    320,0   374,0      429.409,1 #BAD!
- * <p>
+ *
+ *
  * RAW
  * # Run complete. Total time: 00:18:49
- * Benchmark                                                                                    Mode  Cnt        Score        Error   Units
+ * Benchmark (win7-openjdk-1.8.0_121)                                   Mode  Cnt        Score        Error   Units
  * apacheCommonsBase64_decode                                          thrpt   30  1176408,738 ±  30131,885   ops/s
  * apacheCommonsBase64_decode:·gc.alloc.rate                           thrpt   30     6494,603 ±    166,293  MB/sec
  * apacheCommonsBase64_decode:·gc.alloc.rate.norm                      thrpt   30     8680,001 ±      0,002    B/op

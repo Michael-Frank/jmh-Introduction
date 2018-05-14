@@ -1,9 +1,5 @@
 package de.frank.jmh.basic;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.concurrent.TimeUnit;
-
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -20,7 +16,12 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-/**--
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.concurrent.TimeUnit;
+
+/**
+ *
  * @author Michael Frank
  * @version 1.0 13.05.2018
  */
@@ -30,7 +31,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @BenchmarkMode({ Mode.Throughput })
 @OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Benchmark) // Important to be Scope.Benchmark
-@Threads(16)
+@Threads(16)// Important to be high - we want to measure the lock-pressure on the internal  method in SecureRandomSpi "synchronized engineNextBytes"
 public class SecureRandomThreadLocalJMH {
 
 	@State(Scope.Benchmark)
