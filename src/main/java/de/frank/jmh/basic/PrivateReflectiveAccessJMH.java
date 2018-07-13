@@ -70,7 +70,7 @@ newStringSharedConstructor_reflect   1000  avgt   10    10,8 ns/op   48,0 B/op
 @Fork(1)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-public class PrivateReflectiveAccess {
+public class PrivateReflectiveAccessJMH {
 
     private static final BiFunction<char[], Boolean, String> NEW_STRING_SHARED_lambda = createSharedNewStringAccessorlambda();
     private static final MethodHandle NEW_STRING_SHARED_HANDLE = createSharedNewStringAccessorHandle();
@@ -80,7 +80,7 @@ public class PrivateReflectiveAccess {
     public static void main(String[] args) throws Throwable {
 
         //Function check
-        PrivateReflectiveAccess test = new PrivateReflectiveAccess();
+        PrivateReflectiveAccessJMH test = new PrivateReflectiveAccessJMH();
         test.setup();
         System.out.println("newString: " + test.newStringConstructor());
         System.out.println("handler:   " + test.newStringSharedConstructor_handler());
@@ -89,7 +89,7 @@ public class PrivateReflectiveAccess {
 
 
         Options opt = new OptionsBuilder()//
-                .include(".*" + PrivateReflectiveAccess.class.getSimpleName() + ".*")//
+                .include(".*" + PrivateReflectiveAccessJMH.class.getSimpleName() + ".*")//
                 .addProfiler(GCProfiler.class)//
                 .build();
         new Runner(opt).run();
