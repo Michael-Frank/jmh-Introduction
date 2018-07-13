@@ -509,6 +509,7 @@ bigInteger_small_toString        avgt   5      104,87 ±      1,03 ns/op      10
 bigInteger_small_SumLoop100000   avgt   5   2.067.475 ±    20.538 ns/op   2.067.472     20,67
 bigInteger_small_MultLoop100000  avgt   5 480.779.054 ± 1.986.572 ns/op 480.779.052  4.807,79 <--number gets really big (no overflow as wit int/long)
 */
+
 /**
  * @author Michael Frank
  * @version 1.0 05.12.2016
@@ -522,1676 +523,1677 @@ bigInteger_small_MultLoop100000  avgt   5 480.779.054 ± 1.986.572 ns/op 480.779
 public class BasicJavaOpsJMH {
 
 
-	public byte incrementB;
-	public short incrementS;
-	public char incrementC;
-	public int incrementI;
-	public long incrementL;
-	public float incrementF;
-	public double incrementD;
-
-	public byte xB, yB;
-	public short xS, yS, xSBig;
-	public char xC, yC, xCBig;
-	public int xI, yI, xIBig;
-	public long xL, yL, xLBig;
-	public float xF, yF, xFBig;
-	public double xD, yD, xDBig;
-
-	public BigInteger xBigI, yBigI;
-	public BigDecimal xBigD, yBigD;
-	public BigInteger xBigI_LongMax;
-	public BigInteger yBigI_LongMax;
-	public BigDecimal xBigD_LongMax;
-	public BigDecimal yBigD_LongMax;
-
-	public BigInteger xBigI_RealyBig_;
-	public BigInteger yBigI_RealyBig_;
-	public BigDecimal xBigD_RealyBig;
-	public BigDecimal yBigD_RealyBig;
-
-	int loopIterations;
-	Object someInteger;
-	Object isNull;
-	Object isNotNull;
-
-	@Setup
-	public void setup() {
-		incrementB = 0;
-		incrementS = 0;
-		incrementC = 0;
-		incrementI = 0;
-		incrementL = 0;
-		incrementF = 0;
-		incrementD = 0;
-		xB = 103;// must be < 128
-		yB = 5; // at least < 8 but lower x
-		xS = 103; // must be < 128
-		yS = 5; // at least < 16 but lower x
-		xSBig = Short.MAX_VALUE - 10;
-		xC = 103;// must be < 128
-		yC = 5;
-		xCBig = Character.MAX_VALUE - 10;
-		xI = 103;// must be < 128
-		yI = 5; // at least < 8 (used as shift for byte,short,char,int,long)
-		xIBig = Integer.MAX_VALUE - 10;
-		xL = 103L;// must be < 128
-		yL = 5L;
-		xLBig = Long.MAX_VALUE - 10;
-		xF = 103.0F;
-		yF = 5.0F;
-		xFBig = xIBig;
-		xD = 103.0D;
-		yD = 5.0D;
-		xDBig = xLBig;
-		xBigI = BigInteger.valueOf(103);
-		yBigI = BigInteger.valueOf(5);
-		xBigD = BigDecimal.valueOf(103);
-		yBigD = BigDecimal.valueOf(5);
-		xBigI_LongMax = BigInteger.valueOf(Long.MAX_VALUE);
-		yBigI_LongMax = BigInteger.valueOf(5);
-		xBigD_LongMax = BigDecimal.valueOf(Long.MAX_VALUE);
-		yBigD_LongMax = BigDecimal.valueOf(5);
-		// x > LongMax
-		xBigI_RealyBig_ = new BigInteger("892233720368547758079223372036854775807");
-		yBigI_RealyBig_ = new BigInteger("19223372036854775807");
-		xBigD_RealyBig = new BigDecimal("892233720368547758079223372036854775807");
-		yBigD_RealyBig = new BigDecimal("19223372036854775807");
-
-		loopIterations = 100000;
-
-		someInteger = Integer.valueOf(23452345);
-		isNull = null;
-		isNotNull = new Object();
-	}
-
-	// @Group("baseline")
-	@Benchmark
-	public void noOpBaseline() {
-		// this method was intentionally left blank.
-	}
-
-	// @Group("baseline")
-	@Benchmark
-	public int noOpReturnCostBaseline() {
-		return xI;
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_incr() {
-		return incrementB++;
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public boolean byte_equals() {
-		return xB == yB;
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public int byte_compare() {
-		return Byte.compare(xB, yB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public Byte byte_toWrapperCached() {
-		return Byte.valueOf(xB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public String byte_toString() {
-		return Byte.toString(xB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_Add() {
-		return (byte) (xB + yB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_Substract() {
-		return (byte) (xB - yB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_Mult() {
-		return (byte) (xB * yB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_Div() {
-		return (byte) (xB / yB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_Rem() {
-		return (byte) (xB % yB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_XOR() {
-		return (byte) (xB ^ yB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_AND() {
-		return (byte) (xB & yB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_OR() {
-		return (byte) (xB | yB);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_ShiftL() {
-		return (byte) (xB << yI);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_ShiftR() {
-		return (byte) (xB >> yI);
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public byte byte_UShiftR() {
-		return (byte) (xB >>> yI);
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("byte")
-	@Benchmark
-	public byte byte_SumLoop_100000() {
-		byte result = 0;
-		for (int i = 0; i < loopIterations; i++) {
-			result += yB;
-		}
-		return result;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("byte")
-	@Benchmark
-	public byte byte_MultLoop_100000() {
-		byte result = 1;
-		for (int i = 0; i < loopIterations; i++) {
-			result *= yB;
-		}
-		return result;
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public short short_incr() {
-		return incrementS++;
-	}
-
-	// @Group("short")
-	@Benchmark
-	public boolean short_equals() {
-		return xS == yS;
-	}
-
-	// @Group("short")
-	@Benchmark
-	public int short_compare() {
-		return Short.compare(xS, yS);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public Short short_toWrapperCached() {
-		return Short.valueOf(xS);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public Short short_toWrapperUnCached() {
-		return Short.valueOf(xSBig);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public String short_toString() {
-		return Short.toString(xSBig);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_Add() {
-		return (short) (xS + yS);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_Substract() {
-		return (short) (xS - yS);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_Mult() {
-		return (short) (xS * yS);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_Div() {
-		return (short) (xS / yS);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_Rem() {
-		return (short) (xS % yS);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_XOR() {
-		return (short) (xS ^ yS);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_AND() {
-		return (short) (xS & yS);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_OR() {
-		return (short) (xS | yS);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_ShiftL() {
-		return (short) (xS << yI);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_ShiftR() {
-		return (short) (xS >> yI);
-	}
-
-	// @Group("short")
-	@Benchmark
-	public short short_UShiftR() {
-		return (short) (xS >>> yI);
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("short")
-	@Benchmark
-	public short short_SumLoop_100000() {
-		short result = 0;
-		for (int i = 0; i < loopIterations; i++) {
-			result += yS;
-		}
-		return result;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("short")
-	@Benchmark
-	public short short_MultLoop_100000() {
-		short result = 1;
-		for (int i = 0; i < loopIterations; i++) {
-			result *= yS;
-		}
-		return result;
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public char char_incr() {
-		return incrementC++;
-	}
-
-	// @Group("char")
-	@Benchmark
-	public boolean char_equals() {
-		return xC == yC;
-	}
-
-	// @Group("char")
-	@Benchmark
-	public int char_compare() {
-		return Character.compare(xC, yC);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public Character char_toWrapperCached() {
-		return Character.valueOf(xC);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public Character char_toWrapperUnCached() {
-		return Character.valueOf(xCBig);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public String char_toString() {
-		return Character.toString(xCBig);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_Add() {
-		return (char) (xC + yC);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_Substract() {
-		return (char) (xC - yC);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_Mult() {
-		return (char) (xC * yC);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_Div() {
-		return (char) (xC / yC);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_Rem() {
-		return (char) (xC % yC);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_XOR() {
-		return (char) (xC ^ yC);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_AND() {
-		return (char) (xC & yC);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_OR() {
-		return (char) (xC | yC);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_ShiftL() {
-		return (char) (xC << yI);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_ShiftR() {
-		return (char) (xC >> yI);
-	}
-
-	// @Group("char")
-	@Benchmark
-	public char char_UShiftR() {
-		return (char) (xC >>> yI);
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("char")
-	@Benchmark
-	public char char_SumLoop_100000() {
-		char result = 0;
-		for (int i = 0; i < loopIterations; i++) {
-			result += yC;
-		}
-		return result;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("char")
-	@Benchmark
-	public char char_MultLoop_100000() {
-		char result = 1;
-		for (int i = 0; i < loopIterations; i++) {
-			result *= yC;
-		}
-		return result;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_incr() {
-		return incrementI++;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public boolean int_equals() {
-		return xI == yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_compare() {
-		return Integer.compare(xI, yI);
-	}
-
-	// @Group("int")
-	@Benchmark
-	public Integer int_toWrapperCached() {
-		return Integer.valueOf(xI);
-	}
-
-	// @Group("int")
-	@Benchmark
-	public Integer int_toWrapperUnCached() {
-		return Integer.valueOf(xIBig);
-	}
-
-	// @Group("int")
-	@Benchmark
-	public String int_toString() {
-		return Integer.toString(xIBig);
-	}
-
-	// @Group("int")
-	@Benchmark
-	public String int_toHexString() {
-		return Integer.toString(xIBig, 16);
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_Add() {
-		return xI + yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_Substract() {
-		return xI - yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_Mult() {
-		return xI * yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_Div() {
-		return xI / yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_Rem() {
-		return xI % yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_XOR() {
-		return xI ^ yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_AND() {
-		return xI & yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_OR() {
-		return xI | yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_ShiftL() {
-		return xI << yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_ShiftR() {
-		return xI >> yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_UShiftR() {
-		return xI >>> yI;
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_rotateLeft() {
-		return Integer.rotateLeft(xI, yI);
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_rotateRight() {
-		return Integer.rotateRight(xI, yI);
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_bitCount() {
-		return Integer.bitCount(xI);
-	}
-
-	// @Group("int")
-	@Benchmark
-	public int int_leadingZeros() {
-		return Integer.numberOfLeadingZeros(xI);
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("int")
-	@Benchmark
-	public int int_SumLoop_100000() {
-		int result = 0;
-		for (int i = 0; i < loopIterations; i++) {
-			result += yI;
-		}
-		return result;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("int")
-	@Benchmark
-	public int int_MultLoop_100000() {
-		int result = 1;
-		for (int i = 0; i < loopIterations; i++) {
-			result *= yI;
-		}
-		return result;
-	}
-
-	// @Group("byte")
-	@Benchmark
-	public long long_incr() {
-		return incrementL++;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public boolean long_equals() {
-		return xI == yI;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public int long_compare() {
-		return Long.compare(xL, yL);
-	}
-
-	// @Group("long")
-	@Benchmark
-	public Long long_toWrapperCached() {
-		return Long.valueOf(xL);
-	}
-
-	// @Group("long")
-	@Benchmark
-	public Long long_toWrapperUnCached() {
-		return Long.valueOf(xLBig);
-	}
-
-	// @Group("long")
-	@Benchmark
-	public String long_toString() {
-		return Long.toString(xLBig);
-	}
-
-	// @Group("long")
-	@Benchmark
-	public String long_toHexString() {
-		return Long.toString(xLBig, 16);
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_Add() {
-		return xL + yL;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_Substract() {
-		return xL - yL;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_Mult() {
-		return xL * yL;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_Div() {
-		return xL / yL;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_Rem() {
-		return xL % yL;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_XOR() {
-		return xL ^ yL;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_AND() {
-		return xL & yL;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_OR() {
-		return xL | yL;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_ShiftL() {
-		return xL << yI;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_ShiftR() {
-		return xL >> yI;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_UShiftR() {
-		return xL >>> yI;
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_rotateLeft() {
-		return Long.rotateLeft(xL, yI);
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_rotateRight() {
-		return Long.rotateRight(xL, yI);
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_bitCount() {
-		return Long.bitCount(xL);
-	}
-
-	// @Group("long")
-	@Benchmark
-	public long long_leadingZeros() {
-		return Long.numberOfLeadingZeros(xL);
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("int")
-	@Benchmark
-	public long long_SumLoop_100000() {
-		long result = 0;
-		for (int i = 0; i < loopIterations; i++) {
-			result += yL;
-		}
-		return result;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("int")
-	@Benchmark
-	public long long_multLoop_100000() {
-		long result = 1;
-		for (int i = 0; i < loopIterations; i++) {
-			result *= yL;
-		}
-		return result;
-	}
-
-	// @Group("float")
-	@Benchmark
-	public float float_incr() {
-		return incrementF++;
-	}
-
-	// @Group("float")
-	@Benchmark
-	public boolean float_equals() {
-		return xF == yF; // BAD!!!! never do this
-	}
-
-	// @Group("float")
-	@Benchmark
-	public int float_compare() {
-		return Float.compare(xF, yF);
-	}
-
-	// @Group("float")
-	@Benchmark
-	public Float float_toWrapper() {
-		return Float.valueOf(xFBig);
-	}
-
-	// @Group("float")
-	@Benchmark
-	public String float_toString() {
-		return Float.toString(xFBig);
-	}
-
-	// @Group("float")
-	@Benchmark
-	public float float_Add() {
-		return xF + yF;
-	}
-
-	// @Group("float")
-	@Benchmark
-	public float float_Substract() {
-		return xF - yF;
-	}
-
-	// @Group("float")
-	@Benchmark
-	public float float_Mult() {
-		return xF * yF;
-	}
-
-	// @Group("float")
-	@Benchmark
-	public float float_Div() {
-		return xF / yF;
-	}
-
-	// @Group("float")
-	@Benchmark
-	public float float_Mod() {
-		return xF % yF;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("int")
-	@Benchmark
-	public float float_SumLoop_100000() {
-		float result = 0;
-		for (int i = 0; i < loopIterations; i++) {
-			result += yF;
-		}
-		return result;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("int")
-	@Benchmark
-	public float float_multLoop_100000() {
-		float result = 1;
-		for (int i = 0; i < loopIterations; i++) {
-			result *= yF;
-		}
-		return result;
-	}
-
-	// @Group("double")
-	@Benchmark
-	public double double_incr() {
-		return incrementD++;
-	}
-
-	// @Group("double")
-	@Benchmark
-	public boolean double_equals() {
-		return xD == yD; // BAD!!!! never do this
-	}
-
-	// @Group("double")
-	@Benchmark
-	public int double_compare() {
-		return Double.compare(xD, yD);
-	}
-
-	// @Group("double")
-	@Benchmark
-	public Double double_toWrapper() {
-		return Double.valueOf(xDBig);
-	}
-
-	// @Group("double")
-	@Benchmark
-	public String double_toString() {
-		return Double.toString(xDBig);
-	}
-
-	// @Group("double")
-	@Benchmark
-	public double double_Add() {
-		return xD + yD;
-	}
-
-	// @Group("double")
-	@Benchmark
-	public double double_Substract() {
-		return xD - yD;
-	}
-
-	// @Group("double")
-	@Benchmark
-	public double double_Mult() {
-		return xD * yD;
-	}
-
-	// @Group("double")
-	@Benchmark
-	public double double_Div() {
-		return xD / yD;
-	}
-
-	// @Group("double")
-	@Benchmark
-	public double double_Mod() {
-		return xD % yD;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("bigInteger")
-	@Benchmark
-	public double double_SumLoop_100000() {
-		double result = 0;
-		for (int i = 0; i < loopIterations; i++) {
-			result += yD;
-		}
-		return result;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("bigInteger")
-	@Benchmark
-	public double double_multLoop_100000() {
-		double result = 1;
-		for (int i = 0; i < loopIterations; i++) {
-			result *= yD;
-		}
-		return result;
-	}
-
-	// @Group("bigInteger")
-	@Benchmark
-	public String bigInteger_small_toString() {
-		return xBigI.toString(10);
-	}
-
-	// @Group("bigInteger")
-	@Benchmark
-	public BigInteger bigInteger_small_Add() {
-		return xBigI.add(yBigI);
-	}
-
-	// @Group("bigInteger")
-	@Benchmark
-	public BigInteger bigInteger_small_Substract() {
-		return xBigI.subtract(yBigI);
-	}
-
-	// @Group("bigInteger")
-	@Benchmark
-	public BigInteger bigInteger_small_Mult() {
-		return xBigI.multiply(yBigI);
-	}
-
-	// @Group("bigInteger")
-	@Benchmark
-	public BigInteger bigInteger_small_Div() {
-		return xBigI.divide(yBigI);
-	}
-
-	// @Group("bigInteger")
-	@Benchmark
-	public BigInteger bigInteger_small_Rem() {
-		return xBigI.divideAndRemainder(yBigI)[1];
-	}
-
-	// @Group("bigInteger")
-	@Benchmark
-	public BigInteger bigInteger_small_Mod() {
-		return xBigI.mod(yBigI);
-	}
-
-	// @Group("bigInteger")
-	@Benchmark
-	public BigInteger bigInteger_small_XOR() {
-		return xBigI.xor(yBigI);
-	}
-
-	// @Group("bigInteger")
-	@Benchmark
-	public BigInteger bigInteger_small_shiftL() {
-		return xBigI.shiftLeft(yI);
-	}
-
-	// @Group("bigInteger")
-	@Benchmark
-	public BigInteger bigInteger_small_shiftR() {
-		return xBigI.shiftRight(yI);
-	}
-
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public String bigInteger_LongMax_toString() {
-		return xBigI_LongMax.toString(10);
-	}
-
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public BigInteger bigInteger_LongMax_Add() {
-		return xBigI_LongMax.add(yBigI_LongMax);
-	}
-
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public BigInteger bigInteger_LongMax_Substract() {
-		return xBigI_LongMax.subtract(yBigI_LongMax);
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public BigInteger bigInteger_SumLoop_100000() {
-		BigInteger result = BigInteger.ONE;
-		for (int i = 0; i < loopIterations; i++) {
-			result = result.add(yBigI);
-		}
-		return result;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public BigInteger bigInteger_MultLoop_100000() {
-		BigInteger result = BigInteger.ONE;
-		for (int i = 0; i < loopIterations; i++) {
-			result = result.multiply(yBigI);
-		}
-		return result;
-	}
-
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public BigInteger bigInteger_LongMax_Mult() {
-		return xBigI_LongMax.multiply(yBigI_LongMax);
-	}
-
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public BigInteger bigInteger_LongMax_Div() {
-		return xBigI_LongMax.divide(yBigI_LongMax);
-	}
-
-	// @Group("bigIntegerLongMax_")
-	@Benchmark
-	public BigInteger bigInteger_LongMax_Rem() {
-		return xBigI_LongMax.divideAndRemainder(yBigI_LongMax)[1];
-	}
-
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public BigInteger bigInteger_LongMax_Mod() {
-		return xBigI_LongMax.mod(yBigI_LongMax);
-	}
-
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public BigInteger bigInteger_LongMax_XOR() {
-		return xBigI_LongMax.xor(yBigI_LongMax);
-	}
-
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public BigInteger bigInteger_LongMax_shiftL() {
-		return xBigI_LongMax.shiftLeft(yI);
-	}
-
-	// @Group("bigIntegerLongMax")
-	@Benchmark
-	public BigInteger bigInteger_LongMax_shiftR() {
-		return xBigI_LongMax.shiftRight(yI);
-	}
-
-	// @Group("bigIntegerRealyBig")
-	@Benchmark
-	public String bigInteger_RealyBig_toString() {
-		return xBigI_RealyBig_.toString(10);
-	}
-
-	// @Group("bigIntegerRealyBig")
-	@Benchmark
-	public BigInteger bigInteger_RealyBig_Add() {
-		return xBigI_RealyBig_.add(yBigI_RealyBig_);
-	}
-
-	// @Group("bigIntegerRealyBig")
-	@Benchmark
-	public BigInteger bigInteger_RealyBig_Substract() {
-		return xBigI_RealyBig_.subtract(yBigI_RealyBig_);
-	}
-
-	// @Group("bigIntegerRealyBig")
-	@Benchmark
-	public BigInteger bigInteger_RealyBig_Mult() {
-		return xBigI_RealyBig_.multiply(yBigI_RealyBig_);
-	}
-
-	// @Group("bigIntegerRealyBig")
-	@Benchmark
-	public BigInteger bigInteger_RealyBig_Div() {
-		return xBigI_RealyBig_.divide(yBigI_RealyBig_);
-	}
-
-	// @Group("bigIntegerRealyBig")
-	@Benchmark
-	public BigInteger bigInteger_RealyBig_Rem() {
-		return xBigI_RealyBig_.divideAndRemainder(yBigI_RealyBig_)[1];
-	}
-
-	// @Group("bigIntegerRealyBig")
-	@Benchmark
-	public BigInteger bigInteger_RealyBig_Mod() {
-		return xBigI_RealyBig_.mod(yBigI_RealyBig_);
-	}
-
-	// @Group("bigIntegerRealyBig")
-	@Benchmark
-	public BigInteger bigInteger_RealyBig_XOR() {
-		return xBigI_RealyBig_.xor(yBigI_RealyBig_);
-	}
-
-	// @Group("bigIntegerRealyBig")
-	@Benchmark
-	public BigInteger bigInteger_RealyBig_shiftL() {
-		return xBigI_RealyBig_.shiftLeft(yI);
-	}
-
-	// @Group("bigIntegerRealyBig")
-	@Benchmark
-	public BigInteger bigInteger_RealyBig_shiftR() {
-		return xBigI_RealyBig_.shiftRight(yI);
-	}
-
-	// @Group("bigDecimal")
-	@Benchmark
-	public String bigDecimal_small_toString() {
-		return xBigD.toString();
-	}
-
-	// @Group("bigDecimal")
-	@Benchmark
-	public BigDecimal bigDecimal_small_Add() {
-		return xBigD.add(yBigD);
-	}
-
-	// @Group("bigDecimal")
-	@Benchmark
-	public BigDecimal bigDecimal_small_Substract() {
-		return xBigD.subtract(yBigD);
-	}
-
-	// @Group("bigDecimal")
-	@Benchmark
-	public BigDecimal bigDecimal_small_Mult() {
-		return xBigD.multiply(yBigD);
-	}
-
-	// @Group("bigDecimal")
-	@Benchmark
-	public BigDecimal bigDecimal_small_Div128() {
-		return xBigD.divide(yBigD, MathContext.DECIMAL128);
-	}
-
-	// @Group("bigDecimal")
-	@Benchmark
-	public BigDecimal bigDecimal_small_Div64() {
-		return xBigD.divide(yBigD, MathContext.DECIMAL64);
-	}
-
-	// @Group("bigDecimal")
-	@Benchmark
-	public BigDecimal bigDecimal_small_Rem() {
-		return xBigD.divideAndRemainder(yBigD)[1];
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("bigDecimalLongMax")
-	@Benchmark
-	public BigDecimal bigDecimal_SumLoop_100000() {
-		BigDecimal result = BigDecimal.ONE;
-		for (int i = 0; i < loopIterations; i++) {
-			result = result.add(yBigD);
-		}
-		return result;
-	}
-
-	// JVM magic will optimize this loop.
-	// @Group("bigDecimalLongMax")
-	@Benchmark
-	public BigDecimal bigDecimal_MultLoop_100000() {
-		BigDecimal result = BigDecimal.ONE;
-		for (int i = 0; i < loopIterations; i++) {
-			result = result.multiply(yBigD);
-		}
-		return result;
-	}
-
-	// @Group("bigDecimalLongMax")
-	@Benchmark
-	public String bigDecimal_LongMax_toString() {
-		return xBigD_LongMax.toString();
-	}
-
-	// @Group("bigDecimalLongMax")
-	@Benchmark
-	public BigDecimal bigDecimal_LongMax_Add() {
-		return xBigD_LongMax.add(yBigD_LongMax);
-	}
-
-	// @Group("bigDecimalLongMax")
-	@Benchmark
-	public BigDecimal bigDecimal_LongMax_Substract() {
-		return xBigD_LongMax.subtract(yBigD_LongMax);
-	}
-
-	// @Group("bigDecimalLongMax")
-	@Benchmark
-	public BigDecimal bigDecimal_LongMax_Mult() {
-		return xBigD_LongMax.multiply(yBigD_LongMax);
-	}
-
-	// @Group("bigDecimalLongMax")
-	@Benchmark
-	public BigDecimal bigDecimal_LongMax_Div64() {
-		return xBigD_LongMax.divide(yBigD_LongMax, MathContext.DECIMAL64);
-	}
-
-	// @Group("bigDecimalLongMax")
-	@Benchmark
-	public BigDecimal bigDecimal_LongMax_Div128() {
-		return xBigD_LongMax.divide(yBigD_LongMax, MathContext.DECIMAL128);
-	}
-
-	// @Group("bigDecimalLongMax")
-	@Benchmark
-	public BigDecimal bigDecimal_LongMax_Rem() {
-		return xBigD_LongMax.divideAndRemainder(yBigD_LongMax)[1];
-	}
-
-	// @Group("bigDecimalRealyBig")
-	@Benchmark
-	public String bigDecimal_RealyBig_toString() {
-		return xBigD_RealyBig.toString();
-	}
-
-	// @Group("bigDecimalRealyBig")
-	@Benchmark
-	public BigDecimal bigDecimal_RealyBig_Add() {
-		return xBigD_RealyBig.add(yBigD_RealyBig);
-	}
-
-	// @Group("bigDecimalRealyBig")
-	@Benchmark
-	public BigDecimal bigDecimal_RealyBig_Substract() {
-		return xBigD_RealyBig.subtract(yBigD_RealyBig);
-	}
-
-	// @Group("bigDecimalRealyBig")
-	@Benchmark
-	public BigDecimal bigDecimal_RealyBig_Mult() {
-		return xBigD_RealyBig.multiply(yBigD_RealyBig);
-	}
-
-	// @Group("bigDecimalRealyBig")
-	@Benchmark
-	public BigDecimal bigDecimal_RealyBig_Div64() {
-		return xBigD_RealyBig.divide(yBigD_RealyBig, MathContext.DECIMAL64);
-	}
-
-	// @Group("bigDecimalRealyBig")
-	@Benchmark
-	public BigDecimal bigDecimal_RealyBig_Div128() {
-		return xBigD_RealyBig.divide(yBigD_RealyBig, MathContext.DECIMAL128);
-	}
-
-	// @Group("bigDecimalRealyBig")
-	@Benchmark
-	public BigDecimal bigDecimal_RealyBig_Rem() {
-		return xBigD_RealyBig.divideAndRemainder(yBigD_RealyBig)[1];
-	}
-
-	@Benchmark
-	public boolean instanceOfFalse() {
-		return (someInteger instanceof String);
-	}
-
-	@Benchmark
-	public boolean instanceOfTrue() {
-		return (someInteger instanceof Integer);
-	}
-
-	@Benchmark
-	public boolean nullCheckFalse() {
-		return (isNotNull == null);
-	}
-
-	@Benchmark
-	public boolean nullCheckTrue() {
-		return (isNull == null);
-	}
-
-	@Benchmark
-	public void methodCallOverhead_0Args() {
-		callMe();
-	}
-
-	@CompilerControl(CompilerControl.Mode.DONT_INLINE)
-	private void callMe() {
-		//baseline measure
-	}
-
-	@Benchmark
-	public void methodCallOverhead_2Args() {
-		callMe2(xI, yI);
-	}
-
-	@CompilerControl(CompilerControl.Mode.DONT_INLINE)
-	private void callMe2(int xI2, int yI2) {
-		//baseline measure
-
-	}
-
-	@Benchmark
-	public int Math_max_int() {
-		return Math.max(xI, yI);
-	}
-
-	@Benchmark
-	public long Math_max_long() {
-		return Math.max(xL, yL);
-	}
-
-	@Benchmark
-	public double Math_max_double() {
-		return Math.max(xD, yD);
-	}
-
-	@Benchmark
-	public int Math_min_int() {
-		return Math.min(xI, yI);
-	}
-
-	@Benchmark
-	public long Math_min_long() {
-		return Math.min(xL, yL);
-	}
-
-	@Benchmark
-	public double Math_min_double() {
-		return Math.min(xD, yD);
-	}
-
-	@Benchmark
-	public double Math_sin() {
-		return Math.sin(xD);
-	}
-
-	@Benchmark
-	public double Math_cos() {
-		return Math.cos(xD);
-	}
-
-	@Benchmark
-	public double Math_tan() {
-		return Math.tan(xD);
-	}
-
-	@Benchmark
-	public double Math_log() {
-		return Math.log(xD);
-	}
-
-	@Benchmark
-	public double Math_log10() {
-		return Math.log10(xD);
-	}
-
-	@Benchmark
-	public double Math_exp() {
-		return Math.exp(xD);
-	}
-
-	@Benchmark
-	public double Math_SQRT() {
-		return Math.sqrt(xD);
-	}
-
-	@Benchmark
-	public double Math_pow2() {
-		return Math.pow(xD, 2.0d);
-	}
-
-	@Benchmark
-	public double Math_pow1_5() {
-		return Math.pow(xD, 1.5d);
-	}
-
-	@Benchmark
-	public double Math_pow0_5() {
-		return Math.pow(xD, 0.5d);
-	}
-
-	@Benchmark
-	public double Math_powX() {
-		return Math.pow(xD, yD);
-	}
-
-	@Benchmark
-	public float Math_abs_float() {
-		return Math.abs(xF);
-	}
-
-	@Benchmark
-	public double Math_abs_double() {
-		return Math.abs(xD);
-	}
-
-	@Benchmark
-	public double Math_ceil() {
-		return Math.ceil(xD);
-	}
-	@Benchmark
-	public double Math_floor() {
-		return Math.floor(xD);
-	}
-	@Benchmark
-	public double Math_round() {
-		return Math.round(xD);
-	}
-
-	@Benchmark
-	public double Math_muliplyExact_int() {
-		return Math.multiplyExact(xI, yI);
-	}
-
-	@Benchmark
-	public double Math_addExact_int() {
-		return Math.addExact(xI, yI);
-	}
-
-	@Benchmark
-	public double Math_muliplyExact_long() {
-		return Math.multiplyExact(xL, yL);
-	}
-
-	@Benchmark
-	public double Math_EXTRA_invSQRT() {
-		return 1.0d/Math.sqrt(xD);
-	}
-
-
-
-	@Benchmark
-	public float Math_EXTRA_invSQRT_cust_float() {
-		float x=xF;
-	    float xhalf = 0.5f * x;
-	    int i = Float.floatToIntBits(x);
-	    i = 0x5f3759df - (i >> 1);
-	    x = Float.intBitsToFloat(i);
-	    x *= (1.5f - xhalf * x * x);
-	    return x;
-	}
-
-	@Benchmark
-	public double Math_EXTRA_invSQRT_cust_double() {
-		double x=xD;
-	    double xhalf = 0.5d * x;
-	    long i = Double.doubleToLongBits(x);
-	    i = 0x5fe6ec85e7de30daL - (i >> 1);
-	    x = Double.longBitsToDouble(i);
-	    x *= (1.5d - xhalf * x * x);
-	    return x;
-	}
-
-	@Benchmark
-	public double Math_EXTRA_invSQRT_cust_double2(){
-	    double x = xD;
-	    double xhalf = 0.5d*x;
-	    long i = Double.doubleToLongBits(x);
-	    i = 0x5fe6ec85e7de30daL - (i>>1);
-	    x = Double.longBitsToDouble(i);
-	    for(int it = 0; it < 4; it++){
-	        x = x*(1.5d - xhalf*x*x);
-	    }
-	    x *= xD;
-	    return x;
-	}
-
-	@Benchmark
-	public int lookupSwitch() {
-		switch (yI) {// yI=5
-		case 1:
-			return 1;
-		case 5:
-			return 2;
-		case 10:
-			return 3;
-		case 100:
-			return 4;
-		case 1000:
-			return 5;
-		case 10000:
-			return 6;
-		case 100000:
-			return 7;
-		case 1000000:
-			return 8;
-		case 10000000:
-			return 9;
-		}
-		return -1;
-	}
-
-	@Benchmark
-	public int tableSwitch() {
-		switch (yI) {// yI=5
-		case 1:
-			return 1;
-		case 2:
-			return 2;
-		case 3:
-			return 3;
-		case 4:
-			return 4;
-		case 5:
-			return 5;
-		case 6:
-			return 6;
-		case 7:
-			return 7;
-		case 8:
-			return 8;
-		case 9:
-			return 9;
-		}
-		return -1;
-	}
-
-	// still a table switch - javac will fill in the "holes" with "fake" switch
-	// cases.
-	@Benchmark
-	public int tableSwitchWithHoles() {
-		switch (yI) {// yI=5
-		case 1:
-			return 1;
-		case 5:
-			return 3;
-		case 9:
-			return 5;
-		case 11:
-			return 6;
-		case 13:
-			return 7;
-		case 15:
-			return 8;
-		case 17:
-			return 9;
-		case 19:
-			return 9;
-		}
-		return -1;
-	}
-
-	// the medium case is 5. However the longer and the chain and the faster
-	// down the target is, the more expensive the ifElse cascade becomes. =>
-	// USE SWITCH
-	@Benchmark
-	public int ifElseCascade() {
-		if (1 == yI) {// yI ==5
-			return 1;
-		} else if (2 == yI) {
-			return 2;
-		} else if (3 == yI) {
-			return 3;
-		} else if (4 == yI) {
-			return 4;
-		} else if (5 == yI) {
-			return 5;
-		} else if (6 == yI) {
-			return 6;
-		} else if (7 == yI) {
-			return 7;
-		} else if (8 == yI) {
-			return 8;
-		} else if (9 == yI) {
-			return 9;
-		}
-		return -1;
-	}
-
-	@Benchmark
-	public Exception createNewException() {
-		return new Exception();
-	}
-
-	@Benchmark
-	public Exception createNewExceptionWithoutStackTrace() {
-		return new ExceptionWithoutStacktrace();
-	}
-
-	@Benchmark
-	public void catchExceptionWithoutStacktrace(Blackhole b) {
-		try {
-			throw new ExceptionWithoutStacktrace();
-		} catch (Exception e) {
-			b.consume(e);
-		}
-	}
-
-	@Benchmark
-	public void catchException(Blackhole b) {
-		try {
-			throw new Exception();
-		} catch (Exception e) {
-			b.consume(e);
-		}
-	}
-
-	public static class ExceptionWithoutStacktrace extends Exception {
-		@Override
-		public synchronized Throwable fillInStackTrace() {
-			return this;
-		}
-	}
-
-	public static void main(String[] args) throws RunnerException {
-		Options opt = new OptionsBuilder()
-				.include(".*" + BasicJavaOpsJMH.class.getSimpleName() + ".Math_EXTRA*")
-				.forks(1)
-				// #########
-				// COMPILER
-				// #########
-				// make sure we dont see compiling of our benchmark code during
-				// measurement.
-				// if you see compiling => more warmup
-				.jvmArgsAppend("-XX:+UnlockDiagnosticVMOptions")
-				// .jvmArgsAppend("-XX:+PrintCompilation")
-				// .jvmArgsAppend("-XX:+PrintInlining")
-				// .jvmArgsAppend("-XX:+PrintAssembly")
-				// .jvmArgsAppend("-XX:+PrintOptoAssembly") //c2 compiler only
-				// More compiler prints:
-				// .jvmArgsAppend("-XX:+PrintInterpreter")
-				// .jvmArgsAppend("-XX:+PrintNMethods")
-				// .jvmArgsAppend("-XX:+PrintNativeNMethods")
-				// .jvmArgsAppend("-XX:+PrintSignatureHandlers")
-				// .jvmArgsAppend("-XX:+PrintAdapterHandlers")
-				// .jvmArgsAppend("-XX:+PrintStubCode")
-				// .jvmArgsAppend("-XX:+PrintCompilation")
-				// .jvmArgsAppend("-XX:+PrintInlining")
-				// .jvmArgsAppend("-XX:+TraceClassLoading")
-				// .jvmArgsAppend("-XX:PrintAssemblyOptions=syntax")
-
-				// #########
-				// Profling
-				// #########
-				//
-				// .jvmArgsAppend("-XX:+UnlockCommercialFeatures")
-				// .jvmArgsAppend("-XX:+FlightRecorder")
-				//
-				// .jvmArgsAppend("-XX:+UnlockDiagnosticVMOptions")
-				// .jvmArgsAppend("-XX:+PrintSafepointStatistics")
-				// .jvmArgsAppend("-XX:+DebugNonSafepoints")
-				//
-				// required for external profilers like "perf" to show java
-				// frames in their traces
-				// .jvmArgsAppend("-XX:+PerserveFramePointer")
-				.build();
-		new Runner(opt).run();
-
-	}
+    public byte incrementB;
+    public short incrementS;
+    public char incrementC;
+    public int incrementI;
+    public long incrementL;
+    public float incrementF;
+    public double incrementD;
+
+    public byte xB, yB;
+    public short xS, yS, xSBig;
+    public char xC, yC, xCBig;
+    public int xI, yI, xIBig;
+    public long xL, yL, xLBig;
+    public float xF, yF, xFBig;
+    public double xD, yD, xDBig;
+
+    public BigInteger xBigI, yBigI;
+    public BigDecimal xBigD, yBigD;
+    public BigInteger xBigI_LongMax;
+    public BigInteger yBigI_LongMax;
+    public BigDecimal xBigD_LongMax;
+    public BigDecimal yBigD_LongMax;
+
+    public BigInteger xBigI_RealyBig_;
+    public BigInteger yBigI_RealyBig_;
+    public BigDecimal xBigD_RealyBig;
+    public BigDecimal yBigD_RealyBig;
+
+    int loopIterations;
+    Object someInteger;
+    Object isNull;
+    Object isNotNull;
+
+    @Setup
+    public void setup() {
+        incrementB = 0;
+        incrementS = 0;
+        incrementC = 0;
+        incrementI = 0;
+        incrementL = 0;
+        incrementF = 0;
+        incrementD = 0;
+        xB = 103;// must be < 128
+        yB = 5; // at least < 8 but lower x
+        xS = 103; // must be < 128
+        yS = 5; // at least < 16 but lower x
+        xSBig = Short.MAX_VALUE - 10;
+        xC = 103;// must be < 128
+        yC = 5;
+        xCBig = Character.MAX_VALUE - 10;
+        xI = 103;// must be < 128
+        yI = 5; // at least < 8 (used as shift for byte,short,char,int,long)
+        xIBig = Integer.MAX_VALUE - 10;
+        xL = 103L;// must be < 128
+        yL = 5L;
+        xLBig = Long.MAX_VALUE - 10;
+        xF = 103.0F;
+        yF = 5.0F;
+        xFBig = xIBig;
+        xD = 103.0D;
+        yD = 5.0D;
+        xDBig = xLBig;
+        xBigI = BigInteger.valueOf(103);
+        yBigI = BigInteger.valueOf(5);
+        xBigD = BigDecimal.valueOf(103);
+        yBigD = BigDecimal.valueOf(5);
+        xBigI_LongMax = BigInteger.valueOf(Long.MAX_VALUE);
+        yBigI_LongMax = BigInteger.valueOf(5);
+        xBigD_LongMax = BigDecimal.valueOf(Long.MAX_VALUE);
+        yBigD_LongMax = BigDecimal.valueOf(5);
+        // x > LongMax
+        xBigI_RealyBig_ = new BigInteger("892233720368547758079223372036854775807");
+        yBigI_RealyBig_ = new BigInteger("19223372036854775807");
+        xBigD_RealyBig = new BigDecimal("892233720368547758079223372036854775807");
+        yBigD_RealyBig = new BigDecimal("19223372036854775807");
+
+        loopIterations = 100000;
+
+        someInteger = Integer.valueOf(23452345);
+        isNull = null;
+        isNotNull = new Object();
+    }
+
+    // @Group("baseline")
+    @Benchmark
+    public void noOpBaseline() {
+        // this method was intentionally left blank.
+    }
+
+    // @Group("baseline")
+    @Benchmark
+    public int noOpReturnCostBaseline() {
+        return xI;
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_incr() {
+        return incrementB++;
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public boolean byte_equals() {
+        return xB == yB;
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public int byte_compare() {
+        return Byte.compare(xB, yB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public Byte byte_toWrapperCached() {
+        return Byte.valueOf(xB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public String byte_toString() {
+        return Byte.toString(xB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_Add() {
+        return (byte) (xB + yB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_Substract() {
+        return (byte) (xB - yB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_Mult() {
+        return (byte) (xB * yB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_Div() {
+        return (byte) (xB / yB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_Rem() {
+        return (byte) (xB % yB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_XOR() {
+        return (byte) (xB ^ yB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_AND() {
+        return (byte) (xB & yB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_OR() {
+        return (byte) (xB | yB);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_ShiftL() {
+        return (byte) (xB << yI);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_ShiftR() {
+        return (byte) (xB >> yI);
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public byte byte_UShiftR() {
+        return (byte) (xB >>> yI);
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("byte")
+    @Benchmark
+    public byte byte_SumLoop_100000() {
+        byte result = 0;
+        for (int i = 0; i < loopIterations; i++) {
+            result += yB;
+        }
+        return result;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("byte")
+    @Benchmark
+    public byte byte_MultLoop_100000() {
+        byte result = 1;
+        for (int i = 0; i < loopIterations; i++) {
+            result *= yB;
+        }
+        return result;
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public short short_incr() {
+        return incrementS++;
+    }
+
+    // @Group("short")
+    @Benchmark
+    public boolean short_equals() {
+        return xS == yS;
+    }
+
+    // @Group("short")
+    @Benchmark
+    public int short_compare() {
+        return Short.compare(xS, yS);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public Short short_toWrapperCached() {
+        return Short.valueOf(xS);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public Short short_toWrapperUnCached() {
+        return Short.valueOf(xSBig);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public String short_toString() {
+        return Short.toString(xSBig);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_Add() {
+        return (short) (xS + yS);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_Substract() {
+        return (short) (xS - yS);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_Mult() {
+        return (short) (xS * yS);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_Div() {
+        return (short) (xS / yS);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_Rem() {
+        return (short) (xS % yS);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_XOR() {
+        return (short) (xS ^ yS);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_AND() {
+        return (short) (xS & yS);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_OR() {
+        return (short) (xS | yS);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_ShiftL() {
+        return (short) (xS << yI);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_ShiftR() {
+        return (short) (xS >> yI);
+    }
+
+    // @Group("short")
+    @Benchmark
+    public short short_UShiftR() {
+        return (short) (xS >>> yI);
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("short")
+    @Benchmark
+    public short short_SumLoop_100000() {
+        short result = 0;
+        for (int i = 0; i < loopIterations; i++) {
+            result += yS;
+        }
+        return result;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("short")
+    @Benchmark
+    public short short_MultLoop_100000() {
+        short result = 1;
+        for (int i = 0; i < loopIterations; i++) {
+            result *= yS;
+        }
+        return result;
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public char char_incr() {
+        return incrementC++;
+    }
+
+    // @Group("char")
+    @Benchmark
+    public boolean char_equals() {
+        return xC == yC;
+    }
+
+    // @Group("char")
+    @Benchmark
+    public int char_compare() {
+        return Character.compare(xC, yC);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public Character char_toWrapperCached() {
+        return Character.valueOf(xC);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public Character char_toWrapperUnCached() {
+        return Character.valueOf(xCBig);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public String char_toString() {
+        return Character.toString(xCBig);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_Add() {
+        return (char) (xC + yC);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_Substract() {
+        return (char) (xC - yC);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_Mult() {
+        return (char) (xC * yC);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_Div() {
+        return (char) (xC / yC);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_Rem() {
+        return (char) (xC % yC);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_XOR() {
+        return (char) (xC ^ yC);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_AND() {
+        return (char) (xC & yC);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_OR() {
+        return (char) (xC | yC);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_ShiftL() {
+        return (char) (xC << yI);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_ShiftR() {
+        return (char) (xC >> yI);
+    }
+
+    // @Group("char")
+    @Benchmark
+    public char char_UShiftR() {
+        return (char) (xC >>> yI);
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("char")
+    @Benchmark
+    public char char_SumLoop_100000() {
+        char result = 0;
+        for (int i = 0; i < loopIterations; i++) {
+            result += yC;
+        }
+        return result;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("char")
+    @Benchmark
+    public char char_MultLoop_100000() {
+        char result = 1;
+        for (int i = 0; i < loopIterations; i++) {
+            result *= yC;
+        }
+        return result;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_incr() {
+        return incrementI++;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public boolean int_equals() {
+        return xI == yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_compare() {
+        return Integer.compare(xI, yI);
+    }
+
+    // @Group("int")
+    @Benchmark
+    public Integer int_toWrapperCached() {
+        return Integer.valueOf(xI);
+    }
+
+    // @Group("int")
+    @Benchmark
+    public Integer int_toWrapperUnCached() {
+        return Integer.valueOf(xIBig);
+    }
+
+    // @Group("int")
+    @Benchmark
+    public String int_toString() {
+        return Integer.toString(xIBig);
+    }
+
+    // @Group("int")
+    @Benchmark
+    public String int_toHexString() {
+        return Integer.toString(xIBig, 16);
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_Add() {
+        return xI + yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_Substract() {
+        return xI - yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_Mult() {
+        return xI * yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_Div() {
+        return xI / yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_Rem() {
+        return xI % yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_XOR() {
+        return xI ^ yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_AND() {
+        return xI & yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_OR() {
+        return xI | yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_ShiftL() {
+        return xI << yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_ShiftR() {
+        return xI >> yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_UShiftR() {
+        return xI >>> yI;
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_rotateLeft() {
+        return Integer.rotateLeft(xI, yI);
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_rotateRight() {
+        return Integer.rotateRight(xI, yI);
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_bitCount() {
+        return Integer.bitCount(xI);
+    }
+
+    // @Group("int")
+    @Benchmark
+    public int int_leadingZeros() {
+        return Integer.numberOfLeadingZeros(xI);
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("int")
+    @Benchmark
+    public int int_SumLoop_100000() {
+        int result = 0;
+        for (int i = 0; i < loopIterations; i++) {
+            result += yI;
+        }
+        return result;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("int")
+    @Benchmark
+    public int int_MultLoop_100000() {
+        int result = 1;
+        for (int i = 0; i < loopIterations; i++) {
+            result *= yI;
+        }
+        return result;
+    }
+
+    // @Group("byte")
+    @Benchmark
+    public long long_incr() {
+        return incrementL++;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public boolean long_equals() {
+        return xI == yI;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public int long_compare() {
+        return Long.compare(xL, yL);
+    }
+
+    // @Group("long")
+    @Benchmark
+    public Long long_toWrapperCached() {
+        return Long.valueOf(xL);
+    }
+
+    // @Group("long")
+    @Benchmark
+    public Long long_toWrapperUnCached() {
+        return Long.valueOf(xLBig);
+    }
+
+    // @Group("long")
+    @Benchmark
+    public String long_toString() {
+        return Long.toString(xLBig);
+    }
+
+    // @Group("long")
+    @Benchmark
+    public String long_toHexString() {
+        return Long.toString(xLBig, 16);
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_Add() {
+        return xL + yL;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_Substract() {
+        return xL - yL;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_Mult() {
+        return xL * yL;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_Div() {
+        return xL / yL;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_Rem() {
+        return xL % yL;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_XOR() {
+        return xL ^ yL;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_AND() {
+        return xL & yL;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_OR() {
+        return xL | yL;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_ShiftL() {
+        return xL << yI;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_ShiftR() {
+        return xL >> yI;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_UShiftR() {
+        return xL >>> yI;
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_rotateLeft() {
+        return Long.rotateLeft(xL, yI);
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_rotateRight() {
+        return Long.rotateRight(xL, yI);
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_bitCount() {
+        return Long.bitCount(xL);
+    }
+
+    // @Group("long")
+    @Benchmark
+    public long long_leadingZeros() {
+        return Long.numberOfLeadingZeros(xL);
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("int")
+    @Benchmark
+    public long long_SumLoop_100000() {
+        long result = 0;
+        for (int i = 0; i < loopIterations; i++) {
+            result += yL;
+        }
+        return result;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("int")
+    @Benchmark
+    public long long_multLoop_100000() {
+        long result = 1;
+        for (int i = 0; i < loopIterations; i++) {
+            result *= yL;
+        }
+        return result;
+    }
+
+    // @Group("float")
+    @Benchmark
+    public float float_incr() {
+        return incrementF++;
+    }
+
+    // @Group("float")
+    @Benchmark
+    public boolean float_equals() {
+        return xF == yF; // BAD!!!! never do this
+    }
+
+    // @Group("float")
+    @Benchmark
+    public int float_compare() {
+        return Float.compare(xF, yF);
+    }
+
+    // @Group("float")
+    @Benchmark
+    public Float float_toWrapper() {
+        return Float.valueOf(xFBig);
+    }
+
+    // @Group("float")
+    @Benchmark
+    public String float_toString() {
+        return Float.toString(xFBig);
+    }
+
+    // @Group("float")
+    @Benchmark
+    public float float_Add() {
+        return xF + yF;
+    }
+
+    // @Group("float")
+    @Benchmark
+    public float float_Substract() {
+        return xF - yF;
+    }
+
+    // @Group("float")
+    @Benchmark
+    public float float_Mult() {
+        return xF * yF;
+    }
+
+    // @Group("float")
+    @Benchmark
+    public float float_Div() {
+        return xF / yF;
+    }
+
+    // @Group("float")
+    @Benchmark
+    public float float_Mod() {
+        return xF % yF;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("int")
+    @Benchmark
+    public float float_SumLoop_100000() {
+        float result = 0;
+        for (int i = 0; i < loopIterations; i++) {
+            result += yF;
+        }
+        return result;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("int")
+    @Benchmark
+    public float float_multLoop_100000() {
+        float result = 1;
+        for (int i = 0; i < loopIterations; i++) {
+            result *= yF;
+        }
+        return result;
+    }
+
+    // @Group("double")
+    @Benchmark
+    public double double_incr() {
+        return incrementD++;
+    }
+
+    // @Group("double")
+    @Benchmark
+    public boolean double_equals() {
+        return xD == yD; // BAD!!!! never do this
+    }
+
+    // @Group("double")
+    @Benchmark
+    public int double_compare() {
+        return Double.compare(xD, yD);
+    }
+
+    // @Group("double")
+    @Benchmark
+    public Double double_toWrapper() {
+        return Double.valueOf(xDBig);
+    }
+
+    // @Group("double")
+    @Benchmark
+    public String double_toString() {
+        return Double.toString(xDBig);
+    }
+
+    // @Group("double")
+    @Benchmark
+    public double double_Add() {
+        return xD + yD;
+    }
+
+    // @Group("double")
+    @Benchmark
+    public double double_Substract() {
+        return xD - yD;
+    }
+
+    // @Group("double")
+    @Benchmark
+    public double double_Mult() {
+        return xD * yD;
+    }
+
+    // @Group("double")
+    @Benchmark
+    public double double_Div() {
+        return xD / yD;
+    }
+
+    // @Group("double")
+    @Benchmark
+    public double double_Mod() {
+        return xD % yD;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("bigInteger")
+    @Benchmark
+    public double double_SumLoop_100000() {
+        double result = 0;
+        for (int i = 0; i < loopIterations; i++) {
+            result += yD;
+        }
+        return result;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("bigInteger")
+    @Benchmark
+    public double double_multLoop_100000() {
+        double result = 1;
+        for (int i = 0; i < loopIterations; i++) {
+            result *= yD;
+        }
+        return result;
+    }
+
+    // @Group("bigInteger")
+    @Benchmark
+    public String bigInteger_small_toString() {
+        return xBigI.toString(10);
+    }
+
+    // @Group("bigInteger")
+    @Benchmark
+    public BigInteger bigInteger_small_Add() {
+        return xBigI.add(yBigI);
+    }
+
+    // @Group("bigInteger")
+    @Benchmark
+    public BigInteger bigInteger_small_Substract() {
+        return xBigI.subtract(yBigI);
+    }
+
+    // @Group("bigInteger")
+    @Benchmark
+    public BigInteger bigInteger_small_Mult() {
+        return xBigI.multiply(yBigI);
+    }
+
+    // @Group("bigInteger")
+    @Benchmark
+    public BigInteger bigInteger_small_Div() {
+        return xBigI.divide(yBigI);
+    }
+
+    // @Group("bigInteger")
+    @Benchmark
+    public BigInteger bigInteger_small_Rem() {
+        return xBigI.divideAndRemainder(yBigI)[1];
+    }
+
+    // @Group("bigInteger")
+    @Benchmark
+    public BigInteger bigInteger_small_Mod() {
+        return xBigI.mod(yBigI);
+    }
+
+    // @Group("bigInteger")
+    @Benchmark
+    public BigInteger bigInteger_small_XOR() {
+        return xBigI.xor(yBigI);
+    }
+
+    // @Group("bigInteger")
+    @Benchmark
+    public BigInteger bigInteger_small_shiftL() {
+        return xBigI.shiftLeft(yI);
+    }
+
+    // @Group("bigInteger")
+    @Benchmark
+    public BigInteger bigInteger_small_shiftR() {
+        return xBigI.shiftRight(yI);
+    }
+
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public String bigInteger_LongMax_toString() {
+        return xBigI_LongMax.toString(10);
+    }
+
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public BigInteger bigInteger_LongMax_Add() {
+        return xBigI_LongMax.add(yBigI_LongMax);
+    }
+
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public BigInteger bigInteger_LongMax_Substract() {
+        return xBigI_LongMax.subtract(yBigI_LongMax);
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public BigInteger bigInteger_SumLoop_100000() {
+        BigInteger result = BigInteger.ONE;
+        for (int i = 0; i < loopIterations; i++) {
+            result = result.add(yBigI);
+        }
+        return result;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public BigInteger bigInteger_MultLoop_100000() {
+        BigInteger result = BigInteger.ONE;
+        for (int i = 0; i < loopIterations; i++) {
+            result = result.multiply(yBigI);
+        }
+        return result;
+    }
+
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public BigInteger bigInteger_LongMax_Mult() {
+        return xBigI_LongMax.multiply(yBigI_LongMax);
+    }
+
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public BigInteger bigInteger_LongMax_Div() {
+        return xBigI_LongMax.divide(yBigI_LongMax);
+    }
+
+    // @Group("bigIntegerLongMax_")
+    @Benchmark
+    public BigInteger bigInteger_LongMax_Rem() {
+        return xBigI_LongMax.divideAndRemainder(yBigI_LongMax)[1];
+    }
+
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public BigInteger bigInteger_LongMax_Mod() {
+        return xBigI_LongMax.mod(yBigI_LongMax);
+    }
+
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public BigInteger bigInteger_LongMax_XOR() {
+        return xBigI_LongMax.xor(yBigI_LongMax);
+    }
+
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public BigInteger bigInteger_LongMax_shiftL() {
+        return xBigI_LongMax.shiftLeft(yI);
+    }
+
+    // @Group("bigIntegerLongMax")
+    @Benchmark
+    public BigInteger bigInteger_LongMax_shiftR() {
+        return xBigI_LongMax.shiftRight(yI);
+    }
+
+    // @Group("bigIntegerRealyBig")
+    @Benchmark
+    public String bigInteger_RealyBig_toString() {
+        return xBigI_RealyBig_.toString(10);
+    }
+
+    // @Group("bigIntegerRealyBig")
+    @Benchmark
+    public BigInteger bigInteger_RealyBig_Add() {
+        return xBigI_RealyBig_.add(yBigI_RealyBig_);
+    }
+
+    // @Group("bigIntegerRealyBig")
+    @Benchmark
+    public BigInteger bigInteger_RealyBig_Substract() {
+        return xBigI_RealyBig_.subtract(yBigI_RealyBig_);
+    }
+
+    // @Group("bigIntegerRealyBig")
+    @Benchmark
+    public BigInteger bigInteger_RealyBig_Mult() {
+        return xBigI_RealyBig_.multiply(yBigI_RealyBig_);
+    }
+
+    // @Group("bigIntegerRealyBig")
+    @Benchmark
+    public BigInteger bigInteger_RealyBig_Div() {
+        return xBigI_RealyBig_.divide(yBigI_RealyBig_);
+    }
+
+    // @Group("bigIntegerRealyBig")
+    @Benchmark
+    public BigInteger bigInteger_RealyBig_Rem() {
+        return xBigI_RealyBig_.divideAndRemainder(yBigI_RealyBig_)[1];
+    }
+
+    // @Group("bigIntegerRealyBig")
+    @Benchmark
+    public BigInteger bigInteger_RealyBig_Mod() {
+        return xBigI_RealyBig_.mod(yBigI_RealyBig_);
+    }
+
+    // @Group("bigIntegerRealyBig")
+    @Benchmark
+    public BigInteger bigInteger_RealyBig_XOR() {
+        return xBigI_RealyBig_.xor(yBigI_RealyBig_);
+    }
+
+    // @Group("bigIntegerRealyBig")
+    @Benchmark
+    public BigInteger bigInteger_RealyBig_shiftL() {
+        return xBigI_RealyBig_.shiftLeft(yI);
+    }
+
+    // @Group("bigIntegerRealyBig")
+    @Benchmark
+    public BigInteger bigInteger_RealyBig_shiftR() {
+        return xBigI_RealyBig_.shiftRight(yI);
+    }
+
+    // @Group("bigDecimal")
+    @Benchmark
+    public String bigDecimal_small_toString() {
+        return xBigD.toString();
+    }
+
+    // @Group("bigDecimal")
+    @Benchmark
+    public BigDecimal bigDecimal_small_Add() {
+        return xBigD.add(yBigD);
+    }
+
+    // @Group("bigDecimal")
+    @Benchmark
+    public BigDecimal bigDecimal_small_Substract() {
+        return xBigD.subtract(yBigD);
+    }
+
+    // @Group("bigDecimal")
+    @Benchmark
+    public BigDecimal bigDecimal_small_Mult() {
+        return xBigD.multiply(yBigD);
+    }
+
+    // @Group("bigDecimal")
+    @Benchmark
+    public BigDecimal bigDecimal_small_Div128() {
+        return xBigD.divide(yBigD, MathContext.DECIMAL128);
+    }
+
+    // @Group("bigDecimal")
+    @Benchmark
+    public BigDecimal bigDecimal_small_Div64() {
+        return xBigD.divide(yBigD, MathContext.DECIMAL64);
+    }
+
+    // @Group("bigDecimal")
+    @Benchmark
+    public BigDecimal bigDecimal_small_Rem() {
+        return xBigD.divideAndRemainder(yBigD)[1];
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("bigDecimalLongMax")
+    @Benchmark
+    public BigDecimal bigDecimal_SumLoop_100000() {
+        BigDecimal result = BigDecimal.ONE;
+        for (int i = 0; i < loopIterations; i++) {
+            result = result.add(yBigD);
+        }
+        return result;
+    }
+
+    // JVM magic will optimize this loop.
+    // @Group("bigDecimalLongMax")
+    @Benchmark
+    public BigDecimal bigDecimal_MultLoop_100000() {
+        BigDecimal result = BigDecimal.ONE;
+        for (int i = 0; i < loopIterations; i++) {
+            result = result.multiply(yBigD);
+        }
+        return result;
+    }
+
+    // @Group("bigDecimalLongMax")
+    @Benchmark
+    public String bigDecimal_LongMax_toString() {
+        return xBigD_LongMax.toString();
+    }
+
+    // @Group("bigDecimalLongMax")
+    @Benchmark
+    public BigDecimal bigDecimal_LongMax_Add() {
+        return xBigD_LongMax.add(yBigD_LongMax);
+    }
+
+    // @Group("bigDecimalLongMax")
+    @Benchmark
+    public BigDecimal bigDecimal_LongMax_Substract() {
+        return xBigD_LongMax.subtract(yBigD_LongMax);
+    }
+
+    // @Group("bigDecimalLongMax")
+    @Benchmark
+    public BigDecimal bigDecimal_LongMax_Mult() {
+        return xBigD_LongMax.multiply(yBigD_LongMax);
+    }
+
+    // @Group("bigDecimalLongMax")
+    @Benchmark
+    public BigDecimal bigDecimal_LongMax_Div64() {
+        return xBigD_LongMax.divide(yBigD_LongMax, MathContext.DECIMAL64);
+    }
+
+    // @Group("bigDecimalLongMax")
+    @Benchmark
+    public BigDecimal bigDecimal_LongMax_Div128() {
+        return xBigD_LongMax.divide(yBigD_LongMax, MathContext.DECIMAL128);
+    }
+
+    // @Group("bigDecimalLongMax")
+    @Benchmark
+    public BigDecimal bigDecimal_LongMax_Rem() {
+        return xBigD_LongMax.divideAndRemainder(yBigD_LongMax)[1];
+    }
+
+    // @Group("bigDecimalRealyBig")
+    @Benchmark
+    public String bigDecimal_RealyBig_toString() {
+        return xBigD_RealyBig.toString();
+    }
+
+    // @Group("bigDecimalRealyBig")
+    @Benchmark
+    public BigDecimal bigDecimal_RealyBig_Add() {
+        return xBigD_RealyBig.add(yBigD_RealyBig);
+    }
+
+    // @Group("bigDecimalRealyBig")
+    @Benchmark
+    public BigDecimal bigDecimal_RealyBig_Substract() {
+        return xBigD_RealyBig.subtract(yBigD_RealyBig);
+    }
+
+    // @Group("bigDecimalRealyBig")
+    @Benchmark
+    public BigDecimal bigDecimal_RealyBig_Mult() {
+        return xBigD_RealyBig.multiply(yBigD_RealyBig);
+    }
+
+    // @Group("bigDecimalRealyBig")
+    @Benchmark
+    public BigDecimal bigDecimal_RealyBig_Div64() {
+        return xBigD_RealyBig.divide(yBigD_RealyBig, MathContext.DECIMAL64);
+    }
+
+    // @Group("bigDecimalRealyBig")
+    @Benchmark
+    public BigDecimal bigDecimal_RealyBig_Div128() {
+        return xBigD_RealyBig.divide(yBigD_RealyBig, MathContext.DECIMAL128);
+    }
+
+    // @Group("bigDecimalRealyBig")
+    @Benchmark
+    public BigDecimal bigDecimal_RealyBig_Rem() {
+        return xBigD_RealyBig.divideAndRemainder(yBigD_RealyBig)[1];
+    }
+
+    @Benchmark
+    public boolean instanceOfFalse() {
+        return (someInteger instanceof String);
+    }
+
+    @Benchmark
+    public boolean instanceOfTrue() {
+        return (someInteger instanceof Integer);
+    }
+
+    @Benchmark
+    public boolean nullCheckFalse() {
+        return (isNotNull == null);
+    }
+
+    @Benchmark
+    public boolean nullCheckTrue() {
+        return (isNull == null);
+    }
+
+    @Benchmark
+    public void methodCallOverhead_0Args() {
+        callMe();
+    }
+
+    @CompilerControl(CompilerControl.Mode.DONT_INLINE)
+    private void callMe() {
+        //baseline measure
+    }
+
+    @Benchmark
+    public void methodCallOverhead_2Args() {
+        callMe2(xI, yI);
+    }
+
+    @CompilerControl(CompilerControl.Mode.DONT_INLINE)
+    private void callMe2(int xI2, int yI2) {
+        //baseline measure
+
+    }
+
+    @Benchmark
+    public int Math_max_int() {
+        return Math.max(xI, yI);
+    }
+
+    @Benchmark
+    public long Math_max_long() {
+        return Math.max(xL, yL);
+    }
+
+    @Benchmark
+    public double Math_max_double() {
+        return Math.max(xD, yD);
+    }
+
+    @Benchmark
+    public int Math_min_int() {
+        return Math.min(xI, yI);
+    }
+
+    @Benchmark
+    public long Math_min_long() {
+        return Math.min(xL, yL);
+    }
+
+    @Benchmark
+    public double Math_min_double() {
+        return Math.min(xD, yD);
+    }
+
+    @Benchmark
+    public double Math_sin() {
+        return Math.sin(xD);
+    }
+
+    @Benchmark
+    public double Math_cos() {
+        return Math.cos(xD);
+    }
+
+    @Benchmark
+    public double Math_tan() {
+        return Math.tan(xD);
+    }
+
+    @Benchmark
+    public double Math_log() {
+        return Math.log(xD);
+    }
+
+    @Benchmark
+    public double Math_log10() {
+        return Math.log10(xD);
+    }
+
+    @Benchmark
+    public double Math_exp() {
+        return Math.exp(xD);
+    }
+
+    @Benchmark
+    public double Math_SQRT() {
+        return Math.sqrt(xD);
+    }
+
+    @Benchmark
+    public double Math_pow2() {
+        return Math.pow(xD, 2.0d);
+    }
+
+    @Benchmark
+    public double Math_pow1_5() {
+        return Math.pow(xD, 1.5d);
+    }
+
+    @Benchmark
+    public double Math_pow0_5() {
+        return Math.pow(xD, 0.5d);
+    }
+
+    @Benchmark
+    public double Math_powX() {
+        return Math.pow(xD, yD);
+    }
+
+    @Benchmark
+    public float Math_abs_float() {
+        return Math.abs(xF);
+    }
+
+    @Benchmark
+    public double Math_abs_double() {
+        return Math.abs(xD);
+    }
+
+    @Benchmark
+    public double Math_ceil() {
+        return Math.ceil(xD);
+    }
+
+    @Benchmark
+    public double Math_floor() {
+        return Math.floor(xD);
+    }
+
+    @Benchmark
+    public double Math_round() {
+        return Math.round(xD);
+    }
+
+    @Benchmark
+    public double Math_muliplyExact_int() {
+        return Math.multiplyExact(xI, yI);
+    }
+
+    @Benchmark
+    public double Math_addExact_int() {
+        return Math.addExact(xI, yI);
+    }
+
+    @Benchmark
+    public double Math_muliplyExact_long() {
+        return Math.multiplyExact(xL, yL);
+    }
+
+    @Benchmark
+    public double Math_EXTRA_invSQRT() {
+        return 1.0d / Math.sqrt(xD);
+    }
+
+
+    @Benchmark
+    public float Math_EXTRA_invSQRT_cust_float() {
+        float x = xF;
+        float xhalf = 0.5f * x;
+        int i = Float.floatToIntBits(x);
+        i = 0x5f3759df - (i >> 1);
+        x = Float.intBitsToFloat(i);
+        x *= (1.5f - xhalf * x * x);
+        return x;
+    }
+
+    @Benchmark
+    public double Math_EXTRA_invSQRT_cust_double() {
+        double x = xD;
+        double xhalf = 0.5d * x;
+        long i = Double.doubleToLongBits(x);
+        i = 0x5fe6ec85e7de30daL - (i >> 1);
+        x = Double.longBitsToDouble(i);
+        x *= (1.5d - xhalf * x * x);
+        return x;
+    }
+
+    @Benchmark
+    public double Math_EXTRA_invSQRT_cust_double2() {
+        double x = xD;
+        double xhalf = 0.5d * x;
+        long i = Double.doubleToLongBits(x);
+        i = 0x5fe6ec85e7de30daL - (i >> 1);
+        x = Double.longBitsToDouble(i);
+        for (int it = 0; it < 4; it++) {
+            x = x * (1.5d - xhalf * x * x);
+        }
+        x *= xD;
+        return x;
+    }
+
+    @Benchmark
+    public int lookupSwitch() {
+        switch (yI) {// yI=5
+            case 1:
+                return 1;
+            case 5:
+                return 2;
+            case 10:
+                return 3;
+            case 100:
+                return 4;
+            case 1000:
+                return 5;
+            case 10000:
+                return 6;
+            case 100000:
+                return 7;
+            case 1000000:
+                return 8;
+            case 10000000:
+                return 9;
+        }
+        return -1;
+    }
+
+    @Benchmark
+    public int tableSwitch() {
+        switch (yI) {// yI=5
+            case 1:
+                return 1;
+            case 2:
+                return 2;
+            case 3:
+                return 3;
+            case 4:
+                return 4;
+            case 5:
+                return 5;
+            case 6:
+                return 6;
+            case 7:
+                return 7;
+            case 8:
+                return 8;
+            case 9:
+                return 9;
+        }
+        return -1;
+    }
+
+    // still a table switch - javac will fill in the "holes" with "fake" switch
+    // cases.
+    @Benchmark
+    public int tableSwitchWithHoles() {
+        switch (yI) {// yI=5
+            case 1:
+                return 1;
+            case 5:
+                return 3;
+            case 9:
+                return 5;
+            case 11:
+                return 6;
+            case 13:
+                return 7;
+            case 15:
+                return 8;
+            case 17:
+                return 9;
+            case 19:
+                return 9;
+        }
+        return -1;
+    }
+
+    // the medium case is 5. However the longer and the chain and the faster
+    // down the target is, the more expensive the ifElse cascade becomes. =>
+    // USE SWITCH
+    @Benchmark
+    public int ifElseCascade() {
+        if (1 == yI) {// yI ==5
+            return 1;
+        } else if (2 == yI) {
+            return 2;
+        } else if (3 == yI) {
+            return 3;
+        } else if (4 == yI) {
+            return 4;
+        } else if (5 == yI) {
+            return 5;
+        } else if (6 == yI) {
+            return 6;
+        } else if (7 == yI) {
+            return 7;
+        } else if (8 == yI) {
+            return 8;
+        } else if (9 == yI) {
+            return 9;
+        }
+        return -1;
+    }
+
+    @Benchmark
+    public Exception createNewException() {
+        return new Exception();
+    }
+
+    @Benchmark
+    public Exception createNewExceptionWithoutStackTrace() {
+        return new ExceptionWithoutStacktrace();
+    }
+
+    @Benchmark
+    public void catchExceptionWithoutStacktrace(Blackhole b) {
+        try {
+            throw new ExceptionWithoutStacktrace();
+        } catch (Exception e) {
+            b.consume(e);
+        }
+    }
+
+    @Benchmark
+    public void catchException(Blackhole b) {
+        try {
+            throw new Exception();
+        } catch (Exception e) {
+            b.consume(e);
+        }
+    }
+
+    public static class ExceptionWithoutStacktrace extends Exception {
+        @Override
+        public synchronized Throwable fillInStackTrace() {
+            return this;
+        }
+    }
+
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()
+                .include(".*" + BasicJavaOpsJMH.class.getSimpleName() + ".Math_EXTRA*")
+                .forks(1)
+                // #########
+                // COMPILER
+                // #########
+                // make sure we dont see compiling of our benchmark code during
+                // measurement.
+                // if you see compiling => more warmup
+                .jvmArgsAppend("-XX:+UnlockDiagnosticVMOptions")
+                // .jvmArgsAppend("-XX:+PrintCompilation")
+                // .jvmArgsAppend("-XX:+PrintInlining")
+                // .jvmArgsAppend("-XX:+PrintAssembly")
+                // .jvmArgsAppend("-XX:+PrintOptoAssembly") //c2 compiler only
+                // More compiler prints:
+                // .jvmArgsAppend("-XX:+PrintInterpreter")
+                // .jvmArgsAppend("-XX:+PrintNMethods")
+                // .jvmArgsAppend("-XX:+PrintNativeNMethods")
+                // .jvmArgsAppend("-XX:+PrintSignatureHandlers")
+                // .jvmArgsAppend("-XX:+PrintAdapterHandlers")
+                // .jvmArgsAppend("-XX:+PrintStubCode")
+                // .jvmArgsAppend("-XX:+PrintCompilation")
+                // .jvmArgsAppend("-XX:+PrintInlining")
+                // .jvmArgsAppend("-XX:+TraceClassLoading")
+                // .jvmArgsAppend("-XX:PrintAssemblyOptions=syntax")
+
+                // #########
+                // Profling
+                // #########
+                //
+                // .jvmArgsAppend("-XX:+UnlockCommercialFeatures")
+                // .jvmArgsAppend("-XX:+FlightRecorder")
+                //
+                // .jvmArgsAppend("-XX:+UnlockDiagnosticVMOptions")
+                // .jvmArgsAppend("-XX:+PrintSafepointStatistics")
+                // .jvmArgsAppend("-XX:+DebugNonSafepoints")
+                //
+                // required for external profilers like "perf" to show java
+                // frames in their traces
+                // .jvmArgsAppend("-XX:+PerserveFramePointer")
+                .build();
+        new Runner(opt).run();
+
+    }
 }

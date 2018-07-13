@@ -23,10 +23,11 @@ import java.util.concurrent.TimeUnit;
  * classGetSimpleNameThis  avgt    5   96,000 ±  0,715  ns/op *wow expensive!
  * staticName              avgt    5    4,617 ±  0,353  ns/op
  */
+
 /**
-* @author Michael Frank
-* @version 1.0 13.05.2018
-*/
+ * @author Michael Frank
+ * @version 1.0 13.05.2018
+ */
 @State(Scope.Thread)
 @Warmup(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
@@ -36,38 +37,38 @@ import java.util.concurrent.TimeUnit;
 public class ClassGetSimpleNameIsSlowJMH {
 
 
-	public Object obj = new ClassGetSimpleNameIsSlowJMH();
+    public Object obj = new ClassGetSimpleNameIsSlowJMH();
 
 
-	@Benchmark
-	public void noop() {
+    @Benchmark
+    public void noop() {
 
-	}
+    }
 
-	@Benchmark
-	public String staticName() {
-		return "ClassGetSimpleNameIsSlowJMH";
-	}
+    @Benchmark
+    public String staticName() {
+        return "ClassGetSimpleNameIsSlowJMH";
+    }
 
-	@Benchmark
-	public String classGetSimpleName() {
-		return obj.getClass().getSimpleName();
-	}
+    @Benchmark
+    public String classGetSimpleName() {
+        return obj.getClass().getSimpleName();
+    }
 
-	@Benchmark
-	public String classGetName() {
-		return obj.getClass().getName();
-	}
+    @Benchmark
+    public String classGetName() {
+        return obj.getClass().getName();
+    }
 
-	@Benchmark
-	public String classGetSimpleNameThis() {
-		return this.getClass().getSimpleName();
-	}
+    @Benchmark
+    public String classGetSimpleNameThis() {
+        return this.getClass().getSimpleName();
+    }
 
-	public static void main(String[] args) throws RunnerException {
-		Options opt = new OptionsBuilder()//
-				.include(".*" + ClassGetSimpleNameIsSlowJMH.class.getSimpleName() + ".*")//
-				.build();
-		new Runner(opt).run();
-	}
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()//
+                .include(".*" + ClassGetSimpleNameIsSlowJMH.class.getSimpleName() + ".*")//
+                .build();
+        new Runner(opt).run();
+    }
 }

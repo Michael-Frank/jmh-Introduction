@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 /**
  * How NOT to benchmark
- *
+ * <p>
  * Initial Example from the slides
  * Just everything about this example is wrong
  *

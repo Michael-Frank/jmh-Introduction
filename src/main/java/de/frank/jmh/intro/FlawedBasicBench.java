@@ -4,14 +4,14 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * This demonstrates HOW NOT! TO BENCHMARK in multiple steps and the "improvements" one could think of to make it "right" (but will not work)
- *
+ * <p>
  * This is from the live-demo part of the Slides
  * We walk through some issues while benchmarking Java.
  * Mostly optimizations the jvm does - which is good - but bad for getting benchmarkresults.
- *   * compile threshold c1/c2
- *   * dead-code elimination
- *   * constants
- *   * statics
+ * * compile threshold c1/c2
+ * * dead-code elimination
+ * * constants
+ * * statics
  *
  * @author Michael Frank
  * @version 1.0 05.12.2016
@@ -66,6 +66,7 @@ public class FlawedBasicBench {
 
     // dont use constant variables ... still sucks (and still constant)
     public static int input3 = 27;
+
     private static int singleBenchRun_v3(Algo algo, int invocations) {
         long start = System.nanoTime();
         int x = 0;
@@ -78,6 +79,7 @@ public class FlawedBasicBench {
 
     // now we got it, eh? ... nope, still sucks (you can continue this for weeks... now switch to JMH already)
     public static volatile int input4 = 27;
+
     private static int singleBenchRun_v4(Algo algo, int invocations) {
         long start = System.nanoTime();
         int x = 0;
@@ -96,15 +98,6 @@ public class FlawedBasicBench {
         double throughputPerS = invocations * scale;
         System.out.printf("%s %.3fns/op %.0fops/s%n", algo.getClass().getSimpleName(), nsPerOp, throughputPerS);
     }
-
-
-
-
-
-
-
-
-
 
 
     static class AlgoImpl1 implements Algo {

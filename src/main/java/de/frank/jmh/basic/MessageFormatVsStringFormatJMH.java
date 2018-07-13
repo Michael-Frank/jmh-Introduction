@@ -69,6 +69,7 @@ import java.util.concurrent.TimeUnit;
 	concatManualPreCalculated_sharedBuffer  avgt   30  66,880 ± 1,333  ns/op
 	concatManualUnrolled_newStringUnsafe    avgt   30  85,798 ± 0,721  ns/op
 	concatString                            avgt   30  64,915 ± 1,280  ns/op*/
+
 /**
  * @author Michael Frank
  * @version 1.0 13.05.2018
@@ -76,224 +77,220 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(3)
-@BenchmarkMode({ Mode.AverageTime })
+@BenchmarkMode({Mode.AverageTime})
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Thread)
 @Threads(1)
 public class MessageFormatVsStringFormatJMH {
 
-	private String param0 = "x-application/json";
-	private String param1 = UUID.randomUUID().toString();
-	private String param2 = UUID.randomUUID().toString();
-	private String param3 = UUID.randomUUID().toString();
+    private String param0 = "x-application/json";
+    private String param1 = UUID.randomUUID().toString();
+    private String param2 = UUID.randomUUID().toString();
+    private String param3 = UUID.randomUUID().toString();
 
-	private static final String MESSAGE_FORMAT_TEMPLATE = "SomeToStringClass:\nparam0 {0}\nparam1 {1}\n param2 {2}\n param3 {3}";
-	private static final MessageFormat MESSAGE_FORMAT = new MessageFormat(MESSAGE_FORMAT_TEMPLATE);
+    private static final String MESSAGE_FORMAT_TEMPLATE = "SomeToStringClass:\nparam0 {0}\nparam1 {1}\n param2 {2}\n param3 {3}";
+    private static final MessageFormat MESSAGE_FORMAT = new MessageFormat(MESSAGE_FORMAT_TEMPLATE);
 
-	public static void main(String[] args) throws RunnerException {
-		verifyMethodsProduceSameResults();
-		Options opt = new OptionsBuilder()//
-				.include(".*" + MessageFormatVsStringFormatJMH.class.getSimpleName() + ".*")//
-				.addProfiler(GCProfiler.class).build();
-		new Runner(opt).run();
-	}
+    public static void main(String[] args) throws RunnerException {
+        verifyMethodsProduceSameResults();
+        Options opt = new OptionsBuilder()//
+                .include(".*" + MessageFormatVsStringFormatJMH.class.getSimpleName() + ".*")//
+                .addProfiler(GCProfiler.class).build();
+        new Runner(opt).run();
+    }
 
-	@Benchmark
-	public String messageFormat() {
-		String lTemplate = "SomeToStringClass:\nparam0 {0}\nparam1 {1}\nparam2 {2}\n param3 {3}";
-		return MessageFormat.format(lTemplate, param0, param1, param3, param2);
-	}
+    @Benchmark
+    public String messageFormat() {
+        String lTemplate = "SomeToStringClass:\nparam0 {0}\nparam1 {1}\nparam2 {2}\n param3 {3}";
+        return MessageFormat.format(lTemplate, param0, param1, param3, param2);
+    }
 
-	@Benchmark
-	public String messageFormatExternalPattern() {
-		return MessageFormat.format(MESSAGE_FORMAT_TEMPLATE, param0, param1, param3, param2);
-	}
+    @Benchmark
+    public String messageFormatExternalPattern() {
+        return MessageFormat.format(MESSAGE_FORMAT_TEMPLATE, param0, param1, param3, param2);
+    }
 
-	@Benchmark
-	public String messageFormatCached() {
-		return MESSAGE_FORMAT.format(new Object[] { param0, param1, param3, param2});
-	}
+    @Benchmark
+    public String messageFormatCached() {
+        return MESSAGE_FORMAT.format(new Object[]{param0, param1, param3, param2});
+    }
 
-	@Benchmark
-	public String stringFormat() {
-		String lTemplate = "SomeToStringClass:\nparam0 %s\nparam1 %s\nparam2 %s\n param3 %s";
-		return String.format(lTemplate, param0, param1, param3, param2);
-	}
+    @Benchmark
+    public String stringFormat() {
+        String lTemplate = "SomeToStringClass:\nparam0 %s\nparam1 %s\nparam2 %s\n param3 %s";
+        return String.format(lTemplate, param0, param1, param3, param2);
+    }
 
-	@Benchmark
-	public String concatString() {
-		return "SomeToStringClass:\nparam0 " + param0//
-				+ "\nparam1 " + param1 //
-				+ "\n param2 " + param3//
-				+ "\n param3 " + param2;//
-	}
+    @Benchmark
+    public String concatString() {
+        return "SomeToStringClass:\nparam0 " + param0//
+                + "\nparam1 " + param1 //
+                + "\n param2 " + param3//
+                + "\n param3 " + param2;//
+    }
 
-	// yes - it can just be as fast as concat string in this simple case, because the
-	// compiler can optimize it.
-	// But this is deadly in loops! ( and its a plain ugly coding style)
-	@Benchmark
-	public String plusEqualsConcatAntiPattern() {
-		// DONT YOU EVER DO THIS!
-		String r = "SomeToStringClass:\nparam0 ";
-		r += param0;
-		r += "\nparam1 ";
-		r += param1;
-		r += "\n param2 ";
-		r += param3;
-		r += "\n param3 ";
-		r += param2;
-		return r;
-	}
+    // yes - it can just be as fast as concat string in this simple case, because the
+    // compiler can optimize it.
+    // But this is deadly in loops! ( and its a plain ugly coding style)
+    @Benchmark
+    public String plusEqualsConcatAntiPattern() {
+        // DONT YOU EVER DO THIS!
+        String r = "SomeToStringClass:\nparam0 ";
+        r += param0;
+        r += "\nparam1 ";
+        r += param1;
+        r += "\n param2 ";
+        r += param3;
+        r += "\n param3 ";
+        r += param2;
+        return r;
+    }
 
-	//just to show how bad this is...
-	@Benchmark
-	public String plusEqualsConcatAntiPatternLoop() {
-		String[] params = { "SomeToStringClass:\nparam0 ", param0, "\nparam1 ", param1, "\n param2 ",
-				param3, "\n param3 ", param2};
-		String r = "";
-		for (String param : params) {
-			r += param;
-		}
+    //just to show how bad this is...
+    @Benchmark
+    public String plusEqualsConcatAntiPatternLoop() {
+        String[] params = {"SomeToStringClass:\nparam0 ", param0, "\nparam1 ", param1, "\n param2 ",
+                param3, "\n param3 ", param2};
+        String r = "";
+        for (String param : params) {
+            r += param;
+        }
 
-		return r;
-	}
+        return r;
+    }
 
-	@Benchmark
-	public String slf4jMessageFormatter() {
-		return org.slf4j.helpers.MessageFormatter
-				.arrayFormat("SomeToStringClass:\nparam0 {}\nparam1 {}\n param2 {}\nparam3 {}",
-						new Object[] { param0, param1, param3, param2})
-				.getMessage();
-	}
+    @Benchmark
+    public String slf4jMessageFormatter() {
+        return org.slf4j.helpers.MessageFormatter
+                .arrayFormat("SomeToStringClass:\nparam0 {}\nparam1 {}\n param2 {}\nparam3 {}",
+                        new Object[]{param0, param1, param3, param2})
+                .getMessage();
+    }
 
-	@Benchmark
-	public String concatBuilder() {
-		return new StringBuilder()//
-				.append("SomeToStringClass:\nparam0").append(param0)//
-				.append("\nparam1 ").append(param1)//
-				.append("\n param2 ").append(param3)//
-				.append("\n param3 ").append(param2)//
-				.toString();//
-	}
+    @Benchmark
+    public String concatBuilder() {
+        return new StringBuilder()//
+                .append("SomeToStringClass:\nparam0").append(param0)//
+                .append("\nparam1 ").append(param1)//
+                .append("\n param2 ").append(param3)//
+                .append("\n param3 ").append(param2)//
+                .toString();//
+    }
 
-	@Benchmark
-	public String concatBuilder_preSized() {
-		return new StringBuilder(188)//
-				.append("SomeToStringClass:\nparam0 ").append(param0)//
-				.append("\nparam1 ").append(param1)//
-				.append("\n param2 ").append(param3)//
-				.append("\n param3 ").append(param2)//
-				.toString();//
-	}
-
-
+    @Benchmark
+    public String concatBuilder_preSized() {
+        return new StringBuilder(188)//
+                .append("SomeToStringClass:\nparam0 ").append(param0)//
+                .append("\nparam1 ").append(param1)//
+                .append("\n param2 ").append(param3)//
+                .append("\n param3 ").append(param2)//
+                .toString();//
+    }
 
 
+    //####################################################################
+    //####################################################################
+    //####################################################################
+    // Here be dragons...
+    // Some very special stuff - please dont do this :-) (its not worth it)
+    //####################################################################
+    //####################################################################
+    //####################################################################
+    @Benchmark
+    public String concatManualLoop_newStringUnsafe() {
+        char[] r = new char[188];
+        int count = 0;
+        int len;
+        String[] params = {"SomeToStringClass:\nparam0 ", param0, "\nparam1 ", param1, "\n param2 ",
+                param3, "\n param3 ", param2};
 
-	//####################################################################
-	//####################################################################
-	//####################################################################
-	// Here be dragons...
-	// Some very special stuff - please dont do this :-) (its not worth it)
-	//####################################################################
-	//####################################################################
-	//####################################################################
-	@Benchmark
-	public String concatManualLoop_newStringUnsafe() {
-		char[] r = new char[188];
-		int count = 0;
-		int len;
-		String[] params = { "SomeToStringClass:\nparam0 ", param0, "\nparam1 ", param1, "\n param2 ",
-				param3, "\n param3 ", param2};
+        for (String str : params) {
+            len = str.length();
+            str.getChars(0, len, r, count);
+            count += len;
+        }
 
-		for (String str : params) {
-			len = str.length();
-			str.getChars(0, len, r, count);
-			count += len;
-		}
+        return SharedSecrets.getJavaLangAccess().newStringUnsafe(r);
+    }
 
-		return SharedSecrets.getJavaLangAccess().newStringUnsafe(r);
-	}
+    @Benchmark
+    public String concatManualUnrolled_newStringUnsafe() {
+        char[] r = new char[188];
+        int count = 0;
+        int len;
 
-	@Benchmark
-	public String concatManualUnrolled_newStringUnsafe() {
-		char[] r = new char[188];
-		int count = 0;
-		int len;
+        len = "SomeToStringClass:\nparam0 ".length();
+        "SomeToStringClass:\nparam0 ".getChars(0, len, r, count);
+        count += len;
 
-		len = "SomeToStringClass:\nparam0 ".length();
-		"SomeToStringClass:\nparam0 ".getChars(0, len, r, count);
-		count += len;
+        len = param0.length();
+        param0.getChars(0, len, r, count);
+        count += len;
 
-		len = param0.length();
-		param0.getChars(0, len, r, count);
-		count += len;
+        len = "\nparam1 ".length();
+        "\nparam1 ".getChars(0, len, r, count);
+        count += len;
 
-		len = "\nparam1 ".length();
-		"\nparam1 ".getChars(0, len, r, count);
-		count += len;
+        len = param1.length();
+        param1.getChars(0, len, r, count);
+        count += len;
 
-		len = param1.length();
-		param1.getChars(0, len, r, count);
-		count += len;
+        len = "\n param2 ".length();
+        "\n param2 ".getChars(0, len, r, count);
+        count += len;
 
-		len = "\n param2 ".length();
-		"\n param2 ".getChars(0, len, r, count);
-		count += len;
+        len = param3.length();
+        param3.getChars(0, len, r, count);
+        count += len;
 
-		len = param3.length();
-		param3.getChars(0, len, r, count);
-		count += len;
+        len = "\n param3 ".length();
+        "\n param3 ".getChars(0, len, r, count);
+        count += len;
 
-		len = "\n param3 ".length();
-		"\n param3 ".getChars(0, len, r, count);
-		count += len;
+        len = param2.length();
+        param2.getChars(0, len, r, count);
+        count += len;
 
-		len = param2.length();
-		param2.getChars(0, len, r, count);
-		count += len;
+        return SharedSecrets.getJavaLangAccess().newStringUnsafe(r);
+    }
 
-		return SharedSecrets.getJavaLangAccess().newStringUnsafe(r);
-	}
+    // *insert into pre-filled* variant
+    // This variant only works if the length of the tokens never changes!!!
+    private int[] insertPos = {31, 59, 106, 152};
+    private char[] buffer = concatString().toCharArray();
+    String[] tokens = {param0, param1, param3, param2};
 
-	// *insert into pre-filled* variant
-	// This variant only works if the length of the tokens never changes!!!
-	private int[] insertPos = { 31, 59, 106, 152 };
-	private char[] buffer = concatString().toCharArray();
-	String[] tokens = { param0, param1, param3, param2};
-
-	@Benchmark
-	public String concatManualPreCalculated_sharedBuffer() {
-		for (int i = 0; i < tokens.length; i++) {
-			String token = tokens[i];
-			token.getChars(0, token.length(), buffer, insertPos[i]);
-		}
-		return new String(buffer);
-	}
-
+    @Benchmark
+    public String concatManualPreCalculated_sharedBuffer() {
+        for (int i = 0; i < tokens.length; i++) {
+            String token = tokens[i];
+            token.getChars(0, token.length(), buffer, insertPos[i]);
+        }
+        return new String(buffer);
+    }
 
 
-	// VERIFICATION
+    // VERIFICATION
 
-	private static void verifyMethodsProduceSameResults() {
-		MessageFormatVsStringFormatJMH b = new MessageFormatVsStringFormatJMH();
-		String expected =b.concatString();
-		System.out.println("Expected: " + expected);
-		Arrays.stream(MessageFormatVsStringFormatJMH.class.getMethods())
-				.filter(m -> m.getAnnotation(Benchmark.class) != null)
-				.forEach(method -> b.methodProducesExpectedResult(method,expected ));
-	}
+    private static void verifyMethodsProduceSameResults() {
+        MessageFormatVsStringFormatJMH b = new MessageFormatVsStringFormatJMH();
+        String expected = b.concatString();
+        System.out.println("Expected: " + expected);
+        Arrays.stream(MessageFormatVsStringFormatJMH.class.getMethods())
+                .filter(m -> m.getAnnotation(Benchmark.class) != null)
+                .forEach(method -> b.methodProducesExpectedResult(method, expected));
+    }
 
-	private void methodProducesExpectedResult(Method method, String expected) {
-		try {
-			String r = (String) method.invoke(this, null);
-			if (!r.equals(expected)) {
-				throw new VerifyError(
-						"ERROR: method '" + method.getName() + "' does not produce expected result. but returned:" + r);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+    private void methodProducesExpectedResult(Method method, String expected) {
+        try {
+            String r = (String) method.invoke(this, null);
+            if (!r.equals(expected)) {
+                throw new VerifyError(
+                        "ERROR: method '" + method.getName() + "' does not produce expected result. but returned:" + r);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

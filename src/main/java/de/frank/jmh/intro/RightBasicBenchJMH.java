@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
  RightBasicBenchJMH.testAlgo       algo2  avgt    5  2,399 ± 0,033  ns/op
  RightBasicBenchJMH.testAlgo       algo3  avgt    5  2,426 ± 0,123  ns/op
  */
+
 /**
  * @author Michael Frank
  * @version 1.0 13.05.2018
@@ -94,7 +95,7 @@ public class RightBasicBenchJMH {
 
 
     public static void main(String[] args) throws RunnerException {
-        System.setProperty("jmh.perfasm.xperf.dir","C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit");
+        System.setProperty("jmh.perfasm.xperf.dir", "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit");
         new Runner(new OptionsBuilder()
                 .include(RightBasicBenchJMH.class.getName() + ".*")
                 //##########

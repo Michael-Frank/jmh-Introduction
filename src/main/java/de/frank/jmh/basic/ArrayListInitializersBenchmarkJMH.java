@@ -45,6 +45,7 @@ import java.util.stream.Stream;
  * java8Stream                    avgt    5  52,589 ± 1,167  ns/op as expected: sucks
  * java8Stream2                   avgt    5  44,616 ± 0,479  ns/op as expected: sucks
  */
+
 /**
  * @author Michael Frank
  * @version 1.0 13.05.2018
@@ -58,77 +59,77 @@ import java.util.stream.Stream;
 public class ArrayListInitializersBenchmarkJMH {
 
 
-	@Benchmark
-	public void baseline() {
-		//baseline
-	}
+    @Benchmark
+    public void baseline() {
+        //baseline
+    }
 
-	@Benchmark
-	public ArrayList<String> baselineNewArrayList() {
-		return new ArrayList<>();
-	}
+    @Benchmark
+    public ArrayList<String> baselineNewArrayList() {
+        return new ArrayList<>();
+    }
 
-	@Benchmark
-	public ArrayList<String> baselineNewArrayList1() {
-		return new ArrayList<>(1);
-	}
+    @Benchmark
+    public ArrayList<String> baselineNewArrayList1() {
+        return new ArrayList<>(1);
+    }
 
-	@Benchmark
-	public ArrayList<String> arraysAsList() {
-		return new ArrayList<>(Arrays.asList("someValue"));
-	}
+    @Benchmark
+    public ArrayList<String> arraysAsList() {
+        return new ArrayList<>(Arrays.asList("someValue"));
+    }
 
-	@Benchmark
-	public ArrayList<String> collectionsSingletonList() {
-		return new ArrayList<>(Collections.singletonList("someValue"));
-	}
+    @Benchmark
+    public ArrayList<String> collectionsSingletonList() {
+        return new ArrayList<>(Collections.singletonList("someValue"));
+    }
 
-	@Benchmark
-	public ArrayList<String> collectionsSingleton() {
-		return new ArrayList<>(Collections.singleton("someValue"));
-	}
+    @Benchmark
+    public ArrayList<String> collectionsSingleton() {
+        return new ArrayList<>(Collections.singleton("someValue"));
+    }
 
-	@Benchmark
-	public ArrayList<String> simpleAdd() {
-		ArrayList a = new ArrayList<>();
-		a.add("someValue");
-		return a;
-	}
+    @Benchmark
+    public ArrayList<String> simpleAdd() {
+        ArrayList a = new ArrayList<>();
+        a.add("someValue");
+        return a;
+    }
 
-	@Benchmark
-	public ArrayList<String> simpleAddWithInitialCapacity1() {
-		ArrayList a = new ArrayList<>(1);
-		a.add("someValue");
-		return a;
-	}
+    @Benchmark
+    public ArrayList<String> simpleAddWithInitialCapacity1() {
+        ArrayList a = new ArrayList<>(1);
+        a.add("someValue");
+        return a;
+    }
 
-	@Benchmark
-	public ArrayList<String> initializerAdd() {
-		return new ArrayList<String>() {
-			{
-				add("someValue");
-			}
-		};
-	}
+    @Benchmark
+    public ArrayList<String> initializerAdd() {
+        return new ArrayList<String>() {
+            {
+                add("someValue");
+            }
+        };
+    }
 
-	@Benchmark
-	public ArrayList<String> java8Stream() {
-		return Arrays.stream(new String[]{"someValue"}).collect(Collectors.toCollection(ArrayList::new));
-	}
+    @Benchmark
+    public ArrayList<String> java8Stream() {
+        return Arrays.stream(new String[]{"someValue"}).collect(Collectors.toCollection(ArrayList::new));
+    }
 
-	@Benchmark
-	public List<String> java8Stream_v2() {
-		return Stream.of("someValue").collect(Collectors.toCollection(ArrayList::new));
-	}
+    @Benchmark
+    public List<String> java8Stream_v2() {
+        return Stream.of("someValue").collect(Collectors.toCollection(ArrayList::new));
+    }
 
-	@Benchmark
-	public ArrayList<String> guava() {
-		return Lists.newArrayList("someValue");
-	}
+    @Benchmark
+    public ArrayList<String> guava() {
+        return Lists.newArrayList("someValue");
+    }
 
-	public static void main(String[] args) throws RunnerException {
-		Options opt = new OptionsBuilder().include(".*" + ArrayListInitializersBenchmarkJMH.class.getSimpleName() + ".*")
-				.forks(1).build();
-		new Runner(opt).run();
-	}
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder().include(".*" + ArrayListInitializersBenchmarkJMH.class.getSimpleName() + ".*")
+                .forks(1).build();
+        new Runner(opt).run();
+    }
 }

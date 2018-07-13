@@ -70,6 +70,7 @@ dsi.XoRoShiRo128PlusRandom*    228.149.480  162.502.615  168.092.234   55.604.01
 dsi.XorShift1024StarPhiRandom  192.542.221  119.665.989  130.277.979   49.274.933  183.984.705  202.520.136    146.377.660
 
 */
+
 /**
  * @author Michael Frank
  * @version 1.0 21.11.2017
@@ -82,247 +83,247 @@ dsi.XorShift1024StarPhiRandom  192.542.221  119.665.989  130.277.979   49.274.93
 @State(Scope.Thread)
 public class RandomNumberGeneratorsJMH {
 
-	@Param({
-			"JDK.Random",
-			"JDK.ThreadLocalRandom",
-			"JDK.SplitableRandom",
-			"JDK.SecureRandom_SHA1",
-			"JDK.SecureRandom_STRONG",
-			"commons.Well512a",
-			"commons.Well44497b",
-			"commons.MerseneTwister",
+    @Param({
+            "JDK.Random",
+            "JDK.ThreadLocalRandom",
+            "JDK.SplitableRandom",
+            "JDK.SecureRandom_SHA1",
+            "JDK.SecureRandom_STRONG",
+            "commons.Well512a",
+            "commons.Well44497b",
+            "commons.MerseneTwister",
 //            "dsi.SplitMix64Random*",
-			"dsi.XoRoShiRo128PlusRandom*",
+            "dsi.XoRoShiRo128PlusRandom*",
 //            "dsi.XorShift1024StarRandom*",
 //            "dsi.XorShift64StarRandom*",
-			"dsi.XorShift1024StarPhiRandom"
-	})
-	private String implName;
+            "dsi.XorShift1024StarPhiRandom"
+    })
+    private String implName;
 
 
-	@Param({"10"})
-	private int int_bound;
+    @Param({"10"})
+    private int int_bound;
 
-	private long long_bound;
-	private double double_bound;
-	private Random r;
+    private long long_bound;
+    private double double_bound;
+    private Random r;
 
-	@Setup
-	public void setup() throws NoSuchAlgorithmException {
-		long_bound = int_bound;
-		double_bound = int_bound;
+    @Setup
+    public void setup() throws NoSuchAlgorithmException {
+        long_bound = int_bound;
+        double_bound = int_bound;
 
-		switch (implName) {
-			case "JDK.Random":
-				r = new Random();
-				break;
-			case "JDK.SecureRandom_SHA1":
-				r = SecureRandom.getInstance("SHA1PRNG");
-				break;
-			case "JDK.SecureRandom_STRONG":
-				r = SecureRandom.getInstanceStrong();
-				break;
-			case "JDK.ThreadLocalRandom":
-				r = ThreadLocalRandom.current();
-				break;
-			case "JDK.SplitableRandom":
-				r = new JDKSplitableRandomWrapper(new SplittableRandom());
-				break;
-			case "commons.MerseneTwister":
-				r = new JDKRandomWrapper(new MersenneTwister());
-				break;
-			case "commons.Well512a":
-				r = new JDKRandomWrapper(new Well512a());
-				break;
-			case "commons.Well44497b":
-				r = new JDKRandomWrapper(new Well44497b());
-				break;
-			case "dsi.SplitMix64Random*":
-				r = new it.unimi.dsi.util.SplitMix64Random();
-				break;
-			case "dsi.XoRoShiRo128PlusRandom*":
-				r = new it.unimi.dsi.util.XoRoShiRo128PlusRandom();
-				break;
-			case "dsi.XorShift1024StarRandom*":
-				r = new it.unimi.dsi.util.XorShift1024StarRandom();
-				break;
-			case "dsi.XorShift64StarRandom*":
-				r = new it.unimi.dsi.util.XorShift64StarRandom();
-				break;
-			case "dsi.XorShift1024StarPhiRandom":
-				r = new it.unimi.dsi.util.XorShift1024StarPhiRandom();
-				break;
-			default:
-				throw new IllegalArgumentException(implName);
-		}
+        switch (implName) {
+            case "JDK.Random":
+                r = new Random();
+                break;
+            case "JDK.SecureRandom_SHA1":
+                r = SecureRandom.getInstance("SHA1PRNG");
+                break;
+            case "JDK.SecureRandom_STRONG":
+                r = SecureRandom.getInstanceStrong();
+                break;
+            case "JDK.ThreadLocalRandom":
+                r = ThreadLocalRandom.current();
+                break;
+            case "JDK.SplitableRandom":
+                r = new JDKSplitableRandomWrapper(new SplittableRandom());
+                break;
+            case "commons.MerseneTwister":
+                r = new JDKRandomWrapper(new MersenneTwister());
+                break;
+            case "commons.Well512a":
+                r = new JDKRandomWrapper(new Well512a());
+                break;
+            case "commons.Well44497b":
+                r = new JDKRandomWrapper(new Well44497b());
+                break;
+            case "dsi.SplitMix64Random*":
+                r = new it.unimi.dsi.util.SplitMix64Random();
+                break;
+            case "dsi.XoRoShiRo128PlusRandom*":
+                r = new it.unimi.dsi.util.XoRoShiRo128PlusRandom();
+                break;
+            case "dsi.XorShift1024StarRandom*":
+                r = new it.unimi.dsi.util.XorShift1024StarRandom();
+                break;
+            case "dsi.XorShift64StarRandom*":
+                r = new it.unimi.dsi.util.XorShift64StarRandom();
+                break;
+            case "dsi.XorShift1024StarPhiRandom":
+                r = new it.unimi.dsi.util.XorShift1024StarPhiRandom();
+                break;
+            default:
+                throw new IllegalArgumentException(implName);
+        }
 
-	}
-
-
-	@Benchmark
-	public void int_unbounded(Blackhole bh) {
-		bh.consume(r.nextInt());
-	}
-
-	@Benchmark
-	public void int_bounded(Blackhole bh) {
-		bh.consume(r.nextInt(int_bound));
-	}
-
-	@Benchmark
-	public void long_unbounded(Blackhole bh) {
-		bh.consume(r.nextLong());
-	}
+    }
 
 
-	@Benchmark
-	public void double_unbounded(Blackhole bh) {
-		bh.consume(r.nextDouble());
-	}
+    @Benchmark
+    public void int_unbounded(Blackhole bh) {
+        bh.consume(r.nextInt());
+    }
 
-	@Benchmark
-	public void double_bounded(Blackhole bh) {
-		//not quite right but ok for this benchmark
-		double result = r.nextDouble() * double_bound;
+    @Benchmark
+    public void int_bounded(Blackhole bh) {
+        bh.consume(r.nextInt(int_bound));
+    }
 
-		//correct bounded double:
-		//		result= (result < double_bound) ?  result : // correct for rounding
-		//		Double.longBitsToDouble(Double.doubleToLongBits(double_bound) - 1);
-
-		bh.consume(result);
-	}
-
-	@Benchmark
-	public void bool(Blackhole bh) {
-		bh.consume(r.nextBoolean());
-	}
+    @Benchmark
+    public void long_unbounded(Blackhole bh) {
+        bh.consume(r.nextLong());
+    }
 
 
-	/**
-	 * Splitable random does not extend java.util.Random -> make a wrapper
-	 */
-	public static class JDKSplitableRandomWrapper extends Random {
+    @Benchmark
+    public void double_unbounded(Blackhole bh) {
+        bh.consume(r.nextDouble());
+    }
 
-		private final SplittableRandom r;
+    @Benchmark
+    public void double_bounded(Blackhole bh) {
+        //not quite right but ok for this benchmark
+        double result = r.nextDouble() * double_bound;
 
-		public JDKSplitableRandomWrapper(SplittableRandom splittableRandom) {
-			this.r = splittableRandom;
-		}
+        //correct bounded double:
+        //		result= (result < double_bound) ?  result : // correct for rounding
+        //		Double.longBitsToDouble(Double.doubleToLongBits(double_bound) - 1);
 
-		public long nextLong(long n) { // Byte code:
-			return r.nextLong(n);
-		}
+        bh.consume(result);
+    }
 
-		@Override
-		public long nextLong() {
-			return r.nextLong();
-		}
-
-		@Override
-		public int nextInt() {
-			return r.nextInt();
-		}
-
-		@Override
-		public int nextInt(int n) {
-			return r.nextInt(n);
-		}
-
-		@Override
-		public double nextDouble() {
-			return r.nextDouble();
-		}
-
-		@Override
-		public float nextFloat() {
-			return Float.intBitsToFloat((int) (r.nextLong() >>> 41) | 0x3F8 << 20) - 1.0f;
-		}
-
-		@Override
-		public boolean nextBoolean() {
-			return r.nextBoolean();
-		}
-
-		@Override
-		protected int next(int bits) {
-			return (int) (r.nextLong() >>> (64 - bits));
-		}
-
-	}
+    @Benchmark
+    public void bool(Blackhole bh) {
+        bh.consume(r.nextBoolean());
+    }
 
 
-	public class JDKRandomWrapper extends Random implements RandomGenerator {
-		private final RandomGenerator r;
+    /**
+     * Splitable random does not extend java.util.Random -> make a wrapper
+     */
+    public static class JDKSplitableRandomWrapper extends Random {
 
-		public JDKRandomWrapper(RandomGenerator r) {
-			this.r = r;
-		}
+        private final SplittableRandom r;
 
-		@Override
-		public void setSeed(int var1) {
-			this.r.setSeed(var1);
-		}
+        public JDKSplitableRandomWrapper(SplittableRandom splittableRandom) {
+            this.r = splittableRandom;
+        }
 
-		@Override
-		public void setSeed(int[] var1) {
-			this.r.setSeed(var1);
-		}
+        public long nextLong(long n) { // Byte code:
+            return r.nextLong(n);
+        }
 
-		@Override
-		public void setSeed(long var1) {
-			if (r == null) {
-				return;
-			}
-			this.r.setSeed(var1);
-		}
+        @Override
+        public long nextLong() {
+            return r.nextLong();
+        }
 
-		@Override
-		public void nextBytes(byte[] var1) {
-			this.r.nextBytes(var1);
-		}
+        @Override
+        public int nextInt() {
+            return r.nextInt();
+        }
 
-		@Override
-		public int nextInt() {
-			return this.r.nextInt();
-		}
+        @Override
+        public int nextInt(int n) {
+            return r.nextInt(n);
+        }
 
-		@Override
-		public int nextInt(int var1) {
-			return this.r.nextInt(var1);
-		}
+        @Override
+        public double nextDouble() {
+            return r.nextDouble();
+        }
 
-		@Override
-		public long nextLong() {
-			return this.r.nextLong();
-		}
+        @Override
+        public float nextFloat() {
+            return Float.intBitsToFloat((int) (r.nextLong() >>> 41) | 0x3F8 << 20) - 1.0f;
+        }
 
-		@Override
-		public boolean nextBoolean() {
-			return this.r.nextBoolean();
-		}
+        @Override
+        public boolean nextBoolean() {
+            return r.nextBoolean();
+        }
 
-		@Override
-		public float nextFloat() {
-			return this.r.nextFloat();
-		}
+        @Override
+        protected int next(int bits) {
+            return (int) (r.nextLong() >>> (64 - bits));
+        }
 
-		@Override
-		public double nextDouble() {
-			return this.r.nextDouble();
-		}
+    }
 
-		@Override
-		public double nextGaussian() {
-			return this.r.nextGaussian();
-		}
-	}
 
-	public static void main(String[] args) throws Exception {
-		Options opt = new OptionsBuilder()
-				.include(RandomNumberGeneratorsJMH.class.getSimpleName())
-				.build();
-		new Runner(opt).run();
-	}
+    public class JDKRandomWrapper extends Random implements RandomGenerator {
+        private final RandomGenerator r;
+
+        public JDKRandomWrapper(RandomGenerator r) {
+            this.r = r;
+        }
+
+        @Override
+        public void setSeed(int var1) {
+            this.r.setSeed(var1);
+        }
+
+        @Override
+        public void setSeed(int[] var1) {
+            this.r.setSeed(var1);
+        }
+
+        @Override
+        public void setSeed(long var1) {
+            if (r == null) {
+                return;
+            }
+            this.r.setSeed(var1);
+        }
+
+        @Override
+        public void nextBytes(byte[] var1) {
+            this.r.nextBytes(var1);
+        }
+
+        @Override
+        public int nextInt() {
+            return this.r.nextInt();
+        }
+
+        @Override
+        public int nextInt(int var1) {
+            return this.r.nextInt(var1);
+        }
+
+        @Override
+        public long nextLong() {
+            return this.r.nextLong();
+        }
+
+        @Override
+        public boolean nextBoolean() {
+            return this.r.nextBoolean();
+        }
+
+        @Override
+        public float nextFloat() {
+            return this.r.nextFloat();
+        }
+
+        @Override
+        public double nextDouble() {
+            return this.r.nextDouble();
+        }
+
+        @Override
+        public double nextGaussian() {
+            return this.r.nextGaussian();
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Options opt = new OptionsBuilder()
+                .include(RandomNumberGeneratorsJMH.class.getSimpleName())
+                .build();
+        new Runner(opt).run();
+    }
 
 
 }

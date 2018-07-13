@@ -65,6 +65,7 @@ import java.util.concurrent.TimeUnit;
  * sunMisc_encode_Shared              thrpt   30    589989 ±   11087  ops/s
  *
  */
+
 /**
  * @author Michael Frank
  * @version 1.0 13.05.2018
@@ -78,101 +79,101 @@ import java.util.concurrent.TimeUnit;
 @Threads(1)
 public class Base64EncoderDecoderJMH {
 
-	public BASE64Encoder sunEncoder = new BASE64Encoder();
-	public BASE64Decoder sunDecoder = new BASE64Decoder();
+    public BASE64Encoder sunEncoder = new BASE64Encoder();
+    public BASE64Decoder sunDecoder = new BASE64Decoder();
 
-	@State(Scope.Benchmark)
-	public static class MyState {
+    @State(Scope.Benchmark)
+    public static class MyState {
 
-		public static final SecureRandom RANDOM = getSecureRandom();
+        public static final SecureRandom RANDOM = getSecureRandom();
 
-		public byte[] rawData = newRandomByteArray(32);
-		public String base64 = DatatypeConverter.printBase64Binary(rawData);
-
-
-		private static byte[] newRandomByteArray(int i) {
-			byte[] data = new byte[i];
-			RANDOM.nextBytes(data);
-			return data;
-		}
-
-		private static SecureRandom getSecureRandom() {
-			try {
-				return SecureRandom.getInstance("SHA1PRNG");
-			} catch (NoSuchAlgorithmException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
-	public static void main(String[] args) throws RunnerException {
-		Options opt = new OptionsBuilder()//
-				.include(".*" + Base64EncoderDecoderJMH.class.getSimpleName() + ".*")//
-				.addProfiler(GCProfiler.class)//
-				.build();
-		new Runner(opt).run();
-	}
-
-	@Benchmark
-	public String sunMisc_encode_New(MyState state) {
-		return new BASE64Encoder().encode(state.rawData);
-	}
-
-	@Benchmark
-	public String sunMisc_encode_Shared(MyState state) {
-		return sunEncoder.encode(state.rawData);
-	}
-
-	@Benchmark
-	public byte[] sunMisc_decode_New(MyState state) throws IOException {
-		return new BASE64Decoder().decodeBuffer(state.base64);
-	}
-
-	@Benchmark
-	public byte[] sunMisc_decode_Shared(MyState state) throws IOException {
-		return sunDecoder.decodeBuffer(state.base64);
-	}
+        public byte[] rawData = newRandomByteArray(32);
+        public String base64 = DatatypeConverter.printBase64Binary(rawData);
 
 
-	@Benchmark
-	public String javax_xml_Datatyeconverter_encode(MyState state) {
-		return DatatypeConverter.printBase64Binary(state.rawData);
-	}
+        private static byte[] newRandomByteArray(int i) {
+            byte[] data = new byte[i];
+            RANDOM.nextBytes(data);
+            return data;
+        }
 
-	@Benchmark
-	public byte[] javax_xml_Datatyeconverter_decode(MyState state) {
-		return DatatypeConverter.parseBase64Binary(state.base64);
-	}
+        private static SecureRandom getSecureRandom() {
+            try {
+                return SecureRandom.getInstance("SHA1PRNG");
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
-	@Benchmark
-	public String java8util_encode(MyState state) {
-		return Base64.getEncoder().encodeToString(state.rawData);
-	}
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()//
+                .include(".*" + Base64EncoderDecoderJMH.class.getSimpleName() + ".*")//
+                .addProfiler(GCProfiler.class)//
+                .build();
+        new Runner(opt).run();
+    }
 
-	@Benchmark
-	public byte[] java8util_decode(MyState state) {
-		return Base64.getDecoder().decode(state.base64);
-	}
+    @Benchmark
+    public String sunMisc_encode_New(MyState state) {
+        return new BASE64Encoder().encode(state.rawData);
+    }
 
-	@Benchmark
-	public String springBase64Utils_encode(MyState state) {
-		return Base64Utils.encodeToString(state.rawData);
-	}
+    @Benchmark
+    public String sunMisc_encode_Shared(MyState state) {
+        return sunEncoder.encode(state.rawData);
+    }
 
-	@Benchmark
-	public byte[] springBase64Utils_decode(MyState state) {
-		return Base64Utils.decodeFromString(state.base64);
-	}
+    @Benchmark
+    public byte[] sunMisc_decode_New(MyState state) throws IOException {
+        return new BASE64Decoder().decodeBuffer(state.base64);
+    }
 
-	@Benchmark
-	public String apacheCommonsBase64_encode(MyState state) {
-		return org.apache.commons.codec.binary.Base64.encodeBase64String(state.rawData);
-	}
+    @Benchmark
+    public byte[] sunMisc_decode_Shared(MyState state) throws IOException {
+        return sunDecoder.decodeBuffer(state.base64);
+    }
 
-	@Benchmark
-	public byte[] apacheCommonsBase64_decode(MyState state) {
-		return org.apache.commons.codec.binary.Base64.decodeBase64(state.base64);
-	}
+
+    @Benchmark
+    public String javax_xml_Datatyeconverter_encode(MyState state) {
+        return DatatypeConverter.printBase64Binary(state.rawData);
+    }
+
+    @Benchmark
+    public byte[] javax_xml_Datatyeconverter_decode(MyState state) {
+        return DatatypeConverter.parseBase64Binary(state.base64);
+    }
+
+    @Benchmark
+    public String java8util_encode(MyState state) {
+        return Base64.getEncoder().encodeToString(state.rawData);
+    }
+
+    @Benchmark
+    public byte[] java8util_decode(MyState state) {
+        return Base64.getDecoder().decode(state.base64);
+    }
+
+    @Benchmark
+    public String springBase64Utils_encode(MyState state) {
+        return Base64Utils.encodeToString(state.rawData);
+    }
+
+    @Benchmark
+    public byte[] springBase64Utils_decode(MyState state) {
+        return Base64Utils.decodeFromString(state.base64);
+    }
+
+    @Benchmark
+    public String apacheCommonsBase64_encode(MyState state) {
+        return org.apache.commons.codec.binary.Base64.encodeBase64String(state.rawData);
+    }
+
+    @Benchmark
+    public byte[] apacheCommonsBase64_decode(MyState state) {
+        return org.apache.commons.codec.binary.Base64.decodeBase64(state.base64);
+    }
 
 
 }

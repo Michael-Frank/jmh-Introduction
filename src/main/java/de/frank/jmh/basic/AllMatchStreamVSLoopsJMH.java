@@ -33,6 +33,7 @@ allMatch_forEach_specialized   47 ns/op    32 B/op
 allMatch_stream                71 ns/op   152 B/op
 
 */
+
 /**
  * @author Michael Frank
  * @version 1.0 13.05.2018
@@ -45,67 +46,67 @@ allMatch_stream                71 ns/op   152 B/op
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class AllMatchStreamVSLoopsJMH {
 
-	@org.openjdk.jmh.annotations.State(Scope.Thread)
-	public static class State {
-		Map<String, String> toVerify;
-		List<String> required;
+    @org.openjdk.jmh.annotations.State(Scope.Thread)
+    public static class State {
+        Map<String, String> toVerify;
+        List<String> required;
 
-		public State() {
-			Map<String, String> m = new HashMap<>();
-			m.put("aaa", "abc");
-			m.put("bbb", "abc");
-			m.put("ccc", "abc");
-			m.put("ddd", "abc");
-			m.put("eee", "abc");
-			m.put("fff", "abc");
-			m.put("gggg", "abc");
-			m.put("hhh", "abc");
-			this.toVerify = m;
-			this.required = Arrays.asList("bbb", "ccc", "ddd");
-		}
+        public State() {
+            Map<String, String> m = new HashMap<>();
+            m.put("aaa", "abc");
+            m.put("bbb", "abc");
+            m.put("ccc", "abc");
+            m.put("ddd", "abc");
+            m.put("eee", "abc");
+            m.put("fff", "abc");
+            m.put("gggg", "abc");
+            m.put("hhh", "abc");
+            this.toVerify = m;
+            this.required = Arrays.asList("bbb", "ccc", "ddd");
+        }
 
-	}
+    }
 
-	public static void main(String[] args) throws RunnerException {
-		Options opt = new OptionsBuilder()//
-				.include(".*" + AllMatchStreamVSLoopsJMH.class.getSimpleName() + ".*")//
-				.addProfiler(GCProfiler.class)//
-				.build();
-		new Runner(opt).run();
-	}
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()//
+                .include(".*" + AllMatchStreamVSLoopsJMH.class.getSimpleName() + ".*")//
+                .addProfiler(GCProfiler.class)//
+                .build();
+        new Runner(opt).run();
+    }
 
-	@Benchmark
-	public boolean allMatch_stream(State state) {
-		return state.required.stream() //
-				.allMatch(credential -> StringUtils.hasText(state.toVerify.get(credential)));
-	}
-	
-	@Benchmark
-	public boolean allMatch_forEach(State state) {
-		return allMatch(state.required, credential -> StringUtils.hasText(state.toVerify.get(credential)));
-	}
-	
-	private static <T> boolean allMatch(List<T> required, Function<T, Boolean> matcher) {
-		for (T t : required) {
-			if (!matcher.apply(t)) {
-				return false;
-			}
-		}
-		return true; // all matched or empty list
-	}
+    @Benchmark
+    public boolean allMatch_stream(State state) {
+        return state.required.stream() //
+                .allMatch(credential -> StringUtils.hasText(state.toVerify.get(credential)));
+    }
 
-	@Benchmark
-	public boolean allMatch_forEach_specialized(State state) {
-		return mapContainsRequiredKeysValuesNotEmpty(state.required,state.toVerify);
-	}
+    @Benchmark
+    public boolean allMatch_forEach(State state) {
+        return allMatch(state.required, credential -> StringUtils.hasText(state.toVerify.get(credential)));
+    }
 
-	private static  boolean mapContainsRequiredKeysValuesNotEmpty(List<String> requiredKeys, Map<String,String> map) {
-		for (String key : requiredKeys) {
-			if (!StringUtils.hasText(map.get(key))) {
-				return false;
-			}
-		}
-		return true; // all matched or empty list
-	}
+    private static <T> boolean allMatch(List<T> required, Function<T, Boolean> matcher) {
+        for (T t : required) {
+            if (!matcher.apply(t)) {
+                return false;
+            }
+        }
+        return true; // all matched or empty list
+    }
+
+    @Benchmark
+    public boolean allMatch_forEach_specialized(State state) {
+        return mapContainsRequiredKeysValuesNotEmpty(state.required, state.toVerify);
+    }
+
+    private static boolean mapContainsRequiredKeysValuesNotEmpty(List<String> requiredKeys, Map<String, String> map) {
+        for (String key : requiredKeys) {
+            if (!StringUtils.hasText(map.get(key))) {
+                return false;
+            }
+        }
+        return true; // all matched or empty list
+    }
 
 }

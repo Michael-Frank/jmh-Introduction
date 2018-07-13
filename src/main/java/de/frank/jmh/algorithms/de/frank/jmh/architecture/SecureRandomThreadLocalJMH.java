@@ -30,6 +30,7 @@ newEachTime:·gc.alloc.rate.norm      1.385   B/op
 shared:·gc.alloc.rate.norm             400   B/op
 threadLocal:·gc.alloc.rate.norm        400   B/op # winner
  */
+
 /**
  * @author Michael Frank
  * @version 1.0 13.07.2018
@@ -37,19 +38,20 @@ threadLocal:·gc.alloc.rate.norm        400   B/op # winner
 @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(3)
-@BenchmarkMode({ Mode.Throughput })
+@BenchmarkMode({Mode.Throughput})
 @OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Benchmark) // Important to be Scope.Benchmark
 @Threads(16)// Important to be high - we want to measure the lock-pressure on the internal  method in SecureRandomSpi "synchronized engineNextBytes"
 public class SecureRandomThreadLocalJMH {
 
-	@State(Scope.Benchmark)
-	public static class RandomHolder {
-		public static final SecureRandom ONE_FOR_ALL_SECURE_RANDOM = getSecureRandom();
-		public static final ThreadLocal<SecureRandom> TL_SECURE_RANDOM = ThreadLocal.withInitial(()->getSecureRandom());
+    @State(Scope.Benchmark)
+    public static class RandomHolder {
+        public static final SecureRandom ONE_FOR_ALL_SECURE_RANDOM = getSecureRandom();
+        public static final ThreadLocal<SecureRandom> TL_SECURE_RANDOM = ThreadLocal.withInitial(() -> getSecureRandom());
 
 
-	}
+    }
+
     public static SecureRandom getSecureRandom() {
         try {
             return SecureRandom.getInstance("SHA1PRNG");
@@ -58,12 +60,12 @@ public class SecureRandomThreadLocalJMH {
         }
     }
 
-	public static void main(String[] args) throws RunnerException {
-		Options opt = new OptionsBuilder()//
-				.include(".*" + SecureRandomThreadLocalJMH.class.getSimpleName() + ".*")//
-				.addProfiler(GCProfiler.class).build();
-		new Runner(opt).run();
-	}
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()//
+                .include(".*" + SecureRandomThreadLocalJMH.class.getSimpleName() + ".*")//
+                .addProfiler(GCProfiler.class).build();
+        new Runner(opt).run();
+    }
 
 
     @Benchmark
@@ -78,18 +80,18 @@ public class SecureRandomThreadLocalJMH {
 
     }
 
-	@Benchmark
-	public byte[] shared(RandomHolder state) {
-		byte[] r = new byte[128];
-		state.ONE_FOR_ALL_SECURE_RANDOM.nextBytes(r);
-		return r;
-	}
+    @Benchmark
+    public byte[] shared(RandomHolder state) {
+        byte[] r = new byte[128];
+        state.ONE_FOR_ALL_SECURE_RANDOM.nextBytes(r);
+        return r;
+    }
 
-	@Benchmark
-	public byte[] threadLocal(RandomHolder state) {
-		byte[] r = new byte[128];
-		state.TL_SECURE_RANDOM.get().nextBytes(r);
-		return r;
-	}
+    @Benchmark
+    public byte[] threadLocal(RandomHolder state) {
+        byte[] r = new byte[128];
+        state.TL_SECURE_RANDOM.get().nextBytes(r);
+        return r;
+    }
 
 }

@@ -56,6 +56,7 @@ First of all, challenging the overall design decision: when working with indenta
 So instead of generating intermediate Strings, why not write the ' ' characters directly into this buffer instead of creating and returning a new String?
 To avoid the looping, an static char [] filled with spaces can be used as bulk buffer. This gives the overall best performance at the cost of some length restrictions.
 */
+
 /**
  * @author Michael Frank
  * @version 1.0 13.05.2018

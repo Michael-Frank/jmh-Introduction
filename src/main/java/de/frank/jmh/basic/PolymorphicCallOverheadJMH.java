@@ -23,20 +23,20 @@ import static org.openjdk.jmh.annotations.CompilerControl.Mode.DONT_INLINE;
 import static org.openjdk.jmh.annotations.Mode.AverageTime;
 import static org.openjdk.jmh.annotations.Scope.Thread;
 
-/**--
-
- Takeaways: stick to a single generic default implementations with max one fallback for a special case.
- More then two (actively used) implementations during runtime will convert a callsite to a (relatively) expensive megamorphic one .
-
- Results: Oracle JDK 1.8.161 Laptop intel i7-6700HQ@2,7GHz
- ----------------------------------
- Monomorphic:           0,634 +- 0,034 ns/op
- Bimorphic:             0,659 +- 0,084 ns/op
- Megamorphic:           2,189 +- 0,078 ns/op
- Inlinable Monomorphic: 2,777 +- 0,105 ns/op
- Inlinable Bimorphic:   2,657 +- 0,109 ns/op
- Inlinable Megamorphic: 4,099 +- 0,307 ns/op
-
+/**
+ * --
+ * <p>
+ * Takeaways: stick to a single generic default implementations with max one fallback for a special case.
+ * More then two (actively used) implementations during runtime will convert a callsite to a (relatively) expensive megamorphic one .
+ * <p>
+ * Results: Oracle JDK 1.8.161 Laptop intel i7-6700HQ@2,7GHz
+ * ----------------------------------
+ * Monomorphic:           0,634 +- 0,034 ns/op
+ * Bimorphic:             0,659 +- 0,084 ns/op
+ * Megamorphic:           2,189 +- 0,078 ns/op
+ * Inlinable Monomorphic: 2,777 +- 0,105 ns/op
+ * Inlinable Bimorphic:   2,657 +- 0,109 ns/op
+ * Inlinable Megamorphic: 4,099 +- 0,307 ns/op
  *
  * @author Richard Warburton
  * From: https://github.com/RichardWarburton/java-final-benchmark/blob/master/src/main/java/com/insightfullogic/java_final_benchmarks/PolymorphicBenchmark.java

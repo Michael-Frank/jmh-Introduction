@@ -51,6 +51,7 @@ atomicReference          thrpt   30  968.192.148 ops/s
 guava                    thrpt   30  981.892.277 ops/s //impl is same as doubleCheckedLockingBool
 
  */
+
 /**
  * @author Michael Frank
  * @version 1.0 13.07.2018
@@ -58,57 +59,57 @@ guava                    thrpt   30  981.892.277 ops/s //impl is same as doubleC
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(3)
-@BenchmarkMode({ Mode.Throughput })
+@BenchmarkMode({Mode.Throughput})
 @OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Benchmark) // Important to be Scope.Benchmark
 @Threads(1)
 public class LayzLoaderBenchmarkJMH {
 
-	@State(Scope.Benchmark)
-	public static class MyState {
-		Supplier<String> doubleCheckedLocking = DCLLazyLoader.of(MyState::expensiveOperation);
-		Supplier<String> doubleCheckedLocking2 = DCLLazyLoader2.of(MyState::expensiveOperation);
-		Supplier<String> doubleCheckedLockingBool = DCLLazyLoaderBool.of(MyState::expensiveOperation);
-		Supplier<String> atomicReference = AtomicLazyLoader.of(MyState::expensiveOperation);
-		com.google.common.base.Supplier<String> guava = Suppliers.memoize(MyState::expensiveOperation); //same as doubleCheckedLockingBool
+    @State(Scope.Benchmark)
+    public static class MyState {
+        Supplier<String> doubleCheckedLocking = DCLLazyLoader.of(MyState::expensiveOperation);
+        Supplier<String> doubleCheckedLocking2 = DCLLazyLoader2.of(MyState::expensiveOperation);
+        Supplier<String> doubleCheckedLockingBool = DCLLazyLoaderBool.of(MyState::expensiveOperation);
+        Supplier<String> atomicReference = AtomicLazyLoader.of(MyState::expensiveOperation);
+        com.google.common.base.Supplier<String> guava = Suppliers.memoize(MyState::expensiveOperation); //same as doubleCheckedLockingBool
 
-		private static String expensiveOperation() {
-			return String.format("foo %s %s", "foo", "bar");
-		}
-	}
+        private static String expensiveOperation() {
+            return String.format("foo %s %s", "foo", "bar");
+        }
+    }
 
-	public static void main(String[] args) throws RunnerException {
-		Options opt = new OptionsBuilder()//
-				.include(".*" + LayzLoaderBenchmarkJMH.class.getSimpleName() + ".*")//
-				// .addProfiler(GCProfiler.class)//
-				.build();
-		new Runner(opt).run();
-	}
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()//
+                .include(".*" + LayzLoaderBenchmarkJMH.class.getSimpleName() + ".*")//
+                // .addProfiler(GCProfiler.class)//
+                .build();
+        new Runner(opt).run();
+    }
 
-	@Benchmark
-	public String doubleCheckedLocking(MyState state) {
-		return state.doubleCheckedLocking.get();
-	}
+    @Benchmark
+    public String doubleCheckedLocking(MyState state) {
+        return state.doubleCheckedLocking.get();
+    }
 
-	@Benchmark
-	public String bool(MyState state) {
-		return state.doubleCheckedLockingBool.get();
-	}
+    @Benchmark
+    public String bool(MyState state) {
+        return state.doubleCheckedLockingBool.get();
+    }
 
-	@Benchmark
-	public String doubleCheckedLocking2(MyState state) {
-		return state.doubleCheckedLocking2.get();
-	}
+    @Benchmark
+    public String doubleCheckedLocking2(MyState state) {
+        return state.doubleCheckedLocking2.get();
+    }
 
-	@Benchmark
-	public String guava(MyState state) {
-		return state.guava.get();
-	}
+    @Benchmark
+    public String guava(MyState state) {
+        return state.guava.get();
+    }
 
-	@Benchmark
-	public String atomicReference(MyState state) {
-		return state.atomicReference.get();
-	}
+    @Benchmark
+    public String atomicReference(MyState state) {
+        return state.atomicReference.get();
+    }
 
 
     /**
@@ -132,12 +133,12 @@ public class LayzLoaderBenchmarkJMH {
      *    }
      *  }
      * </pre>
-     *
+     * <p>
      * Usage Example 2:
      * <pre>
      * Supplier<String> anotherExpensiveOp = LazyLoader.of(() -> "ExpensiveDebugString" + someObject.toString());
      * </pre>
-     *
+     * <p>
      * When would you use this:<br/>
      * deferred execution of e.g. expensive JNDI lookups. The JNDI might not be
      * ready/initialized while you create an instance of your class - so you cannot
@@ -151,7 +152,7 @@ public class LayzLoaderBenchmarkJMH {
         // "cachedObject" is not required to be volatile - guarded by volatile read of
         // "supplier"
         private T cachedObject;
-	    private volatile Supplier<T> supplier;
+        private volatile Supplier<T> supplier;
 
         private DCLLazyLoader(Supplier<T> supplier) {
             this.supplier = Objects.requireNonNull(supplier);
@@ -180,10 +181,10 @@ public class LayzLoaderBenchmarkJMH {
         }
     }
 
-    public  static class DCLLazyLoader2<T> implements Supplier<T> {
+    public static class DCLLazyLoader2<T> implements Supplier<T> {
 
-	    // "cachedObject" is not required to be volatile - guarded by volatile read of
-	    // "supplier"
+        // "cachedObject" is not required to be volatile - guarded by volatile read of
+        // "supplier"
         private volatile Supplier<T> supplier;
         private T object;
 
@@ -207,7 +208,7 @@ public class LayzLoaderBenchmarkJMH {
                     if (supplier != null) {
                         T object = supplier.get();
                         supplier = null;
-                        this.object=object;
+                        this.object = object;
                         return object;
                     }
                 }
@@ -218,8 +219,8 @@ public class LayzLoaderBenchmarkJMH {
 
     public static class DCLLazyLoaderBool<T> implements Supplier<T> {
 
-	    // "cachedObject" is not required to be volatile - guarded by volatile read of
-	    // "loaded"
+        // "cachedObject" is not required to be volatile - guarded by volatile read of
+        // "loaded"
         private volatile boolean loaded = false;
         private Supplier<T> supplier;
         private T object;
@@ -236,11 +237,11 @@ public class LayzLoaderBenchmarkJMH {
             if (!loaded) {
                 synchronized (this) {
                     if (!loaded) {
-                        T t= supplier.get();
-                        object=t;
-                        loaded=true;
-	                    supplier = null;
-	                    return t;
+                        T t = supplier.get();
+                        object = t;
+                        loaded = true;
+                        supplier = null;
+                        return t;
                     }
                 }
             }

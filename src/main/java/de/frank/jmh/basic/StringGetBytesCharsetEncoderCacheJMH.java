@@ -52,6 +52,7 @@ import java.util.concurrent.TimeUnit;
 
 
 */
+
 /**
  * @author Michael Frank
  * @version 1.0 13.05.2018
@@ -59,45 +60,46 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(3)
-@BenchmarkMode({ Mode.AverageTime })
+@BenchmarkMode({Mode.AverageTime})
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Thread)
 @Threads(16)//important to be high to put pressure on the cache
 public class StringGetBytesCharsetEncoderCacheJMH {
 
-	@State(Scope.Thread)
-	public static class ThreadState {
-		private String stringData="löko3lö3laöskfjölaw3kr4j21öl5kjrfölskjfö2lqk3jrlkasjföl2k3jröl2kj5ölksdjfs23234l21l3j4lkjflksjlökjcv23lk4j";
-		private byte[] byteData = stringData
-				.getBytes(StandardCharsets.UTF_8);
-	}
+    @State(Scope.Thread)
+    public static class ThreadState {
+        private String stringData = "löko3lö3laöskfjölaw3kr4j21öl5kjrfölskjfö2lqk3jrlkasjföl2k3jröl2kj5ölksdjfs23234l21l3j4lkjflksjlökjcv23lk4j";
+        private byte[] byteData = stringData
+                .getBytes(StandardCharsets.UTF_8);
+    }
 
-	public static void main(String[] args) throws RunnerException {
-		Options opt = new OptionsBuilder()//
-				.include(".*" + StringGetBytesCharsetEncoderCacheJMH.class.getSimpleName() + ".*")//
-				.addProfiler(GCProfiler.class)//
-				.jvmArgs("-Xmx128m")
-				.build();
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()//
+                .include(".*" + StringGetBytesCharsetEncoderCacheJMH.class.getSimpleName() + ".*")//
+                .addProfiler(GCProfiler.class)//
+                .jvmArgs("-Xmx128m")
+                .build();
 
-		new Runner(opt).run();
-	}
+        new Runner(opt).run();
+    }
 
-	@Benchmark
-	public String stringFromBytes_CharsetInstance(ThreadState s) {
-		return new String(s.byteData, StandardCharsets.UTF_8);
-	}
+    @Benchmark
+    public String stringFromBytes_CharsetInstance(ThreadState s) {
+        return new String(s.byteData, StandardCharsets.UTF_8);
+    }
 
-	@Benchmark
-	public String stringFromBytes_CharsetName(ThreadState s) throws UnsupportedEncodingException {
-		return new String(s.byteData, StandardCharsets.UTF_8.name());
-	}
+    @Benchmark
+    public String stringFromBytes_CharsetName(ThreadState s) throws UnsupportedEncodingException {
+        return new String(s.byteData, StandardCharsets.UTF_8.name());
+    }
 
-	@Benchmark
-	public byte[] bytesFromString_CharsetInstance(ThreadState s) {
-		return s.stringData.getBytes(StandardCharsets.UTF_8);	}
+    @Benchmark
+    public byte[] bytesFromString_CharsetInstance(ThreadState s) {
+        return s.stringData.getBytes(StandardCharsets.UTF_8);
+    }
 
-	@Benchmark
-	public byte[] bytesFromString_CharsetName(ThreadState s) throws UnsupportedEncodingException {
-		return s.stringData.getBytes(StandardCharsets.UTF_8.name());
-	}
+    @Benchmark
+    public byte[] bytesFromString_CharsetName(ThreadState s) throws UnsupportedEncodingException {
+        return s.stringData.getBytes(StandardCharsets.UTF_8.name());
+    }
 }

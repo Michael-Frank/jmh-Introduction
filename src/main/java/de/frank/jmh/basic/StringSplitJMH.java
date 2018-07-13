@@ -31,6 +31,7 @@ TwoChars             284    652    5.085    2.007 # this is internally a regex a
 TwoChars_compiled    175    461    3.903    1.513 # uses cached Pattern.compile
 
 */
+
 /**
  * @author Michael Frank
  * @version 1.0 13.05.2018
@@ -44,18 +45,19 @@ TwoChars_compiled    175    461    3.903    1.513 # uses cached Pattern.compile
 @State(Scope.Thread)
 public class StringSplitJMH {
 
-    @Param({"2","10","100"})
+    @Param({"2", "10", "100"})
     private int stringLen;
 
     private String csvString; // @stringLen10: "1,2,3,4,5,6,7,8,9,10";
     private String commaDotString;//@stringLen10 "1,.2,.3,.4,.5,.6,.7,.8,.9,.10";
 
-	private static final Pattern SPLIT_TWO = Pattern.compile(",\\.");
+    private static final Pattern SPLIT_TWO = Pattern.compile(",\\.");
     private static final Splitter GUAVA_SPLIT_TWO = Splitter.on(",.");
+
     @Setup
-    public void setup(){
-        csvString= IntStream.rangeClosed(1,stringLen).mapToObj(Integer::toString).collect(Collectors.joining(","));
-        commaDotString= IntStream.rangeClosed(1,stringLen).mapToObj(Integer::toString).collect(Collectors.joining(",."));
+    public void setup() {
+        csvString = IntStream.rangeClosed(1, stringLen).mapToObj(Integer::toString).collect(Collectors.joining(","));
+        commaDotString = IntStream.rangeClosed(1, stringLen).mapToObj(Integer::toString).collect(Collectors.joining(",."));
     }
 
     @Benchmark
@@ -72,16 +74,17 @@ public class StringSplitJMH {
     public String[] twoChars_compiled() {
         return SPLIT_TWO.split(commaDotString);
     }
+
     @Benchmark
     public String[] twoChars_apache() {
-        return org.apache.commons.lang.StringUtils.split(commaDotString ,",.");
+        return org.apache.commons.lang.StringUtils.split(commaDotString, ",.");
     }
 
     @Benchmark
     public List<String> twoChars_guava() {
         return GUAVA_SPLIT_TWO.splitToList(commaDotString);
     }
-    
+
     public static void main(String[] args) throws RunnerException {
 
         System.setProperty("jmh.perfasm.xperf.dir", "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit");

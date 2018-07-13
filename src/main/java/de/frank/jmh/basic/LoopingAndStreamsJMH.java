@@ -1,4 +1,3 @@
-
 package de.frank.jmh.basic;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -67,6 +66,7 @@ import java.util.stream.IntStream;
  idioticLoop                          0,01   0,31     30,49     314,25      86,27
 
 */
+
 /**
  * @author Michael Frank
  * @version 1.0 21.01.2017
@@ -100,7 +100,7 @@ public class LoopingAndStreamsJMH {
     static class ComplexData {
         private static final AtomicInteger INSTANCES = new AtomicInteger();
         //just a map of {"0":"0", "1":"1", "2":"2"};
-        private static final Map<String, String> COMMON_DATA = IntStream.rangeClosed(0,3).mapToObj(Integer::toString).collect(Collectors.toMap(x->x,x->x));
+        private static final Map<String, String> COMMON_DATA = IntStream.rangeClosed(0, 3).mapToObj(Integer::toString).collect(Collectors.toMap(x -> x, x -> x));
 
         Map<String, String> data;
 

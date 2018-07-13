@@ -44,6 +44,7 @@ threadLocal_differentKey        280         632        4.248
 threadLocal_sameKey              96         448        4.064
 
  */
+
 /**
  * @author Michael Frank
  * @version 1.0 13.07.2018
@@ -57,69 +58,69 @@ threadLocal_sameKey              96         448        4.064
 @Threads(16)
 public class CipherCacheThreadLocalJMH {
 
-	private static final ThreadLocal<Cipher> CIPHERS = ThreadLocal.withInitial(CipherCacheThreadLocalJMH::newCipher);
-	private static final ThreadLocal<Cipher> CIPHERS_REUSE_KEY = ThreadLocal.withInitial(CipherCacheThreadLocalJMH::newCipherFixedKey);
+    private static final ThreadLocal<Cipher> CIPHERS = ThreadLocal.withInitial(CipherCacheThreadLocalJMH::newCipher);
+    private static final ThreadLocal<Cipher> CIPHERS_REUSE_KEY = ThreadLocal.withInitial(CipherCacheThreadLocalJMH::newCipherFixedKey);
 
 
-	@Param({"20", "200", "2000"})
-	private int dataLen;
+    @Param({"20", "200", "2000"})
+    private int dataLen;
 
-	private byte[] data;
-	private byte[] key;
+    private byte[] data;
+    private byte[] key;
 
-	@Setup
-	public void setup() {
-		data = RandomStringUtils.randomAlphanumeric(dataLen).getBytes();
-		key = new byte[256 / Byte.SIZE];
-		new SecureRandom().nextBytes(key);
-	}
+    @Setup
+    public void setup() {
+        data = RandomStringUtils.randomAlphanumeric(dataLen).getBytes();
+        key = new byte[256 / Byte.SIZE];
+        new SecureRandom().nextBytes(key);
+    }
 
-	private static Cipher newCipher() {
-		try {
-			return Cipher.getInstance("AES/CBC/PKCS5Padding");
-		} catch (GeneralSecurityException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    private static Cipher newCipher() {
+        try {
+            return Cipher.getInstance("AES/CBC/PKCS5Padding");
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	private static Cipher newCipherFixedKey() {
-		try {
-			Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
-			byte[] key = new byte[256/Byte.SIZE];
-			new SecureRandom().nextBytes(key);
-			c.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
-			return c;
-		} catch (GeneralSecurityException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    private static Cipher newCipherFixedKey() {
+        try {
+            Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            byte[] key = new byte[256 / Byte.SIZE];
+            new SecureRandom().nextBytes(key);
+            c.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
+            return c;
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	@Benchmark
-	public byte[] newEachTime() throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException {
-		Cipher cipher = newCipher();
-		cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
-		return cipher.doFinal(data);
-	}
+    @Benchmark
+    public byte[] newEachTime() throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException {
+        Cipher cipher = newCipher();
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
+        return cipher.doFinal(data);
+    }
 
-	@Benchmark
-	public byte[] threadLocal_differentKey() throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException {
-		Cipher cipher = CIPHERS.get();
-		cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
-		return cipher.doFinal(data);
-	}
+    @Benchmark
+    public byte[] threadLocal_differentKey() throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException {
+        Cipher cipher = CIPHERS.get();
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
+        return cipher.doFinal(data);
+    }
 
-	@Benchmark
-	public byte[] threadLocal_sameKey() throws BadPaddingException, IllegalBlockSizeException {
-		Cipher cipher = CIPHERS_REUSE_KEY.get();
-		return cipher.doFinal(data);
-	}
+    @Benchmark
+    public byte[] threadLocal_sameKey() throws BadPaddingException, IllegalBlockSizeException {
+        Cipher cipher = CIPHERS_REUSE_KEY.get();
+        return cipher.doFinal(data);
+    }
 
-	public static void main(String[] args) throws RunnerException {
-		Options opt = new OptionsBuilder()//
-				.jvmArgsAppend("-Dcrypto.policy=unlimited") //since java 8u151
-				.include(".*" + CipherCacheThreadLocalJMH.class.getSimpleName() + ".*")//
-				.addProfiler(GCProfiler.class)//
-				.build();
-		new Runner(opt).run();
-	}
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()//
+                .jvmArgsAppend("-Dcrypto.policy=unlimited") //since java 8u151
+                .include(".*" + CipherCacheThreadLocalJMH.class.getSimpleName() + ".*")//
+                .addProfiler(GCProfiler.class)//
+                .build();
+        new Runner(opt).run();
+    }
 }
