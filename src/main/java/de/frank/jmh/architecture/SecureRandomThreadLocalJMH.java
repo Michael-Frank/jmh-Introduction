@@ -1,4 +1,4 @@
-package de.frank.jmh.algorithms.de.frank.jmh.architecture;
+package de.frank.jmh.architecture;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
