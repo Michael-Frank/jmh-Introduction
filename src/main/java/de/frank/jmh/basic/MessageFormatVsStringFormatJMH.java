@@ -24,9 +24,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /*--
-	compare performance of various String-/Message-format implementations
+	compares the performance of various String-/Message-format implementations
 
-    Learnings:  dont use String-/Message-formaters mindlessly in hot code paths. Most of them are fairly expensive!
+    Learning's: Most String-/Message-formatter's are fairly expensive! Don't use  mindlessly in hot code paths.
 
 	###Disclaimer##########
 	all of this obviously only matters in HOT code paths
@@ -61,7 +61,8 @@ import java.util.concurrent.TimeUnit;
 	plusEqualsConcatAntiPatternLoop  avgt   30  3619,269 ± 34,120  ns/op
 
 
-    some VERY special cases (showing what is possible) - please dont do that :-)
+    some VERY special cases (showing what is possible API wise but not worth it)
+    please don't do that in production code :-)
 	Benchmark                               Mode  Cnt   Score   Error  Units
 	concatBuilder_preSized                  avgt   30  66,162 ± 2,792  ns/op
 	concatManualLoop_newStringUnsafe        avgt   30  98,029 ± 1,827  ns/op
@@ -86,8 +87,8 @@ public class MessageFormatVsStringFormatJMH {
 	private String param2 = UUID.randomUUID().toString();
 	private String param3 = UUID.randomUUID().toString();
 
-	private static final String messageFormatTemplate = "SomeToStringClass:\nparam0 {0}\nparam1 {1}\n param2 {2}\n param3 {3}";
-	private static final MessageFormat messageFormat = new MessageFormat(messageFormatTemplate);
+	private static final String MESSAGE_FORMAT_TEMPLATE = "SomeToStringClass:\nparam0 {0}\nparam1 {1}\n param2 {2}\n param3 {3}";
+	private static final MessageFormat MESSAGE_FORMAT = new MessageFormat(MESSAGE_FORMAT_TEMPLATE);
 
 	public static void main(String[] args) throws RunnerException {
 		verifyMethodsProduceSameResults();
@@ -105,12 +106,12 @@ public class MessageFormatVsStringFormatJMH {
 
 	@Benchmark
 	public String messageFormatExternalPattern() {
-		return MessageFormat.format(messageFormatTemplate, param0, param1, param3, param2);
+		return MessageFormat.format(MESSAGE_FORMAT_TEMPLATE, param0, param1, param3, param2);
 	}
 
 	@Benchmark
 	public String messageFormatCached() {
-		return messageFormat.format(new Object[] { param0, param1, param3, param2});
+		return MESSAGE_FORMAT.format(new Object[] { param0, param1, param3, param2});
 	}
 
 	@Benchmark
@@ -186,10 +187,17 @@ public class MessageFormatVsStringFormatJMH {
 	}
 
 
+
+
+
+	//####################################################################
+	//####################################################################
+	//####################################################################
 	// Here be dragons...
 	// Some very special stuff - please dont do this :-) (its not worth it)
-
-
+	//####################################################################
+	//####################################################################
+	//####################################################################
 	@Benchmark
 	public String concatManualLoop_newStringUnsafe() {
 		char[] r = new char[188];

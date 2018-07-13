@@ -29,10 +29,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /*--
- DANGER! This benchmark is heavily flawed!
+ DANGER! this benchmark is heavily flawed!
+ Measuring simple looping is skewed - re test with your own application code inside the loops.
 
 
- Benchmark               /ListSize->    10  1.000   10.0000  1.000.000    Average
+ All numbers in: nanoseconds per operation
+
+ Benchmark in ns/op      /ListSize->    10  1.000   10.0000  1.000.000    Average
  forI_complexList                     0,14  15,24  2.365,01  31.435,36   8.453,94
  forI_complexArray                    0,12  13,63  2.368,53  31.311,63   8.423,48
  forEach_complexList                  0,15  16,56  2.450,98  32.373,94   8.710,41
@@ -63,96 +66,6 @@ import java.util.stream.IntStream;
 
  idioticLoop                          0,01   0,31     30,49     314,25      86,27
 
- RAW
- Benchmark                             (size)  Mode  Cnt      Score      Error  Units
- forEach_List                              10  avgt   10      0,016 ±    0,001  us/op
- forEach_List                            1000  avgt   10      0,779 ±    0,024  us/op
- forEach_List                          100000  avgt   10     89,794 ±    1,259  us/op
- forEach_List                         1000000  avgt   10   1939,268 ±   97,095  us/op
- forEach_complexArray                      10  avgt   10      0,143 ±    0,004  us/op
- forEach_complexArray                    1000  avgt   10     14,749 ±    0,291  us/op
- forEach_complexArray                  100000  avgt   10   2440,916 ±  235,483  us/op
- forEach_complexArray                 1000000  avgt   10  32145,448 ± 1191,279  us/op
- forEach_complexList                       10  avgt   10      0,154 ±    0,009  us/op
- forEach_complexList                     1000  avgt   10     16,559 ±    0,647  us/op
- forEach_complexList                   100000  avgt   10   2450,981 ±   89,490  us/op
- forEach_complexList                  1000000  avgt   10  32373,937 ± 1496,225  us/op
- forEach_intArray                          10  avgt   10      0,007 ±    0,001  us/op
- forEach_intArray                        1000  avgt   10      0,308 ±    0,003  us/op
- forEach_intArray                      100000  avgt   10     30,435 ±    0,390  us/op
- forEach_intArray                     1000000  avgt   10    313,212 ±    4,696  us/op
- forI_List                                 10  avgt   10      0,014 ±    0,001  us/op
- forI_List                               1000  avgt   10      0,714 ±    0,007  us/op
- forI_List                             100000  avgt   10     87,006 ±    0,983  us/op
- forI_List                            1000000  avgt   10   1893,455 ±   13,293  us/op
- forI_complexArray                         10  avgt   10      0,123 ±    0,004  us/op
- forI_complexArray                       1000  avgt   10     13,631 ±    0,210  us/op
- forI_complexArray                     100000  avgt   10   2368,528 ±   17,609  us/op
- forI_complexArray                    1000000  avgt   10  31311,627 ±  450,944  us/op
- forI_complexList                          10  avgt   10      0,140 ±    0,004  us/op
- forI_complexList                        1000  avgt   10     15,244 ±    0,151  us/op
- forI_complexList                      100000  avgt   10   2365,007 ±   19,434  us/op
- forI_complexList                     1000000  avgt   10  31435,364 ±  364,273  us/op
- forI_intArray                             10  avgt   10      0,007 ±    0,001  us/op
- forI_intArray                           1000  avgt   10      0,309 ±    0,004  us/op
- forI_intArray                         100000  avgt   10     30,329 ±    0,117  us/op
- forI_intArray                        1000000  avgt   10    313,311 ±    5,146  us/op
- idioticLoop                               10  avgt   10      0,008 ±    0,001  us/op
- idioticLoop                             1000  avgt   10      0,309 ±    0,003  us/op
- idioticLoop                           100000  avgt   10     30,493 ±    0,210  us/op
- idioticLoop                          1000000  avgt   10    314,252 ±    5,094  us/op
- stream_List_mapToIntReduce                10  avgt   10      0,052 ±    0,001  us/op
- stream_List_mapToIntReduce              1000  avgt   10      0,880 ±    0,016  us/op
- stream_List_mapToIntReduce            100000  avgt   10    106,804 ±    1,088  us/op
- stream_List_mapToIntReduce           1000000  avgt   10   1964,138 ±   30,768  us/op
- stream_List_mapToIntReduce_parallel       10  avgt   10      8,082 ±    0,170  us/op
- stream_List_mapToIntReduce_parallel     1000  avgt   10     15,277 ±    0,135  us/op
- stream_List_mapToIntReduce_parallel   100000  avgt   10    138,838 ±    0,791  us/op
- stream_List_mapToIntReduce_parallel  1000000  avgt   10   1216,951 ±  267,542  us/op
- stream_List_mapToIntSum                   10  avgt   10      0,052 ±    0,001  us/op
- stream_List_mapToIntSum                 1000  avgt   10      0,882 ±    0,009  us/op
- stream_List_mapToIntSum               100000  avgt   10    592,990 ±    4,905  us/op
- stream_List_mapToIntSum              1000000  avgt   10   6896,603 ±   44,491  us/op
- stream_List_mapToIntSum_parallel          10  avgt   10      7,626 ±    0,160  us/op
- stream_List_mapToIntSum_parallel        1000  avgt   10     15,459 ±    0,040  us/op
- stream_List_mapToIntSum_parallel      100000  avgt   10    138,479 ±    0,784  us/op
- stream_List_mapToIntSum_parallel     1000000  avgt   10   1220,337 ±  233,975  us/op
- stream_List_sumCollector                  10  avgt   10      0,041 ±    0,001  us/op
- stream_List_sumCollector                1000  avgt   10      1,308 ±    0,018  us/op
- stream_List_sumCollector              100000  avgt   10    112,295 ±    8,113  us/op
- stream_List_sumCollector             1000000  avgt   10   3638,444 ± 1782,402  us/op
- stream_complexArray_foreach               10  avgt   10      0,162 ±    0,002  us/op
- stream_complexArray_foreach             1000  avgt   10     15,080 ±    0,311  us/op
- stream_complexArray_foreach           100000  avgt   10   2324,873 ±   59,349  us/op
- stream_complexArray_foreach          1000000  avgt   10  30511,147 ±  205,739  us/op
- stream_complexArray_map                   10  avgt   10      0,213 ±    0,007  us/op
- stream_complexArray_map                 1000  avgt   10     17,206 ±    0,196  us/op
- stream_complexArray_map               100000  avgt   10   2462,452 ±   44,033  us/op
- stream_complexArray_map              1000000  avgt   10  31645,963 ±  366,983  us/op
- stream_complexList_foreach                10  avgt   10      0,165 ±    0,003  us/op
- stream_complexList_foreach              1000  avgt   10     15,060 ±    0,262  us/op
- stream_complexList_foreach            100000  avgt   10   2336,542 ±   47,220  us/op
- stream_complexList_foreach           1000000  avgt   10  30482,101 ±  253,728  us/op
- stream_complexList_map                    10  avgt   10      0,206 ±    0,013  us/op
- stream_complexList_map                  1000  avgt   10     17,046 ±    0,198  us/op
- stream_complexList_map                100000  avgt   10   2462,185 ±   25,568  us/op
- stream_complexList_map               1000000  avgt   10  31589,821 ±  220,494  us/op
- stream_intArray_reduce                    10  avgt   10      0,042 ±    0,001  us/op
- stream_intArray_reduce                  1000  avgt   10      2,616 ±    0,021  us/op
- stream_intArray_reduce                100000  avgt   10     30,505 ±    0,267  us/op
- stream_intArray_reduce               1000000  avgt   10    316,119 ±    2,321  us/op
- stream_intArray_reduce_parallel           10  avgt   10      7,410 ±    0,017  us/op
- stream_intArray_reduce_parallel         1000  avgt   10     13,889 ±    0,200  us/op
- stream_intArray_reduce_parallel       100000  avgt   10     21,098 ±    0,192  us/op
- stream_intArray_reduce_parallel      1000000  avgt   10     84,555 ±    0,314  us/op
- stream_intArray_sum                       10  avgt   10      0,040 ±    0,001  us/op
- stream_intArray_sum                     1000  avgt   10      2,308 ±    0,015  us/op
- stream_intArray_sum                   100000  avgt   10     30,250 ±    0,190  us/op
- stream_intArray_sum                  1000000  avgt   10    312,934 ±    3,177  us/op
- stream_intArray_sum_parallel              10  avgt   10      7,960 ±    0,613  us/op
- stream_intArray_sum_parallel            1000  avgt   10     13,890 ±    0,218  us/op
- stream_intArray_sum_parallel          100000  avgt   10     21,155 ±    0,403  us/op
- stream_intArray_sum_parallel         1000000  avgt   10     84,472 ±    0,439  us/op
 */
 /**
  * @author Michael Frank
@@ -160,7 +73,7 @@ import java.util.stream.IntStream;
  */
 @Fork(3)
 @State(Scope.Benchmark)
-@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
 @BenchmarkMode(Mode.AverageTime)
 @Warmup(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
@@ -216,6 +129,12 @@ public class LoopingAndStreamsJMH {
     }
 
     @SuppressWarnings("ForLoopReplaceableByForEach")
+
+    @Benchmark
+    public void baseline_singleOp(Blackhole b) {
+        b.consume(complexData[0].data.get(key));
+    }
+
     @Benchmark
     public void forI_complexArray(Blackhole b) {
         for (int i = 0; i < complexData.length; i++) {
@@ -333,6 +252,7 @@ public class LoopingAndStreamsJMH {
 
     @Benchmark
     public int stream_List_sumCollector() {
+        //intentionally NOT ,mapToInt(Integer::intValue).sum()  see stream_List_mapToIntSum
         return dataAsList.stream().collect(Collectors.summingInt(Integer::intValue));
     }
 
@@ -357,15 +277,13 @@ public class LoopingAndStreamsJMH {
         // seriously, this is fucking stupid.
 
         //This "habit" can sometimes be found in very old code
-        // -> the reasoning was: "java performs array bounds checks for i in each iteration
-        // This is INVALID today.
+        // The reasoning was: "java performs expensive array bounds checks for i in each iteration"
         //
-        // The compiler will perform "bounds check elimination" for you (if applicable)
-        // Iin contrast:
-        // Throwing a AIOOB exception is very expensive - especially the
-        // "fillInStackTrace" part
-        // But the jvm is smart and just throws out your bad "exception" code
+        // This is INVALID today as the compiler will perform "bounds check elimination" for you (if applicable)
+        // In contrast: Throwing a AIOOB exception is very expensive - especially the "fillInStackTrace" part
+        // But the JVM is smart again and just throws out your bad "exception" code
         // and inserts a bounds check "if i < size" itself
+        // so while not bad for your performance - the code is just ridiculous.
 
         int sum = 0;
         try {

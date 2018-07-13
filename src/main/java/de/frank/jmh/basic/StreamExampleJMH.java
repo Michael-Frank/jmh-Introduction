@@ -89,54 +89,7 @@ stream_fixed          1.569.788    10.913     51
 classic_fixed         1.626.222    10.983     47
 parallelStream_fixed    287.844     8.079     46
 
-
-
-Raw: Single threaded
-# Run complete. Total time: 00:20:00
-
-Benchmark                                (len)   Mode  Cnt       Score        Error  Units
-StreamExampleJMH.classic                   100  thrpt   30   70254,289 ±   2685,193  ops/s
-StreamExampleJMH.classic                 10000  thrpt   30     350,347 ±      3,969  ops/s
-StreamExampleJMH.classic               1000000  thrpt   30       3,361 ±      0,042  ops/s
-StreamExampleJMH.classic_fixed             100  thrpt   20  832263,130 ± 183190,375  ops/s
-StreamExampleJMH.classic_fixed           10000  thrpt   30    2212,961 ±    141,743  ops/s
-StreamExampleJMH.classic_fixed         1000000  thrpt   30      16,105 ±      0,387  ops/s
-StreamExampleJMH.parallelStream            100  thrpt   30   28709,051 ±   1453,039  ops/s
-StreamExampleJMH.parallelStream          10000  thrpt   30    1259,053 ±     40,364  ops/s
-StreamExampleJMH.parallelStream        1000000  thrpt   30      13,872 ±      0,502  ops/s
-StreamExampleJMH.parallelStream_fixed      100  thrpt   30   40561,798 ±   5372,311  ops/s
-StreamExampleJMH.parallelStream_fixed    10000  thrpt   30    3985,788 ±    185,206  ops/s
-StreamExampleJMH.parallelStream_fixed  1000000  thrpt   30      39,933 ±      0,712  ops/s
-StreamExampleJMH.stream                    100  thrpt   30   68652,635 ±   2467,171  ops/s
-StreamExampleJMH.stream                  10000  thrpt   30     352,362 ±      4,273  ops/s
-StreamExampleJMH.stream                1000000  thrpt   30       3,419 ±      0,047  ops/s
-StreamExampleJMH.stream_fixed              100  thrpt   30  496389,432 ± 107313,592  ops/s
-StreamExampleJMH.stream_fixed            10000  thrpt   30    2082,807 ±     81,577  ops/s
-StreamExampleJMH.stream_fixed          1000000  thrpt   30      17,528 ±      0,509  ops/s
-
-
-Raw multithreaded
-Benchmark                                (len)   Mode  Cnt        Score        Error  Units
-StreamExampleJMH.classic                   100  thrpt   30   286828,664 ±   6930,275  ops/s
-StreamExampleJMH.classic                 10000  thrpt   30     1883,282 ±     15,156  ops/s
-StreamExampleJMH.classic               1000000  thrpt   30       14,899 ±      0,224  ops/s
-StreamExampleJMH.classic_fixed             100  thrpt   30  1626222,018 ± 292931,915  ops/s
-StreamExampleJMH.classic_fixed           10000  thrpt   30    10982,843 ±    135,599  ops/s
-StreamExampleJMH.classic_fixed         1000000  thrpt   30       46,870 ±      0,592  ops/s
-StreamExampleJMH.parallelStream            100  thrpt   30   145953,845 ±   4474,521  ops/s
-StreamExampleJMH.parallelStream          10000  thrpt   30     1790,952 ±     16,373  ops/s
-StreamExampleJMH.parallelStream        1000000  thrpt   30       17,235 ±      0,652  ops/s
-StreamExampleJMH.parallelStream_fixed      100  thrpt   30   287843,782 ±  20113,571  ops/s
-StreamExampleJMH.parallelStream_fixed    10000  thrpt   30     8079,292 ±    173,957  ops/s
-StreamExampleJMH.parallelStream_fixed  1000000  thrpt   30       46,348 ±      0,511  ops/s
-StreamExampleJMH.stream                    100  thrpt   30   297454,885 ±  10395,150  ops/s
-StreamExampleJMH.stream                  10000  thrpt   30     1804,544 ±     26,097  ops/s
-StreamExampleJMH.stream                1000000  thrpt   30       16,750 ±      0,223  ops/s
-StreamExampleJMH.stream_fixed              100  thrpt   30  1569787,824 ± 344774,103  ops/s
-StreamExampleJMH.stream_fixed            10000  thrpt   30    10912,654 ±    229,093  ops/s
-StreamExampleJMH.stream_fixed          1000000  thrpt   30       50,717 ±      1,375  ops/s
-
- */
+*/
 
 /**
  * @author Michael Frank

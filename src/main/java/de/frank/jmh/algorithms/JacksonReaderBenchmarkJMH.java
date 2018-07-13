@@ -23,48 +23,18 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /*--
- And the winner is: sharedObjectReader!
  It is totally thread-safe and saleable to reuse the  ObjectReader reader = new ObjectMapper().readerFor(Map.class);
 
- Benchmark                       Mode  Cnt        Score        Error  Units
- my_tokennewMapperPerCall_1     thrpt    5    24845,747 ±    401,588  ops/s
- my_tokennewMapperPerCall_2     thrpt    5    44459,373 ±   4541,548  ops/s
- my_tokennewMapperPerCall_4     thrpt    5    79350,459 ±  11168,382  ops/s
- my_tokennewMapperPerCall_8     thrpt    5   114334,386 ±   7930,404  ops/s
- my_tokennewMapperPerCall_32    thrpt    5   101316,231 ±  13915,002  ops/s
+ Throughput in  ops/s          1         2          4          8         32 #numThreads
+ newMapperPerCall         24.845    44.459     79.350    114.334    101.316
+ sharedObjectMapper      429.138   821.334  1.402.759  1.622.020  1.610.938
+ sharedObjectReade       434.012   804.545  1.379.722  1.716.694  1.739.768 #winner
 
- my_tokensharedObjectMapper_1   thrpt    5   429138,455 ±  15425,506  ops/s
- my_tokensharedObjectMapper_2   thrpt    5   821334,492 ±  41812,944  ops/s
- my_tokensharedObjectMapper_4   thrpt    5  1402759,756 ±  92106,132  ops/s
- my_tokensharedObjectMapper_8   thrpt    5  1622020,315 ± 131445,036  ops/s
- my_tokensharedObjectMapper_32  thrpt    5  1610938,419 ± 230044,029  ops/s
+ Per call in  us/op            1         2          4          8         32 #numThreads
+ newMapperPerCall           53,7      54,2       63,7       90,0      386,7
+ sharedObjectMapper          2,9       3,0        3,7        5,8       25,1
+ sharedObjectReader          2,8       2,9        4,1        6,0       26,4 #winner
 
- my_tokensharedObjectReader_1   thrpt    5   434012,998 ±  26670,798  ops/s
- my_tokensharedObjectReader_2   thrpt    5   804545,269 ±  29523,579  ops/s
- my_tokensharedObjectReader_4   thrpt    5  1379722,464 ± 123574,988  ops/s
- my_tokensharedObjectReader_8   thrpt    5  1716694,389 ± 157594,614  ops/s
- my_tokensharedObjectReader_32  thrpt    5  1739768,637 ±  44723,808  ops/s
-
-
-
- Benchmark                      Mode  Cnt    Score    Error  Units
- my_tokennewMapperPerCall_1     avgt    5   53,725 ±  3,958  us/op
- my_tokennewMapperPerCall_2     avgt    5   54,223 ±  3,276  us/op
- my_tokennewMapperPerCall_4     avgt    5   63,746 ±  3,588  us/op
- my_tokennewMapperPerCall_8     avgt    5   90,052 ±  1,339  us/op
- my_tokennewMapperPerCall_32    avgt    5  386,733 ± 16,266  us/op
-
- my_tokensharedObjectMapper_1   avgt    5    2,969 ±  0,048  us/op
- my_tokensharedObjectMapper_2   avgt    5    3,083 ±  0,295  us/op
- my_tokensharedObjectMapper_4   avgt    5    3,731 ±  0,251  us/op
- my_tokensharedObjectMapper_8   avgt    5    5,866 ±  0,292  us/op
- my_tokensharedObjectMapper_32  avgt    5   25,153 ±  1,266  us/op
-
- my_tokensharedObjectReader_1   avgt    5    2,875 ±  0,008  us/op
- my_tokensharedObjectReader_2   avgt    5    2,932 ±  0,067  us/op
- my_tokensharedObjectReader_4   avgt    5    4,179 ±  0,256  us/op
- my_tokensharedObjectReader_8   avgt    5    6,083 ±  0,216  us/op
- my_tokensharedObjectReader_32  avgt    5   26,405 ±  1,320  us/op
 */
 /**
  * @author Michael Frank
@@ -80,8 +50,9 @@ public class JacksonReaderBenchmarkJMH {
 	public static void main(String[] args) throws RunnerException, IOException {
 		System.out.println((Map<String,String>) new SharedOjectReaderHolder().reader.readValue(new InputHolder().input));
 
-		Options opt = new OptionsBuilder().include(".*" + JacksonReaderBenchmarkJMH.class.getSimpleName() + ".*")
-				.forks(1).build();
+		Options opt = new OptionsBuilder().include(".*" + JacksonReaderBenchmarkJMH.class.getSimpleName() + ".*")//
+				.forks(1)//
+				.build();//
 		new Runner(opt).run();
 	}
 

@@ -28,15 +28,15 @@ import java.util.concurrent.TimeUnit;
 * @version 1.0 13.05.2018
 */
 @State(Scope.Thread)
-@Warmup(iterations = 3, time = 3, timeUnit = TimeUnit.NANOSECONDS)
-@Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.NANOSECONDS)
+@Warmup(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-public class ClassNameJMH {
+public class ClassGetSimpleNameIsSlowJMH {
 
 
-	public Object obj = new ClassNameJMH();
+	public Object obj = new ClassGetSimpleNameIsSlowJMH();
 
 
 	@Benchmark
@@ -46,7 +46,7 @@ public class ClassNameJMH {
 
 	@Benchmark
 	public String staticName() {
-		return "ClassNameJMH";
+		return "ClassGetSimpleNameIsSlowJMH";
 	}
 
 	@Benchmark
@@ -66,7 +66,7 @@ public class ClassNameJMH {
 
 	public static void main(String[] args) throws RunnerException {
 		Options opt = new OptionsBuilder()//
-				.include(".*" + ClassNameJMH.class.getSimpleName() + ".*")//
+				.include(".*" + ClassGetSimpleNameIsSlowJMH.class.getSimpleName() + ".*")//
 				.build();
 		new Runner(opt).run();
 	}

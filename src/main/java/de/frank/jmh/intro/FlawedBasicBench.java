@@ -6,7 +6,8 @@ import java.util.concurrent.TimeUnit;
  * This demonstrates HOW NOT! TO BENCHMARK in multiple steps and the "improvements" one could think of to make it "right" (but will not work)
  *
  * This is from the live-demo part of the Slides
- * Walk through of some issues (optimizations the jvm does - which is good) while benchmarking Java.
+ * We walk through some issues while benchmarking Java.
+ * Mostly optimizations the jvm does - which is good - but bad for getting benchmarkresults.
  *   * compile threshold c1/c2
  *   * dead-code elimination
  *   * constants
@@ -26,14 +27,14 @@ public class FlawedBasicBench {
         Algo[] implementations = new Algo[]{new AlgoImpl1(), new AlgoImpl2(), new AlgoImpl3()};
         for (Algo algo : implementations) {
             //HOWTO: run each variant at its own (jvm instance)!
-            singleBenchRun_v1(algo, 1_000);
+//            singleBenchRun_v1(algo, 1_000);
 //            singleBenchRun_v1(algo, 10_000);
 //            singleBenchRun_v1(algo, 100_000);
 //            singleBenchRun_v1(algo, 1_000_000);
 //            singleBenchRun_v1(algo, 200_000_000);
 //            x += singleBenchRun_v2(algo, 200_000_000);
 //            x += singleBenchRun_v3(algo, 200_000_000);
-//            x += singleBenchRun_v4(algo, 200_000_000);
+            x += singleBenchRun_v4(algo, 200_000_000);
         }
         System.out.println(x);
     }

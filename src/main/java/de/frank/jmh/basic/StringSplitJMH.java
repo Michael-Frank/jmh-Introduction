@@ -1,5 +1,6 @@
 package de.frank.jmh.basic;
 
+import com.google.common.base.Splitter;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -16,6 +17,7 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -24,9 +26,9 @@ import java.util.stream.IntStream;
 /*--
 Results in ns/op
              len->     2     10      100  Average
-SingleChar            82    249    2.189      840
-TwoChars             284    652    5.085    2.007
-TwoChars_compiled    175    461    3.903    1.513
+SingleChar            82    249    2.189      840 # java has a non-regex fast path for single char splits
+TwoChars             284    652    5.085    2.007 # this is internally a regex and thus slow - internally calls Pattern.compile each time
+TwoChars_compiled    175    461    3.903    1.513 # uses cached Pattern.compile
 
 */
 /**
@@ -48,6 +50,8 @@ public class StringSplitJMH {
     private String csvString; // @stringLen10: "1,2,3,4,5,6,7,8,9,10";
     private String commaDotString;//@stringLen10 "1,.2,.3,.4,.5,.6,.7,.8,.9,.10";
 
+	private static final Pattern SPLIT_TWO = Pattern.compile(",\\.");
+    private static final Splitter GUAVA_SPLIT_TWO = Splitter.on(",.");
     @Setup
     public void setup(){
         csvString= IntStream.rangeClosed(1,stringLen).mapToObj(Integer::toString).collect(Collectors.joining(","));
@@ -64,14 +68,20 @@ public class StringSplitJMH {
         return commaDotString.split(",\\.");
     }
 
-    private static final Pattern SPLIT_TWO = Pattern.compile("\\.");
-
     @Benchmark
-    public String[] twoChars_compile() {
+    public String[] twoChars_compiled() {
         return SPLIT_TWO.split(commaDotString);
     }
+    @Benchmark
+    public String[] twoChars_apache() {
+        return org.apache.commons.lang.StringUtils.split(commaDotString ,",.");
+    }
 
-
+    @Benchmark
+    public List<String> twoChars_guava() {
+        return GUAVA_SPLIT_TWO.splitToList(commaDotString);
+    }
+    
     public static void main(String[] args) throws RunnerException {
 
         System.setProperty("jmh.perfasm.xperf.dir", "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit");

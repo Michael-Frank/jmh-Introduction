@@ -1,4 +1,4 @@
-package de.frank.jmh.algorithms;
+package de.frank.jmh.basic;
 
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -24,8 +24,10 @@ import static org.openjdk.jmh.annotations.Mode.AverageTime;
 import static org.openjdk.jmh.annotations.Scope.Thread;
 
 /**--
- * From: https://github.com/RichardWarburton/java-final-benchmark/blob/master/src/main/java/com/insightfullogic/java_final_benchmarks/PolymorphicBenchmark.java
- *
+
+ Takeaways: stick to a single generic default implementations with max one fallback for a special case.
+ More then two (actively used) implementations during runtime will convert a callsite to a (relatively) expensive megamorphic one .
+
  Results: Oracle JDK 1.8.161 Laptop intel i7-6700HQ@2,7GHz
  ----------------------------------
  Monomorphic:           0,634 +- 0,034 ns/op
@@ -34,8 +36,10 @@ import static org.openjdk.jmh.annotations.Scope.Thread;
  Inlinable Monomorphic: 2,777 +- 0,105 ns/op
  Inlinable Bimorphic:   2,657 +- 0,109 ns/op
  Inlinable Megamorphic: 4,099 +- 0,307 ns/op
- ----------------------------------
+
+ *
  * @author Richard Warburton
+ * From: https://github.com/RichardWarburton/java-final-benchmark/blob/master/src/main/java/com/insightfullogic/java_final_benchmarks/PolymorphicBenchmark.java
  */
 @BenchmarkMode(AverageTime)
 @Warmup(iterations = 5, time = 1, timeUnit = SECONDS)
@@ -43,8 +47,8 @@ import static org.openjdk.jmh.annotations.Scope.Thread;
 @Fork(5)
 @OutputTimeUnit(NANOSECONDS)
 @State(Thread)
-public class PolymorphicCallBenchmarkJMH {
-    // Deliberately a field, JMH avoids constant folding
+public class PolymorphicCallOverheadJMH {
+    // Deliberately a non final field, JMH avoids constant folding
     private double x = Math.PI;
 
     private Polymorph polymorph;
@@ -199,8 +203,8 @@ public class PolymorphicCallBenchmarkJMH {
     private static RunResult makeRunner(String method) throws RunnerException {
         return new Runner(new OptionsBuilder()
                 .warmupMode(WarmupMode.BULK)
-                .include(".*" + PolymorphicCallBenchmarkJMH.class.getSimpleName() + ".*" + method + ".*_measure")
-                .includeWarmup(".*" + PolymorphicCallBenchmarkJMH.class.getSimpleName() + ".*" + method + ".*_warmup")
+                .include(".*" + PolymorphicCallOverheadJMH.class.getSimpleName() + ".*" + method + ".*_measure")
+                .includeWarmup(".*" + PolymorphicCallOverheadJMH.class.getSimpleName() + ".*" + method + ".*_warmup")
                 .build()).runSingle();
     }
 

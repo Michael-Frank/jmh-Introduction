@@ -27,6 +27,10 @@ import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 /*--
+ * ============================
+ * 1 Thread benchmark
+ * ============================
+ * Result: 1 threaded - sun.misc en/decoders are ~15-20x slower then java.utilBase64
  * (win7-openjdk-1.8.0_121)
  *
  *                                      alloc     alloc      Eden      Eden Survivor Survivor       gc      gc                #
@@ -45,118 +49,21 @@ import java.util.concurrent.TimeUnit;
  * sunMisc_encode_New                 6.728,4  25.336,0   6.753,5  25.419,1     0,10     0,37    277,0   476,0      417.641,1 #BAD!
  * sunMisc_encode_Shared              6.912,2  25.320,0   6.918,9  25.337,9     0,11     0,39    320,0   374,0      429.409,1 #BAD!
  *
+ * ============================
+ * 16 Thread benchmark
+ * ============================
+ * Result: under contention with 16 threads - sun.misc en/decoders are ~12-70x slower then java.utilBase64
  *
- * RAW
- * # Run complete. Total time: 00:18:49
- * Benchmark (win7-openjdk-1.8.0_121)                                   Mode  Cnt        Score        Error   Units
- * apacheCommonsBase64_decode                                          thrpt   30  1176408,738 ±  30131,885   ops/s
- * apacheCommonsBase64_decode:·gc.alloc.rate                           thrpt   30     6494,603 ±    166,293  MB/sec
- * apacheCommonsBase64_decode:·gc.alloc.rate.norm                      thrpt   30     8680,001 ±      0,002    B/op
- * apacheCommonsBase64_decode:·gc.churn.PS_Eden_Space                  thrpt   30     6471,399 ±    287,409  MB/sec
- * apacheCommonsBase64_decode:·gc.churn.PS_Eden_Space.norm             thrpt   30     8646,726 ±    285,878    B/op
- * apacheCommonsBase64_decode:·gc.churn.PS_Survivor_Space              thrpt   30        0,084 ±      0,021  MB/sec
- * apacheCommonsBase64_decode:·gc.churn.PS_Survivor_Space.norm         thrpt   30        0,112 ±      0,028    B/op
- * apacheCommonsBase64_decode:·gc.count                                thrpt   30      326,000               counts
- * apacheCommonsBase64_decode:·gc.time                                 thrpt   30      342,000                   ms
- * apacheCommonsBase64_encode                                          thrpt   30  1149444,784 ±  37045,422   ops/s
- * apacheCommonsBase64_encode:·gc.alloc.rate                           thrpt   30     6244,400 ±    200,707  MB/sec
- * apacheCommonsBase64_encode:·gc.alloc.rate.norm                      thrpt   30     8544,002 ±      0,002    B/op
- * apacheCommonsBase64_encode:·gc.churn.PS_Eden_Space                  thrpt   30     6280,619 ±    301,006  MB/sec
- * apacheCommonsBase64_encode:·gc.churn.PS_Eden_Space.norm             thrpt   30     8595,675 ±    336,061    B/op
- * apacheCommonsBase64_encode:·gc.churn.PS_Survivor_Space              thrpt   30        0,090 ±      0,032  MB/sec
- * apacheCommonsBase64_encode:·gc.churn.PS_Survivor_Space.norm         thrpt   30        0,122 ±      0,043    B/op
- * apacheCommonsBase64_encode:·gc.count                                thrpt   30      332,000               counts
- * apacheCommonsBase64_encode:·gc.time                                 thrpt   30      480,000                   ms
- * java8util_decode                                                    thrpt   30  5903631,886 ± 124839,248   ops/s
- * java8util_decode:·gc.alloc.rate                                     thrpt   30      900,784 ±     19,064  MB/sec
- * java8util_decode:·gc.alloc.rate.norm                                thrpt   30      240,000 ±      0,001    B/op
- * java8util_decode:·gc.churn.PS_Eden_Space                            thrpt   30      890,534 ±     60,436  MB/sec
- * java8util_decode:·gc.churn.PS_Eden_Space.norm                       thrpt   30      237,024 ±     13,794    B/op
- * java8util_decode:·gc.churn.PS_Survivor_Space                        thrpt   30        0,089 ±      0,033  MB/sec
- * java8util_decode:·gc.churn.PS_Survivor_Space.norm                   thrpt   30        0,024 ±      0,009    B/op
- * java8util_decode:·gc.count                                          thrpt   30      262,000               counts
- * java8util_decode:·gc.time                                           thrpt   30      234,000                   ms
- * java8util_encode                                                    thrpt   30  9612305,476 ± 220981,958   ops/s
- * java8util_encode:·gc.alloc.rate                                     thrpt   30     1173,273 ±     26,984  MB/sec
- * java8util_encode:·gc.alloc.rate.norm                                thrpt   30      192,000 ±      0,001    B/op
- * java8util_encode:·gc.churn.PS_Eden_Space                            thrpt   30     1181,711 ±     81,771  MB/sec
- * java8util_encode:·gc.churn.PS_Eden_Space.norm                       thrpt   30      193,404 ±     12,663    B/op
- * java8util_encode:·gc.churn.PS_Survivor_Space                        thrpt   30        0,075 ±      0,029  MB/sec
- * java8util_encode:·gc.churn.PS_Survivor_Space.norm                   thrpt   30        0,012 ±      0,005    B/op
- * java8util_encode:·gc.count                                          thrpt   30      211,000               counts
- * java8util_encode:·gc.time                                           thrpt   30      218,000                   ms
- * javax_xml_Datatyeconverter_decode                                   thrpt   30  7659230,514 ± 471490,259   ops/s
- * javax_xml_Datatyeconverter_decode:·gc.alloc.rate                    thrpt   30      350,477 ±     21,749  MB/sec
- * javax_xml_Datatyeconverter_decode:·gc.alloc.rate.norm               thrpt   30       72,000 ±      0,001    B/op
- * javax_xml_Datatyeconverter_decode:·gc.churn.PS_Eden_Space           thrpt   30      360,302 ±     59,795  MB/sec
- * javax_xml_Datatyeconverter_decode:·gc.churn.PS_Eden_Space.norm      thrpt   30       74,257 ±     11,737    B/op
- * javax_xml_Datatyeconverter_decode:·gc.churn.PS_Survivor_Space       thrpt   30        0,032 ±      0,017  MB/sec
- * javax_xml_Datatyeconverter_decode:·gc.churn.PS_Survivor_Space.norm  thrpt   30        0,007 ±      0,003    B/op
- * javax_xml_Datatyeconverter_decode:·gc.count                         thrpt   30       58,000               counts
- * javax_xml_Datatyeconverter_decode:·gc.time                          thrpt   30       49,000                   ms
- * javax_xml_Datatyeconverter_encode                                   thrpt   30  9158803,189 ± 495140,896   ops/s
- * javax_xml_Datatyeconverter_encode:·gc.alloc.rate                    thrpt   30     1351,231 ±     73,306  MB/sec
- * javax_xml_Datatyeconverter_encode:·gc.alloc.rate.norm               thrpt   30      232,000 ±      0,001    B/op
- * javax_xml_Datatyeconverter_encode:·gc.churn.PS_Eden_Space           thrpt   30     1357,677 ±     72,786  MB/sec
- * javax_xml_Datatyeconverter_encode:·gc.churn.PS_Eden_Space.norm      thrpt   30      233,407 ±      7,243    B/op
- * javax_xml_Datatyeconverter_encode:·gc.churn.PS_Survivor_Space       thrpt   30        0,086 ±      0,025  MB/sec
- * javax_xml_Datatyeconverter_encode:·gc.churn.PS_Survivor_Space.norm  thrpt   30        0,015 ±      0,004    B/op
- * javax_xml_Datatyeconverter_encode:·gc.count                         thrpt   30      274,000               counts
- * javax_xml_Datatyeconverter_encode:·gc.time                          thrpt   30      291,000                   ms
- * springBase64Utils_decode                                            thrpt   30  5080874,829 ± 271818,921   ops/s
- * springBase64Utils_decode:·gc.alloc.rate                             thrpt   30     1188,790 ±     63,622  MB/sec
- * springBase64Utils_decode:·gc.alloc.rate.norm                        thrpt   30      368,000 ±      0,001    B/op
- * springBase64Utils_decode:·gc.churn.PS_Eden_Space                    thrpt   30     1192,999 ±    140,973  MB/sec
- * springBase64Utils_decode:·gc.churn.PS_Eden_Space.norm               thrpt   30      369,042 ±     37,058    B/op
- * springBase64Utils_decode:·gc.churn.PS_Survivor_Space                thrpt   30        0,066 ±      0,020  MB/sec
- * springBase64Utils_decode:·gc.churn.PS_Survivor_Space.norm           thrpt   30        0,021 ±      0,006    B/op
- * springBase64Utils_decode:·gc.count                                  thrpt   30      160,000               counts
- * springBase64Utils_decode:·gc.time                                   thrpt   30      214,000                   ms
- * springBase64Utils_encode                                            thrpt   30  7481073,916 ± 174164,409   ops/s
- * springBase64Utils_encode:·gc.alloc.rate                             thrpt   30     1103,437 ±     25,724  MB/sec
- * springBase64Utils_encode:·gc.alloc.rate.norm                        thrpt   30      232,000 ±      0,001    B/op
- * springBase64Utils_encode:·gc.churn.PS_Eden_Space                    thrpt   30     1126,065 ±     78,470  MB/sec
- * springBase64Utils_encode:·gc.churn.PS_Eden_Space.norm               thrpt   30      236,731 ±     15,253    B/op
- * springBase64Utils_encode:·gc.churn.PS_Survivor_Space                thrpt   30        0,062 ±      0,026  MB/sec
- * springBase64Utils_encode:·gc.churn.PS_Survivor_Space.norm           thrpt   30        0,013 ±      0,005    B/op
- * springBase64Utils_encode:·gc.count                                  thrpt   30      184,000               counts
- * springBase64Utils_encode:·gc.time                                   thrpt   30      152,000                   ms
- * sunMisc_decode_New                                                  thrpt   30   471740,209 ±  20009,663   ops/s
- * sunMisc_decode_New:·gc.alloc.rate                                   thrpt   30      247,190 ±     10,511  MB/sec
- * sunMisc_decode_New:·gc.alloc.rate.norm                              thrpt   30      824,004 ±      0,006    B/op
- * sunMisc_decode_New:·gc.churn.PS_Eden_Space                          thrpt   30      247,632 ±     31,771  MB/sec
- * sunMisc_decode_New:·gc.churn.PS_Eden_Space.norm                     thrpt   30      826,186 ±    101,835    B/op
- * sunMisc_decode_New:·gc.churn.PS_Survivor_Space                      thrpt   30        0,058 ±      0,024  MB/sec
- * sunMisc_decode_New:·gc.churn.PS_Survivor_Space.norm                 thrpt   30        0,193 ±      0,081    B/op
- * sunMisc_decode_New:·gc.count                                        thrpt   30      161,000               counts
- * sunMisc_decode_New:·gc.time                                         thrpt   30      190,000                   ms
- * sunMisc_decode_Shared                                               thrpt   30   455591,541 ±  13323,007   ops/s
- * sunMisc_decode_Shared:·gc.alloc.rate                                thrpt   30      227,081 ±      6,631  MB/sec
- * sunMisc_decode_Shared:·gc.alloc.rate.norm                           thrpt   30      784,004 ±      0,006    B/op
- * sunMisc_decode_Shared:·gc.churn.PS_Eden_Space                       thrpt   30      224,158 ±     12,031  MB/sec
- * sunMisc_decode_Shared:·gc.churn.PS_Eden_Space.norm                  thrpt   30      774,566 ±     41,097    B/op
- * sunMisc_decode_Shared:·gc.churn.PS_Survivor_Space                   thrpt   30        0,078 ±      0,019  MB/sec
- * sunMisc_decode_Shared:·gc.churn.PS_Survivor_Space.norm              thrpt   30        0,271 ±      0,065    B/op
- * sunMisc_decode_Shared:·gc.count                                     thrpt   30      206,000               counts
- * sunMisc_decode_Shared:·gc.time                                      thrpt   30      189,000                   ms
- * sunMisc_encode_New                                                  thrpt   30   417641,108 ±  14716,609   ops/s
- * sunMisc_encode_New:·gc.alloc.rate                                   thrpt   30     6728,447 ±    238,234  MB/sec
- * sunMisc_encode_New:·gc.alloc.rate.norm                              thrpt   30    25336,004 ±      0,006    B/op
- * sunMisc_encode_New:·gc.churn.PS_Eden_Space                          thrpt   30     6753,520 ±    330,963  MB/sec
- * sunMisc_encode_New:·gc.churn.PS_Eden_Space.norm                     thrpt   30    25419,090 ±    706,806    B/op
- * sunMisc_encode_New:·gc.churn.PS_Survivor_Space                      thrpt   30        0,097 ±      0,034  MB/sec
- * sunMisc_encode_New:·gc.churn.PS_Survivor_Space.norm                 thrpt   30        0,368 ±      0,127    B/op
- * sunMisc_encode_New:·gc.count                                        thrpt   30      277,000               counts
- * sunMisc_encode_New:·gc.time                                         thrpt   30      476,000                   ms
- * sunMisc_encode_Shared                                               thrpt   30   429409,128 ±  14102,286   ops/s
- * sunMisc_encode_Shared:·gc.alloc.rate                                thrpt   30     6912,155 ±    227,193  MB/sec
- * sunMisc_encode_Shared:·gc.alloc.rate.norm                           thrpt   30    25320,004 ±      0,006    B/op
- * sunMisc_encode_Shared:·gc.churn.PS_Eden_Space                       thrpt   30     6918,856 ±    296,661  MB/sec
- * sunMisc_encode_Shared:·gc.churn.PS_Eden_Space.norm                  thrpt   30    25337,894 ±    566,604    B/op
- * sunMisc_encode_Shared:·gc.churn.PS_Survivor_Space                   thrpt   30        0,105 ±      0,025  MB/sec
- * sunMisc_encode_Shared:·gc.churn.PS_Survivor_Space.norm              thrpt   30        0,385 ±      0,092    B/op
- * sunMisc_encode_Shared:·gc.count                                     thrpt   30      320,000               counts
- * sunMisc_encode_Shared:·gc.time                                      thrpt   30      374,000                   ms
+ * Benchmark                           Mode  Cnt     Score     Error  Units
+ * java8util_decode                   thrpt   30  24901327 ±  732628  ops/s
+ * java8util_encode                   thrpt   30  42275097 ± 1445483  ops/s
+ * javax_xml_Datatyeconverter_decode  thrpt   30  31974184 ± 1620874  ops/s
+ * javax_xml_Datatyeconverter_encode  thrpt   30  37667396 ± 1040602  ops/s
+ * sunMisc_decode_New                 thrpt   30   1968543 ±   32656  ops/s
+ * sunMisc_decode_Shared              thrpt   30   1790385 ±   22195  ops/s
+ * sunMisc_encode_New                 thrpt   30    599063 ±    7482  ops/s
+ * sunMisc_encode_Shared              thrpt   30    589989 ±   11087  ops/s
+ *
  */
 /**
  * @author Michael Frank
