@@ -12,6 +12,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
+import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
@@ -36,14 +37,22 @@ Most of the time "optimizations" are a tradeoff, depend on workload (numberOfWor
 
 Please refer to the descriptions provided alongside the implementation for further details.
 
+
+Benchmark
+
+
+
+
+
 Benchmark(win7-openjdk-1.8.0_161)
                                 10   1000  10000     10  1000 10000 #<-Number of words
                              ns/op  ns/op  ns/op   b/op  b/op  b/op
-base                           510   5325   5477     24    24    24 # base
-twoLoops_newTempArray          491   5776   7713     80  4040 40040 # @10 Words shows no improvements, @10000 words performance gets worse -> gc-pressure (See results form gc-profiler)
-twoLoops_cachedTempArray       541   5493   5433     24    24    24 # show no significant effect - Failed to achieve improvement but implementation is more complicated
-runMarkovChain                 346   3931   4112                    # finally faster
-flatRunMarkovChain             285   3053   2921                    # very compact data structure - more cpu cache friendly - a nightmare to debug ;-)
+base                           524   5905   5933    328  3441  3441 # base
+twoLoops_newTempArray          567   6497   8882    384  7457 43454 # @10 Words shows no improvements, @10000 words performance gets worse -> gc-pressure (See results form gc-profiler)
+twoLoops_cachedTempArray       549   6353   6580    328  3441  3444 # show no significant effect - Failed to achieve improvement but implementation is more complicated
+runMarkovChain                 354   3939   4127      0     0     0 # finally faster - no gc at all :)
+flatRunMarkovChain             305   3314   3114      0     0     0 # very compact data structure - more cpu cache friendly - a nightmare to debug ;-)
+
 
 
  */
@@ -57,7 +66,7 @@ flatRunMarkovChain             285   3053   2921                    # very compa
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Threads(1)
-@Fork(1)//demo=1; normally run with fork's >= 3
+@Fork(3)//demo=1; normally run with fork's >= 3
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @State(Scope.Thread)//<-very important this time
@@ -124,12 +133,18 @@ public class SimpleMarkovChainBenchmarkJMH {
         flatRunMarkovChain.generate(sb, numberOfWords);
         b.consume(sb);
     }
+
+
+
+
     public interface MarkovChainIF {
         int NON_WORD = -1;
         String WHITE_SPACE = " ";
 
         void generate(StringBuilder sb, int numberOfWords);
     }
+
+
 
     static class MarkovChain implements MarkovChainIF {
 
@@ -281,6 +296,7 @@ public class SimpleMarkovChainBenchmarkJMH {
         }
     }
 
+
     public static class DirectIndexingRunMarkovChain implements MarkovChainIF {
         protected final State[] states; //transitionIndexes are indexes directly back into this State[]
         protected final State startState;
@@ -366,6 +382,8 @@ public class SimpleMarkovChainBenchmarkJMH {
     }
 
 
+
+
     public static class FlatDirectIndexingRunMarkovChain extends DirectIndexingRunMarkovChain {
 
         private static final int DICTIDX_OFFSET = 0;
@@ -445,7 +463,9 @@ public class SimpleMarkovChainBenchmarkJMH {
         }
     }
 
-    static class BiGram {
+
+
+    public static class BiGram {
         private int first;
         private int second;
 
@@ -484,6 +504,8 @@ public class SimpleMarkovChainBenchmarkJMH {
         }
     }
 
+
+
     public static void main(String[] args) throws RunnerException {
         //for xperfas/WinPerfAsmProfiler
         System.setProperty("jmh.perfasm.xperf.dir", "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit");
@@ -510,7 +532,7 @@ public class SimpleMarkovChainBenchmarkJMH {
                 // Profilers
                 //############
                 //commonly used profilers:
-                //.addProfiler(GCProfiler.class)
+                .addProfiler(GCProfiler.class)
                 //.addProfiler(StackProfiler.class)
                 //.addProfiler(HotspotRuntimeProfiler.class)
                 //.addProfiler(HotspotMemoryProfiler.class)

@@ -35,15 +35,31 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
     <groupId>de.frank</groupId>
     <artifactId>jmh-introduction</artifactId>
-    <version>1.0</version>
+    <version>1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>JMH benchmark sample: Java</name>
+    <name>JMH benchmarks: intro, basic benchmarks, algorithms and some architectural support benchmarks</name>
 
     <!--
        This is the demo/sample template build script for building Java benchmarks with JMH.
        Edit as needed.
     -->
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <javac.target>1.8</javac.target>
+        <uberjar.name>benchmarks</uberjar.name>
+
+
+        <jmh.version>1.21</jmh.version>
+
+        <spring-core.version>5.0.8.RELEASE</spring-core.version>
+        <dsiutils.version>2.4.2</dsiutils.version>
+        <commons-codec.version>1.11</commons-codec.version>
+        <asciitable.version>0.3.2</asciitable.version>
+        <jackson-databind.version>2.9.5</jackson-databind.version>
+    </properties>
+
 
     <dependencies>
         <dependency>
@@ -62,24 +78,24 @@ THE POSSIBILITY OF SUCH DAMAGE.
         <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>dsiutils</artifactId>
-            <version>2.4.2</version>
+            <version>${dsiutils.version}</version>
         </dependency>
 
         <!-- Base64EncodersDecodersJMH-->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>5.0.6.RELEASE</version>
+            <version>${spring-core.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.11</version>
+            <version>${commons-codec.version}</version>
         </dependency>
         <dependency>
             <groupId>de.vandermeer</groupId>
             <artifactId>asciitable</artifactId>
-            <version>0.3.2</version>
+            <version>${asciitable.version}</version>
         </dependency>
 
 
@@ -87,30 +103,11 @@ THE POSSIBILITY OF SUCH DAMAGE.
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.5</version>
+            <version>${jackson-databind.version}</version>
         </dependency>
 
 
     </dependencies>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <!--
-            JMH version to use with this project.
-          -->
-        <jmh.version>1.20</jmh.version>
-
-        <!--
-            Java source/target to use for compilation.
-          -->
-        <javac.target>1.8</javac.target>
-
-        <!--
-            Name of the benchmark Uber-JAR to generate.
-          -->
-        <uberjar.name>benchmarks</uberjar.name>
-    </properties>
 
     <build>
         <plugins>

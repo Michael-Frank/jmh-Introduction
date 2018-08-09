@@ -1,6 +1,5 @@
 package de.frank.jmh.basic;
 
-import com.sun.istack.internal.NotNull;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -162,7 +161,7 @@ public class AtomicReferenceFieldUpdater {
 
     public static class SampleNode implements SampleNodeIF<SampleNode> {
 
-        @NotNull
+
         private final String name; // FCQN.methodName - is unique for each node
         private AtomicLong invocations = new AtomicLong();
         // save memory on leaf nodes by not creating a children map until required
@@ -288,7 +287,7 @@ public class AtomicReferenceFieldUpdater {
 
     public static class AtomicRefSampleNode implements SampleNodeIF<AtomicRefSampleNode> {
 
-        @NotNull
+
         private final String name; // FCQN.methodName - is unique for each node
         private AtomicLong invocations = new AtomicLong();
         // save memory on leaf nodes by not creating a children map until required
