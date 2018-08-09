@@ -17,9 +17,12 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -27,36 +30,22 @@ import java.util.concurrent.TimeUnit;
 Disclaimer: There are ways to really optimize this - but this is out of scope for this showcase.
 
 What this should teach you: "optimizations" can sound good in your head, but can turn out
- - bad and (like "twoLoops_newTempArray")
- - provide no improvements - (like twoLoops_cachedTemArray)
-Most of the time, "optimizations" are in reality  a tradeoff, depend on workload (numberOfWords in this case), the the
-negatives may cancel the benefits from the positive.
+ - bad - like "twoLoops_newTempArray"
+ - provide no improvements - like twoLoops_cachedTempArray
+Most of the time "optimizations" are a tradeoff, depend on workload (numberOfWords in this case) and the negatives may cancel the benefits from the positive.
 
 Please refer to the descriptions provided alongside the implementation for further details.
 
-Benchmark(win7-openjdk-1.8.0_121)                          (numberOfWords)  Mode  Cnt      Score      Error   Units
-base                                                                   10  avgt   15    457,041 ±   21,534   ns/op #base
-twoLoops_newTempArray                                                  10  avgt   15    459,436 ±   23,109   ns/op #small numberOfWords values show no significant effect
-twoLoops_cachedTemArray                                                10  avgt   15    460,761 ±   22,979   ns/op #small numberOfWords values show no significant effect
+Benchmark(win7-openjdk-1.8.0_161)
+                                10   1000  10000     10  1000 10000 #<-Number of words
+                             ns/op  ns/op  ns/op   b/op  b/op  b/op
+base                           510   5325   5477     24    24    24 # base
+twoLoops_newTempArray          491   5776   7713     80  4040 40040 # @10 Words shows no improvements, @10000 words performance gets worse -> gc-pressure (See results form gc-profiler)
+twoLoops_cachedTempArray       541   5493   5433     24    24    24 # show no significant effect - Failed to achieve improvement but implementation is more complicated
+runMarkovChain                 346   3931   4112                    # finally faster
+flatRunMarkovChain             285   3053   2921                    # very compact data structure - more cpu cache friendly - a nightmare to debug ;-)
 
-base                                                                 1000  avgt   15   5058,576 ±  236,098   ns/op #base
-twoLoops_newTempArray                                                1000  avgt   15   5135,198 ±  192,736   ns/op #small numberOfWords values show no significant effect
-twoLoops_cachedTemArray                                              1000  avgt   15   4989,976 ±  275,330   ns/op #small numberOfWords values show no significant effect
 
-base                                                                10000  avgt   15   4760,743 ±  148,249   ns/op #base
-twoLoops_newTempArray                                               10000  avgt   15   7485,091 ±  531,489   ns/op #BAD - performance gets worse -> gc-preasure (See results form gc-profiler)
-twoLoops_cachedTemArray                                             10000  avgt   15   5334,929 ±  449,339   ns/op #Failed to achive improvement.
-
-//GC
-base:·gc.alloc.rate.norm                                               10  avgt   15     24,000 ±    0,001    B/op #base
-twoLoops_newTempArray:·gc.alloc.rate.norm                              10  avgt   15     80,000 ±    0,001    B/op #BAD
-twoLoops_cachedTemArray:·gc.alloc.rate.norm                            10  avgt   15     24,000 ±    0,001    B/op #ok again
-base:·gc.alloc.rate.norm                                             1000  avgt   15     24,001 ±    0,001    B/op #base
-twoLoops_newTempArray:·gc.alloc.rate.norm                            1000  avgt   15   4040,001 ±    0,001    B/op #BAD
-twoLoops_cachedTemArray:·gc.alloc.rate.norm                          1000  avgt   15     24,001 ±    0,001    B/op #ok again
-base:·gc.alloc.rate.norm                                            10000  avgt   15     24,001 ±    0,001    B/op #base
-twoLoops_newTempArray:·gc.alloc.rate.norm                           10000  avgt   15  40040,001 ±    0,001    B/op #BAD
-twoLoops_cachedTemArray:·gc.alloc.rate.norm                         10000  avgt   15     24,001 ±    0,001    B/op #ok again
  */
 
 /**
@@ -68,9 +57,9 @@ twoLoops_cachedTemArray:·gc.alloc.rate.norm                         10000  avgt
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Threads(1)
-@Fork(3)//demo=1; normally run with fork's >= 3
-@Warmup(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
+@Fork(1)//demo=1; normally run with fork's >= 3
+@Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @State(Scope.Thread)//<-very important this time
 public class SimpleMarkovChainBenchmarkJMH {
 
@@ -99,6 +88,9 @@ public class SimpleMarkovChainBenchmarkJMH {
                     "The light at the back of the raindrop does not undergo total internal reflection, and some light does emerge from the back. However, light coming out the back of the raindrop does not create a rainbow between the observer and the sun because spectra emitted from the back of the raindrop do not have a maximum of intensity, as the other visible rainbows do, and thus the colours blend together rather than forming a rainbow.\n" +
                     "A rainbow does not exist at one particular location. Many rainbows exist; however, only one can be seen depending on the particular observer's viewpoint as droplets of light illuminated by the sun. All raindrops refract and reflect the sunlight in the same way, but only the light from some raindrops reaches the observer's eye. This light is what constitutes the rainbow for that observer. The whole system composed by the sun's rays, the observer's head, and the (spherical) water drops has an axial symmetry around the axis through the observer's head and parallel to the sun's rays. The rainbow is curved because the set of all the raindrops that have the right angle between the observer, the drop, and the sun, lie on a cone pointing at the sun with the observer at the tip. The base of the cone forms a circle at an angle of 40–42° to the line between the observer's head and their shadow but 50% or more of the circle is below the horizon, unless the observer is sufficiently far above the earth's surface to see it all, for example in an aeroplane (see above).[21][22] Alternatively, an observer with the right vantage point may see the full circle in a fountain or waterfall spray.\n");
 
+    private static DirectIndexingRunMarkovChain runMarkovChain = new DirectIndexingRunMarkovChain(markov);
+    private static FlatDirectIndexingRunMarkovChain flatRunMarkovChain = new FlatDirectIndexingRunMarkovChain(markov);
+
     @Benchmark
     public void base(Blackhole b) {
         sb.setLength(0);//reset
@@ -114,16 +106,34 @@ public class SimpleMarkovChainBenchmarkJMH {
     }
 
     @Benchmark
-    public void twoLoops_cachedTemArray(Blackhole b) {
+    public void twoLoops_cachedTempArray(Blackhole b) {
         sb.setLength(0);//reset
         markov.generateTwoLoopsCached(sb, numberOfWords);
         b.consume(sb);
     }
 
-    static class MarkovChain {
-        private static final int NON_WORD = -1;
-        private static final String WHITE_SPACE = " ";
-        //BigGram: <wordDictIDX, wordDictIDX>  List<WordDictIDX>
+    @Benchmark
+    public void runMarkovChain(Blackhole b) {
+        sb.setLength(0);//reset
+        runMarkovChain.generate(sb, numberOfWords);
+        b.consume(sb);
+    }
+    @Benchmark
+    public void flatRunMarkovChain(Blackhole b) {
+        sb.setLength(0);//reset
+        flatRunMarkovChain.generate(sb, numberOfWords);
+        b.consume(sb);
+    }
+    public interface MarkovChainIF {
+        int NON_WORD = -1;
+        String WHITE_SPACE = " ";
+
+        void generate(StringBuilder sb, int numberOfWords);
+    }
+
+    static class MarkovChain implements MarkovChainIF {
+
+        //BigGram: <wordDictIDX, wordDictIDX> -> List<WordDictIDX>
         private Map<BiGram, List<Integer>> stateTrans;
         private List<String> dict;
 
@@ -131,7 +141,6 @@ public class SimpleMarkovChainBenchmarkJMH {
             this.stateTrans = lookup;
             this.dict = dict;
         }
-
 
         public static MarkovChain fromInput(String s) {
 
@@ -186,6 +195,7 @@ public class SimpleMarkovChainBenchmarkJMH {
         }
 
         //two tasks in one loop: 1) walk the state-transitions table and 2) also translate from index to Word using Dict
+        @Override
         public void generate(StringBuilder sb, int numberOfWords) {
             BiGram state = new BiGram(NON_WORD, NON_WORD);
             ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -271,6 +281,170 @@ public class SimpleMarkovChainBenchmarkJMH {
         }
     }
 
+    public static class DirectIndexingRunMarkovChain implements MarkovChainIF {
+        protected final State[] states; //transitionIndexes are indexes directly back into this State[]
+        protected final State startState;
+        protected final int startSateIDX;
+        protected List<String> dict;
+
+        public class State {
+            int dictIDX;
+            int[] transitionIndexes;
+
+            @Override
+            public String toString() {
+                return "State{" +
+                        "dictIDX=" + dictIDX +
+                        ", transitionIndexes=" + Arrays.toString(transitionIndexes) +
+                        '}';
+            }
+        }
+
+        public DirectIndexingRunMarkovChain(MarkovChain chain) {
+            this.dict = chain.dict;
+
+            Map<BiGram, Integer> tmpIndexLookup = new HashMap<>();
+            State[] states = new State[chain.stateTrans.size()];
+            int index = 0;
+
+            //initial transformation of map to State[] and assign indexes for each BiGram(=State)
+            for (Entry<BiGram, List<Integer>> e : chain.stateTrans.entrySet()) {
+                if (!tmpIndexLookup.containsKey(e.getKey())) {
+                    State s = new State();
+                    s.dictIDX = e.getKey().second;
+                    states[index] = s;
+                    tmpIndexLookup.put(e.getKey(), index++);
+                }
+            }
+
+            //direct indexing of state->state transitions inside of state[]
+            for (Entry<BiGram, List<Integer>> e : chain.stateTrans.entrySet()) {
+                int[] trans = new int[e.getValue().size()];
+                states[tmpIndexLookup.get(e.getKey())].transitionIndexes = trans;
+
+                for (int i = 0; i < trans.length; i++) {
+                    int curTrans = e.getValue().get(i);
+                    if (curTrans == NON_WORD) {
+                        trans[i] = NON_WORD;
+                    } else {
+                        trans[i] = tmpIndexLookup.get(new BiGram(e.getKey().second, curTrans));
+                    }
+                }
+            }
+
+            this.states = states;
+            this.startSateIDX = tmpIndexLookup.get(new BiGram(NON_WORD, NON_WORD));
+            this.startState = states[startSateIDX];
+
+        }
+
+        @Override
+        public void generate(StringBuilder sb, int numberOfWords) {
+            ThreadLocalRandom r = ThreadLocalRandom.current();
+            State curState = startState;
+            for (int i = 0; i < numberOfWords; i++) {
+
+                int transition = curState.transitionIndexes[r.nextInt(curState.transitionIndexes.length)];
+
+                if (transition == NON_WORD) {
+                    break;
+                }
+                curState = states[transition];
+
+                appendWord(sb, dict.get(curState.dictIDX));
+            }
+        }
+
+        private void appendWord(StringBuilder sb, String word) {
+            //single token like ,.?!" - remove previous whitespae
+            if (word.length() == 1) {
+                sb.setLength(Math.max(0, sb.length() - 1));
+            }
+            sb.append(word);
+            sb.append(' ');
+        }
+    }
+
+
+    public static class FlatDirectIndexingRunMarkovChain extends DirectIndexingRunMarkovChain {
+
+        private static final int DICTIDX_OFFSET = 0;
+        private static final int TRANSITIONS_LEN_OFFEST = 1;
+        private static final int TRANSITIONS_OFFEST = 2;
+        private final int stateTransStartState;
+        private final int[] stateTrans;
+
+        public FlatDirectIndexingRunMarkovChain(MarkovChain chain) {
+            super(chain);
+            //flatMap states <dictIDX,len,trans1,trans2,...><dictIDX,len,trans1,trans2,...>...
+            int len = Arrays.stream(states).mapToInt(x -> x.transitionIndexes.length + 2).sum();
+            int[] stateTrans = new int[len];
+            int[] stateOffsets = new int[states.length];
+            int curIDX = 0;
+            for (int i = 0; i < states.length; i++) {
+                stateOffsets[i] = curIDX;
+                State s = states[i];
+                stateTrans[curIDX + DICTIDX_OFFSET] = s.dictIDX;
+                stateTrans[curIDX + TRANSITIONS_LEN_OFFEST] = s.transitionIndexes.length;
+                System.arraycopy(s.transitionIndexes, 0, stateTrans, curIDX+TRANSITIONS_OFFEST, s.transitionIndexes.length);
+                curIDX += (2 + s.transitionIndexes.length);
+
+            }
+
+            //translate transitionIndexes to indexes in flatmap
+            for (int stateIDX = 0; stateIDX < states.length; stateIDX++) {
+                int curStateOffset = stateOffsets[stateIDX];
+                int transitions = stateTrans[curStateOffset + TRANSITIONS_LEN_OFFEST];
+                for (int transIDX = 0; transIDX < transitions; transIDX++) {
+                    int transitionIDX = curStateOffset + TRANSITIONS_OFFEST + transIDX;
+                    if (stateTrans[transitionIDX] != NON_WORD) {
+                        stateTrans[transitionIDX] = stateOffsets[stateTrans[transitionIDX]];
+                    }
+                }
+            }
+            this.stateTrans = stateTrans;
+            this.stateTransStartState = stateOffsets[super.startSateIDX];
+        }
+
+        @Override
+        public void generate(StringBuilder sb, int numberOfWords) {
+            ThreadLocalRandom r = ThreadLocalRandom.current();
+            int curState = stateTransStartState;
+            for (int i = 0; i < numberOfWords; i++) {
+                int nextTransitionIDX = r.nextInt(getTransitionsLength(curState));
+                int nextStateIDX = getTransitionToNextState(curState, nextTransitionIDX);
+
+                if (nextStateIDX == NON_WORD) {
+                    break;
+                }
+                curState = nextStateIDX;
+                appendWord(sb, dict.get(getDictIdx(curState)));
+            }
+        }
+
+        //could construct a flyweight around this flatmaped data structure
+        private int getDictIdx(int curState) {
+            return stateTrans[curState + DICTIDX_OFFSET];
+        }
+
+        private int getTransitionsLength(int curState) {
+            return stateTrans[curState + TRANSITIONS_LEN_OFFEST];
+        }
+
+        private int getTransitionToNextState(int curState, int transitionIdx) {
+            return stateTrans[curState + TRANSITIONS_OFFEST + transitionIdx];
+        }
+
+        private void appendWord(StringBuilder sb, String word) {
+            //single token like ,.?!" - remove previous whitespae
+            if (word.length() == 1) {
+                sb.setLength(Math.max(0, sb.length() - 1));
+            }
+            sb.append(word);
+            sb.append(' ');
+        }
+    }
+
     static class BiGram {
         private int first;
         private int second;
@@ -294,22 +468,19 @@ public class SimpleMarkovChainBenchmarkJMH {
             return "[" + first + "," + second + "]";
         }
 
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
+            if (!(o instanceof BiGram)) return false;
             BiGram biGram = (BiGram) o;
-
-            if (first != biGram.first) return false;
-            return second == biGram.second;
+            return first == biGram.first &&
+                    second == biGram.second;
         }
 
         @Override
         public int hashCode() {
-            int result = first;
-            result = 31 * result + second;
-            return result;
+            return Objects.hash(first, second);
         }
     }
 
@@ -325,6 +496,13 @@ public class SimpleMarkovChainBenchmarkJMH {
             markov.generate(sb, 1000);
             System.out.println(sb);
         }
+        sb.setLength(0);
+        runMarkovChain.generate(sb, 1000);
+        System.out.println("DirectIndexingRunMarkovChain: " + sb);
+        sb.setLength(0);
+        flatRunMarkovChain.generate(sb, 1000);
+        System.out.println("FlatDirectIndexingRunMarkovChain: " + sb);
+
 
         new Runner(new OptionsBuilder()
                 .include(SimpleMarkovChainBenchmarkJMH.class.getName() + ".*")

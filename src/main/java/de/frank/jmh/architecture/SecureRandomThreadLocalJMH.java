@@ -22,13 +22,18 @@ import java.util.concurrent.TimeUnit;
 
 /*--
 
-Benchmark                            Score  Units
-newEachTime                      1.111.351  ops/s # not bad for SecureRandom.instance() each time
-shared                             363.403  ops/s # the shared version suffers from lock contention in  public synchronized void engineNextBytes(byte[] result)
-threadLocal                      1.957.664  ops/s # winner - A Per-thread cached SecureRandom is much faster then sharing a single cached instance
-newEachTime:·gc.alloc.rate.norm      1.385   B/op
-shared:·gc.alloc.rate.norm             400   B/op
-threadLocal:·gc.alloc.rate.norm        400   B/op # winner
+Throughput benchmark          Score Units
+threadLocal               1.957.664 ops/s  # winner - A Per-thread cached SecureRandom is much faster then sharing a single cached instance
+shared                      363.403 ops/s  # the shared version suffers from lock contention in public synchronized void engineNextBytes(byte[] result)
+getInstance               1.111.351 ops/s  # creating a new SecureRandom.instance() each time is surprisingly fast
+
+
+gc.alloc.rate.norm benchmark  Score Units
+threadLocal                     400 B/op  # winner
+shared                          400 B/op
+getInstance                   1.385 B/op
+
+
  */
 
 /**
@@ -48,8 +53,6 @@ public class SecureRandomThreadLocalJMH {
     public static class RandomHolder {
         public static final SecureRandom ONE_FOR_ALL_SECURE_RANDOM = getSecureRandom();
         public static final ThreadLocal<SecureRandom> TL_SECURE_RANDOM = ThreadLocal.withInitial(() -> getSecureRandom());
-
-
     }
 
     public static SecureRandom getSecureRandom() {
@@ -69,7 +72,7 @@ public class SecureRandomThreadLocalJMH {
 
 
     @Benchmark
-    public byte[] newEachTime(RandomHolder state) {
+    public byte[] getInstance(RandomHolder state) {
         try {
             byte[] r = new byte[128];
             SecureRandom.getInstance("SHA1PRNG").nextBytes(r);

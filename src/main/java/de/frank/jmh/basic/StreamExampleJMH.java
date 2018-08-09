@@ -49,15 +49,15 @@ Beware of hidden costs of seemingly simple methods, like in this case with .toLo
 char in the String O(n) and also has to create a copy of the String.
 
 First the numbers:
-Singlethreaded THROUGHPUT/s  higher is better
-         (len)->            100    10000  100000
-classic                70.254,3    350,3     3,4
-stream                 68.652,6    352,4     3,4
-parallelStream         28.709,1  1.259,1    13,9
+Single-threaded THROUGHPUT in ops/s - higher is better
+                          100  10000 100000 #<-list size
+classic                70.254    350      3
+stream                 68.652    352      3
+parallelStream         28.709  1.259     13
 --
-classic_fixed         832.263,1  2.213,0    16,1
-stream_fixed          496.389,4  2.082,8    17,5
-parallelStream_fixed   40.561,8  3.985,8    39,9
+classic_fixed         832.263  2.213     16
+stream_fixed          496.389  2.082     17
+parallelStream_fixed   40.561  3.985     39
 
 
 Nevertheless lets look at stream vs classic:
@@ -80,14 +80,14 @@ complex enough that the overhead is worth it? Sure you have CPU resources to spa
 
 For a better understanding of the issues with parallelStreams look at the multithreaded numbers
 
-Multithreaded THROUGHPUT/s  higher is better
-         (len)->            100   10000   100000
-classic                 286.829     1.883     15
-stream                  297.455     1.805     17
-parallelStream          145.954     1.791     17
-stream_fixed          1.569.788    10.913     51
-classic_fixed         1.626.222    10.983     47
-parallelStream_fixed    287.844     8.079     46
+Multi-threaded THROUGHPUT in ops/s - higher is better
+                            100     10000  100000 #<-list size
+classic                 286.829     1.883      15
+stream                  297.455     1.805      17
+parallelStream          145.954     1.791      17
+stream_fixed          1.569.788    10.913      51
+classic_fixed         1.626.222    10.983      47
+parallelStream_fixed    287.844     8.079      46
 
 */
 

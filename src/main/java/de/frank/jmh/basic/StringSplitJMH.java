@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /*--
-Results in ns/op
+Results in ns/op - lower is better
              len->     2     10      100  Average
 SingleChar            82    249    2.189      840 # java has a non-regex fast path for single char splits
 TwoChars             284    652    5.085    2.007 # this is internally a regex and thus slow - internally calls Pattern.compile each time

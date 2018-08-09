@@ -23,9 +23,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
-/*--                dataLen-> 20 200 2000
-newEachTime    20    4.126.463 ops/s    2.282.067 ops/s  330.163 ops/s #
-threadLocal    20    8.620.123 ops/s    2.542.658 ops/s  332.177 ops/s # caching is not much faster..
+/*--
+Througput  ops/s         20        200     2000  #<-dataLen
+newEachTime       4.126.463  2.282.067  330.163  #
+threadLocal       8.620.123  2.542.658  332.177  # caching is not much faster..
+
 newEachTime.gc.Norm        648 B/op           653 B/op       584 B/op  #
 threadLocal.gc.Norm         20 B/op            48 B/op        48 B/op  # but way more GC friendly (reduced GC times and GC Pauses!)
 
