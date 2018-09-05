@@ -1,5 +1,5 @@
 # jmh-Introduction
-Examples form my basic introduction to JMH and why you should use it.
+Examples form my basic introduction to JMH and why __you__ should start using JMH.
 
 Please read the project page of  [JMH - Java Microbenchmarking Harness](http://openjdk.java.net/projects/code-tools/jmh/)
 
