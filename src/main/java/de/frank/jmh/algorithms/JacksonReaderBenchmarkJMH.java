@@ -23,13 +23,14 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /*--
- It is totally thread-safe and saleable to reuse the  ObjectReader reader = new ObjectMapper().readerFor(Map.class);
-
+ It is thread-safe and saleable to reuse the  ObjectReader reader = new ObjectMapper().readerFor(Map.class);
+ Higher is Better
  Throughput in  ops/s          1         2          4          8         32 #numThreads
  newMapperPerCall         24.845    44.459     79.350    114.334    101.316
  sharedObjectMapper      429.138   821.334  1.402.759  1.622.020  1.610.938
- sharedObjectReade       434.012   804.545  1.379.722  1.716.694  1.739.768 #winner
+ sharedObjectReader      434.012   804.545  1.379.722  1.716.694  1.739.768 #winner
 
+ Lower is Better
  Per call in  us/op            1         2          4          8         32 #numThreads
  newMapperPerCall           53,7      54,2       63,7       90,0      386,7
  sharedObjectMapper          2,9       3,0        3,7        5,8       25,1

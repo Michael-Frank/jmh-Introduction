@@ -36,7 +36,7 @@ Some generators have special methods to generate bounded doubles, floats, ints a
 @ VM version: JDK 1.8.0_161, VM 25.161-b12
 @ Single Threaded
                                                  double       double          int          int        long
-                                      bool      bounded    unbounded      bounded    unbounded    unbounded        Average  Comment
+                                      bool      bounded    unbounded      bounded    unbounded    unbounded       Average # Comment
 JDK.Random                      84.530.322   40.726.804   41.015.961   71.972.563   83.968.432   41.933.529    60.691.269 # DONT EVER USE! - this is just plain bad. Use ThreadLocalRandom as dropin replacement.
 JDK.SplitableRandom            222.596.847  171.889.636  180.398.036  111.568.686  251.920.298  240.194.560   196.428.010 # splitMix64 - but lacks the jdk.Random "interface" and has a few shortcomings
 JDK.ThreadLocalRandom          228.848.173  192.477.756  202.704.545  115.587.554  245.179.387  240.212.027   204.168.240 # splitMix64 - VERY good - Prefer this one if you don't have special requirements.

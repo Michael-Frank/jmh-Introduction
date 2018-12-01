@@ -25,13 +25,13 @@ import java.util.concurrent.TimeUnit;
 
  Oracle JDK 1.8.0_161
  Run complete. Total time: 00:13:52
- Benchmark               Mode  Cnt       Score     Error  Units
- JDKrandomUUID          thrpt   30   1.387.488 ±  24.324  ops/s #uses SecureRandom
- JDKnewUUIDFrom2Longs   thrpt   30   2.682.555 ±  61.595  ops/s #own random but is still bad
- customUUID             thrpt   30  14.895.978 ± 350.588  ops/s far less overhead and faster
- customUUIDFrom2Longs   thrpt   30  14.821.319 ± 256.184  ops/s
- customUUIDProvidedRNG  thrpt   30  14.964.418 ± 428.048  ops/s
- customUUIDReuseBuffer  thrpt   30  24.378.762 ± 719.431  ops/s #if possible (re-)use a buffer - then this version runs with ZERO GC-Allocations
+ Benchmark               Mode  Cnt       Score     Error  Units # Comment
+ JDKrandomUUID          thrpt   30   1.387.488 ±  24.324  ops/s # uses SecureRandom internally
+ JDKnewUUIDFrom2Longs   thrpt   30   2.682.555 ±  61.595  ops/s # own random but is still bad
+ customUUID             thrpt   30  14.895.978 ± 350.588  ops/s # far less overhead and faster
+ customUUIDFrom2Longs   thrpt   30  14.821.319 ± 256.184  ops/s # use-case specific variant
+ customUUIDProvidedRNG  thrpt   30  14.964.418 ± 428.048  ops/s # use-case specific variant
+ customUUIDReuseBuffer  thrpt   30  24.378.762 ± 719.431  ops/s # if possible (re-)use a buffer - then this version runs with ZERO GC-Allocations
  */
 
 /**
