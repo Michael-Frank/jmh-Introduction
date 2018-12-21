@@ -24,12 +24,19 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
 /*--
-Througput  ops/s         20        200     2000  #<-dataLen
-newEachTime       4.126.463  2.282.067  330.163  #
-threadLocal       8.620.123  2.542.658  332.177  # caching is not much faster..
+The MessageDigest.getInstance("SHA-256") calls are surprisingly and allocate an reasonable amount of memory.
+The benefits of caching the MessageDigest instance are mostly visible in two cases
+- Optimizing Latency: less garbage create -> reduced GC times and GC Pauses  (only really shows when hashing small data chunks very frequently)
+- hashing LOTS of very small data blocks
 
-newEachTime.gc.Norm        648 B/op           653 B/op       584 B/op  #
-threadLocal.gc.Norm         20 B/op            48 B/op        48 B/op  # but way more GC friendly (reduced GC times and GC Pauses!)
+Throughput ops/s         20        200     2000  #<-dataLen
+newEachTime       4.126.463  2.282.067  330.163  #
+threadLocal       8.620.123  2.542.658  332.177  # much faster for small data - benefits diminish when hashing bigger junks.
+
+Allocations per Invocation in B/op:
+                         20        200     2000  #<-dataLen
+newEachTime.gc.Norm     648        653      584  #
+threadLocal.gc.Norm      20         48       48  # but way more GC friendly (reduced GC times and GC Pauses!)
 
 */
 
