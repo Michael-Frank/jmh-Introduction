@@ -46,7 +46,7 @@ import static java.lang.String.format;
  toArrayStreamString    36 ns/op  248 ns/op 346.462 ns/op  # sucks because of stream
  */
 @State(Scope.Thread)
-@Warmup(iterations = 10, time = 7, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 @BenchmarkMode(Mode.AverageTime)
