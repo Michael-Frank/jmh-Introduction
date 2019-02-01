@@ -1,20 +1,12 @@
 package de.frank.jmh.basic;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import sun.misc.SharedSecrets;
 
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
@@ -80,7 +72,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Thread)
 @Threads(1)
-public class MessageFormatVsStringFormatJMH {
+public class MessageFormatVsStringFormatJMHPreJava9 {
 
     private String param0 = "x-application/json";
     private String param1 = UUID.randomUUID().toString();
@@ -93,7 +85,7 @@ public class MessageFormatVsStringFormatJMH {
     public static void main(String[] args) throws RunnerException {
         verifyMethodsProduceSameResults();
         Options opt = new OptionsBuilder()//
-                .include(".*" + MessageFormatVsStringFormatJMH.class.getSimpleName() + ".*")//
+                .include(".*" + MessageFormatVsStringFormatJMHPreJava9.class.getSimpleName() + ".*")//
                 .addProfiler(GCProfiler.class).build();
         new Runner(opt).run();
     }
@@ -186,6 +178,73 @@ public class MessageFormatVsStringFormatJMH {
                 .toString();//
     }
 
+
+    //####################################################################
+    //####################################################################
+    //####################################################################
+    // Here be dragons...
+    // Some very special stuff - please dont do this :-) (its not worth it)
+    //####################################################################
+    //####################################################################
+    //####################################################################
+    @Benchmark
+    public String concatManualLoop_newStringUnsafe() {
+        char[] r = new char[188];
+        int count = 0;
+        int len;
+        String[] params = {"SomeToStringClass:\nparam0 ", param0, "\nparam1 ", param1, "\n param2 ",
+                param3, "\n param3 ", param2};
+
+        for (String str : params) {
+            len = str.length();
+            str.getChars(0, len, r, count);
+            count += len;
+        }
+
+        return SharedSecrets.getJavaLangAccess().newStringUnsafe(r);
+    }
+
+    @Benchmark
+    public String concatManualUnrolled_newStringUnsafe() {
+        char[] r = new char[188];
+        int count = 0;
+        int len;
+
+        len = "SomeToStringClass:\nparam0 ".length();
+        "SomeToStringClass:\nparam0 ".getChars(0, len, r, count);
+        count += len;
+
+        len = param0.length();
+        param0.getChars(0, len, r, count);
+        count += len;
+
+        len = "\nparam1 ".length();
+        "\nparam1 ".getChars(0, len, r, count);
+        count += len;
+
+        len = param1.length();
+        param1.getChars(0, len, r, count);
+        count += len;
+
+        len = "\n param2 ".length();
+        "\n param2 ".getChars(0, len, r, count);
+        count += len;
+
+        len = param3.length();
+        param3.getChars(0, len, r, count);
+        count += len;
+
+        len = "\n param3 ".length();
+        "\n param3 ".getChars(0, len, r, count);
+        count += len;
+
+        len = param2.length();
+        param2.getChars(0, len, r, count);
+        count += len;
+
+        return SharedSecrets.getJavaLangAccess().newStringUnsafe(r);
+    }
+
     // *insert into pre-filled* variant
     // This variant only works if the length of the tokens never changes!!!
     private int[] insertPos = {31, 59, 106, 152};
@@ -205,10 +264,10 @@ public class MessageFormatVsStringFormatJMH {
     // VERIFICATION
 
     private static void verifyMethodsProduceSameResults() {
-        MessageFormatVsStringFormatJMH b = new MessageFormatVsStringFormatJMH();
+        MessageFormatVsStringFormatJMHPreJava9 b = new MessageFormatVsStringFormatJMHPreJava9();
         String expected = b.concatString();
         System.out.println("Expected: " + expected);
-        Arrays.stream(MessageFormatVsStringFormatJMH.class.getMethods())
+        Arrays.stream(MessageFormatVsStringFormatJMHPreJava9.class.getMethods())
                 .filter(m -> m.getAnnotation(Benchmark.class) != null)
                 .forEach(method -> b.methodProducesExpectedResult(method, expected));
     }

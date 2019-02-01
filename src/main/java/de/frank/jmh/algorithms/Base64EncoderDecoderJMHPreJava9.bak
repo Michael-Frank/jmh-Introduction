@@ -1,22 +1,16 @@
 package de.frank.jmh.algorithms;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.springframework.util.Base64Utils;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -75,7 +69,10 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Benchmark) // Important to be Scope.Benchmark
 @Threads(1)
-public class Base64EncoderDecoderJMH {
+public class Base64EncoderDecoderJMHPreJava9 {
+
+    public BASE64Encoder sunEncoder = new BASE64Encoder();
+    public BASE64Decoder sunDecoder = new BASE64Decoder();
 
     @State(Scope.Benchmark)
     public static class MyState {
@@ -83,7 +80,7 @@ public class Base64EncoderDecoderJMH {
         public static final SecureRandom RANDOM = getSecureRandom();
 
         public byte[] rawData = newRandomByteArray(32);
-        public String base64 = Base64.getEncoder().encodeToString(rawData);
+        public String base64 = DatatypeConverter.printBase64Binary(rawData);
 
 
         private static byte[] newRandomByteArray(int i) {
@@ -103,13 +100,42 @@ public class Base64EncoderDecoderJMH {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
-                .include(".*" + Base64EncoderDecoderJMH.class.getSimpleName() + ".*")//
+                .include(".*" + Base64EncoderDecoderJMHPreJava9.class.getSimpleName() + ".*")//
                 .addProfiler(GCProfiler.class)//
                 .build();
         new Runner(opt).run();
     }
 
-   
+    @Benchmark
+    public String sunMisc_encode_New(MyState state) {
+        return new BASE64Encoder().encode(state.rawData);
+    }
+
+    @Benchmark
+    public String sunMisc_encode_Shared(MyState state) {
+        return sunEncoder.encode(state.rawData);
+    }
+
+    @Benchmark
+    public byte[] sunMisc_decode_New(MyState state) throws IOException {
+        return new BASE64Decoder().decodeBuffer(state.base64);
+    }
+
+    @Benchmark
+    public byte[] sunMisc_decode_Shared(MyState state) throws IOException {
+        return sunDecoder.decodeBuffer(state.base64);
+    }
+
+
+    @Benchmark
+    public String javax_xml_Datatyeconverter_encode(MyState state) {
+        return DatatypeConverter.printBase64Binary(state.rawData);
+    }
+
+    @Benchmark
+    public byte[] javax_xml_Datatyeconverter_decode(MyState state) {
+        return DatatypeConverter.parseBase64Binary(state.base64);
+    }
 
     @Benchmark
     public String java8_util_Base64_encode(MyState state) {
