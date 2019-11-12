@@ -1,16 +1,10 @@
 package de.frank.jmh.architecture;
 
 import com.google.common.base.Suppliers;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.apache.commons.lang3.concurrent.ConcurrentException;
+import org.apache.commons.lang3.concurrent.LazyInitializer;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -28,27 +22,26 @@ If guava is fine - use it.
 Cold (singleShot) !very! inaccurate for such short runtime's!
 Benchmark              Mode     Cnt   Score   Error  Units
 doubleCheckedLocking     ss  600000  82,358 ± 0,976  ns/op
-doubleCheckedLocking2    ss  600000  64,803 ± 0,909  ns/op
 doubleCheckedLockingBool ss  600000  81,273 ± 1,093  ns/op
 atomicReference          ss  600000  74,027 ± 1,059  ns/op
 guava                    ss  600000  57,973 ± 0,836  ns/op //impl is same as doubleCheckedLockingBool
 
 
 1 thread (un-contended)
-Benchmark                 Mode  Cnt      Score
-doubleCheckedLocking     thrpt   30  250.866.385 ops/s
-doubleCheckedLocking2    thrpt   30  252.989.272 ops/s
-doubleCheckedLockingBool thrpt   30  247.712.652 ops/s
-atomicReference          thrpt   30  242.032.148 ops/s
-guava                    thrpt   30  247.541.635 ops/s //impl is same as doubleCheckedLockingBool
+Benchmark                 Mode  Cnt            Score
+apache                   thrpt   30  432.232.705,281  ops/s
+guava                    thrpt   30  400.486.228,714  ops/s
+doubleCheckedLockingBool thrpt   30  393.490.297,020  ops/s //impl is same as doubleCheckedLockingBool
+doubleCheckedLocking     thrpt   30  393.088.054,796  ops/s
+atomicReference          thrpt   30  392.140.813,525  ops/s
 
 16 threads (contended)
-Benchmark                 Mode  Cnt      Score
-doubleCheckedLocking     thrpt   30  999.919.860 ops/s
-doubleCheckedLocking2    thrpt   30  993.081.667 ops/s
-doubleCheckedLockingBool thrpt   30  969.773.974 ops/s
-atomicReference          thrpt   30  968.192.148 ops/s
-guava                    thrpt   30  981.892.277 ops/s //impl is same as doubleCheckedLockingBool
+Benchmark                 Mode  Cnt          Score
+apache                   thrpt   30  1.590.075.016  ops/s
+guava                    thrpt   30  1.639.424.605  ops/s
+doubleCheckedLocking     thrpt   30  1.617.764.807  ops/s
+doubleCheckedLockingBool thrpt   30  1.609.340.012  ops/s //impl is same as doubleCheckedLockingBool
+atomicReference          thrpt   30  1.545.984.032  ops/s
 
  */
 
@@ -60,18 +53,24 @@ guava                    thrpt   30  981.892.277 ops/s //impl is same as doubleC
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(3)
 @BenchmarkMode({Mode.Throughput})
-@OutputTimeUnit(TimeUnit.SECONDS)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Benchmark) // Important to be Scope.Benchmark
-@Threads(1)
+@Threads(16)
 public class LayzLoaderBenchmarkJMH {
 
     @State(Scope.Benchmark)
     public static class MyState {
         Supplier<String> doubleCheckedLocking = DCLLazyLoader.of(MyState::expensiveOperation);
-        Supplier<String> doubleCheckedLocking2 = DCLLazyLoader2.of(MyState::expensiveOperation);
         Supplier<String> doubleCheckedLockingBool = DCLLazyLoaderBool.of(MyState::expensiveOperation);
         Supplier<String> atomicReference = AtomicLazyLoader.of(MyState::expensiveOperation);
         com.google.common.base.Supplier<String> guava = Suppliers.memoize(MyState::expensiveOperation); //same as doubleCheckedLockingBool
+        LazyInitializer<String> apache = new LazyInitializer<String>() {
+            @Override
+            protected String initialize() {
+                return expensiveOperation();
+            }
+        };
+
 
         private static String expensiveOperation() {
             return String.format("foo %s %s", "foo", "bar");
@@ -81,7 +80,7 @@ public class LayzLoaderBenchmarkJMH {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
                 .include(".*" + LayzLoaderBenchmarkJMH.class.getSimpleName() + ".*")//
-                // .addProfiler(GCProfiler.class)//
+                .addProfiler(GCProfiler.class)//
                 .build();
         new Runner(opt).run();
     }
@@ -92,18 +91,18 @@ public class LayzLoaderBenchmarkJMH {
     }
 
     @Benchmark
-    public String bool(MyState state) {
+    public String doubleCheckedLockingBool(MyState state) {
         return state.doubleCheckedLockingBool.get();
-    }
-
-    @Benchmark
-    public String doubleCheckedLocking2(MyState state) {
-        return state.doubleCheckedLocking2.get();
     }
 
     @Benchmark
     public String guava(MyState state) {
         return state.guava.get();
+    }
+
+    @Benchmark
+    public String apache(MyState state) throws ConcurrentException {
+        return state.apache.get();
     }
 
     @Benchmark
@@ -181,41 +180,7 @@ public class LayzLoaderBenchmarkJMH {
         }
     }
 
-    public static class DCLLazyLoader2<T> implements Supplier<T> {
 
-        // "cachedObject" is not required to be volatile - guarded by volatile read of
-        // "supplier"
-        private volatile Supplier<T> supplier;
-        private T object;
-
-        private DCLLazyLoader2(Supplier<T> supplier) {
-            this.supplier = Objects.requireNonNull(supplier);
-        }
-
-        public static <T> Supplier<T> of(Supplier<T> supplier) {
-            return new DCLLazyLoader2<>(supplier);
-        }
-
-        public T get() {
-            // This DCL idiom requires Java >=1.5 and volatile to work but then it is
-            // guaranteed to be correct
-            // On doubt read:
-            // https://docs.oracle.com/javase/specs/jls/se7/html/jls-17.html#jls-17.4.5
-            // https://shipilev.net/blog/2014/safe-public-construction/#_safe_publication
-            // Still doubt? Guavas MemoizingSupplier employs the same logic.
-            if (supplier != null) {
-                synchronized (this) {
-                    if (supplier != null) {
-                        T object = supplier.get();
-                        supplier = null;
-                        this.object = object;
-                        return object;
-                    }
-                }
-            }
-            return object;
-        }
-    }
 
     public static class DCLLazyLoaderBool<T> implements Supplier<T> {
 
