@@ -60,7 +60,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
         <dsiutils.version>2.4.2</dsiutils.version>
         <commons-codec.version>1.11</commons-codec.version>
         <asciitable.version>0.3.2</asciitable.version>
-        <jackson-databind.version>2.9.5</jackson-databind.version>
+        <jackson-databind.version>2.9.10.1</jackson-databind.version>
     </properties>
 
 
