@@ -1,20 +1,14 @@
 package de.frank.jmh.basic;
 
 import com.google.common.collect.Lists;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -128,8 +122,13 @@ public class ArrayListInitializersBenchmarkJMH {
     }
 
     public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder().include(".*" + ArrayListInitializersBenchmarkJMH.class.getSimpleName() + ".*")
-                .forks(1).build();
+        Options opt = new OptionsBuilder()//
+                .include(ArrayListInitializersBenchmarkJMH.class.getName())
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        ArrayListInitializersBenchmarkJMH.class.getSimpleName()))
+                .forks(1)
+                .build();
         new Runner(opt).run();
     }
 }

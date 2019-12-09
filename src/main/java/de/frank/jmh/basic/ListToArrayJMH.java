@@ -1,16 +1,7 @@
 package de.frank.jmh.basic;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Param;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.profile.DTraceAsmProfiler;
 import org.openjdk.jmh.results.RunResult;
 import org.openjdk.jmh.results.format.ResultFormatType;
 import org.openjdk.jmh.runner.Runner;
@@ -18,14 +9,9 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -33,6 +19,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 
 /*--
+Outdated - Just read the perfect article from Alexey: https://shipilev.net/blog/2016/arrays-wisdom-ancients/#_conclusion
 
  VM version: JDK 1.8.0_161-1-redhat, VM 25.161-b14
  Benchmark
@@ -46,31 +33,109 @@ import static java.lang.String.format;
  toArrayStreamString    36 ns/op  248 ns/op 346.462 ns/op  # sucks because of stream
  */
 @State(Scope.Thread)
-@Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
-@Fork(1)
+@Fork(value = 1, jvmArgsAppend = {"-XX:+UseParallelGC", "-Xms1g", "-Xmx1g"})
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class ListToArrayJMH {
 
-    private static final String[] DATA_SIZE_PARAMS = {"1", "100", "100000"};
+    private static final String[] DATA_SIZE_PARAMS = {"1"};//, "100", "100000"};
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
-                .include(".*" + ListToArrayJMH.class.getSimpleName() + ".*")//
-                //.addProfiler(GCProfiler.class)//
-                .param("dataSize" , DATA_SIZE_PARAMS)
+                .include(ListToArrayJMH.class.getName() + ".*")//
+//                .addProfiler(GCProfiler.class)//
+//                .addProfiler(LinuxPerfNormProfiler.class)//Linux
+//                .addProfiler(LinuxPerfAsmProfiler.class)//Linux
+//                .addProfiler(WinPerfAsmProfiler.cl ass)//WIN
+                .addProfiler(DTraceAsmProfiler.class)//OSX
+                // to run Dtras run: sudo java -cp benchmarks.jar de.frank.jmh.basic.ListToArrayJMH -p dataSize=10
+
+                //make sure we dont see compiling of our benchmark code during
+                //measurement. if you see compiling => more warmup
+                .jvmArgsAppend(
+                        "-XX:+UnlockDiagnosticVMOptions",
+                        "-XX:+PrintCompilation",
+                        //"-XX:+PrintInlining", //
+                        "-XX:+PrintAssembly", //requires hsdis binary in jdk - enable if you use the perf or winperf profiler
+                        // "-XX:+PrintOptoAssembly", //c2 compiler only
+                        //"-XX:+DebugNonSafepoints",
+                        //required for external profilers like "perf" to show java
+                        //frames in their traces
+                        "-XX:+PreserveFramePointer"
+                )
+                .param("dataSize", DATA_SIZE_PARAMS)
                 .resultFormat(ResultFormatType.JSON)
-                .result(format("%s_%s.json",//
-                        new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(System.currentTimeMillis()),//
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
                         ListToArrayJMH.class.getSimpleName()))
                 .build();
         displayAsMatrix("dataSize", new Runner(opt).run());
     }
 
+
+    List<String> data;
+
+    @Param({"1", "100", "100000"})
+    private int dataSize;
+
+
+    @Setup
+    public void setup() {
+        String[] tmp = new String[dataSize];
+        for (int i = 0; i < tmp.length; i++) {
+            tmp[i] = "foo" + i;
+        }
+        this.data = Arrays.asList(tmp); //toArray implementation in openjdk 1.8 is the same as java.util.ArrayList
+    }
+
+
+    @Benchmark
+    public Object[] toArray() {
+        //flawed, as Object[] does not require "instanceof String" checks on assignment and we probably allays want a typed array.
+        return data.toArray();
+    }
+
+
+    @Benchmark
+    public String[] toArrayStringUnsized() {
+        return data.toArray(new String[0]);
+    }
+
+    @Benchmark
+    public String[] toArrayStringSized() {
+        return data.toArray(new String[data.size()]);
+    }
+
+
+    @Benchmark
+    public Object[] toArrayObjectUnsized() {
+        //flawed, as Object[] does not require "instanceof String" checks on assignment
+        return data.toArray(new Object[0]);
+    }
+
+    @Benchmark
+    public Object[] toArrayObjectSized() {
+        //flawed, as Object[] does not require "instanceof String" checks on assignment
+        return data.toArray(new Object[data.size()]);
+    }
+
+
+    @Benchmark
+    public Object[] toArrayStream() {
+        return data.stream().toArray();
+    }
+
+    @Benchmark
+    public String[] toArrayStreamString() {
+        return data.stream().toArray(String[]::new);
+    }
+
+
     private static void displayAsMatrix(String groupByThisParam, Collection<RunResult> results) {
         Optional<RunResult> resultWithMoreThenOneParam = results.stream().filter(x -> x.getParams().getParamsKeys().size() > 1).findFirst();
-        if(resultWithMoreThenOneParam.isPresent()){
+        if (resultWithMoreThenOneParam.isPresent()) {
             System.out.println("ERROR! Cannot display as Matrix!");
             return;
         }
@@ -123,58 +188,4 @@ public class ListToArrayJMH {
                 });
     }
 
-
-    List<String> data;
-
-    @Param({"1", "100", "100000"})
-    private int dataSize;
-
-
-    @Setup
-    public void setup() {
-        String[] tmp = new String[dataSize];
-        for (int i = 0; i < tmp.length; i++) {
-            tmp[i] = "" + i;
-        }
-        this.data = Arrays.asList(tmp); //toArray implementation in openjdk 1.8 is the same as java.util.ArrayList
-    }
-
-
-    @Benchmark
-    public Object[] toArray() {
-        //flawed, as Object[] does not require "instanceof String" checks on assignment
-        return data.toArray();
-    }
-
-    @Benchmark
-    public Object[] toArrayObjectUnsized() {
-        //flawed, as Object[] does not require "instanceof String" checks on assignment
-        return data.toArray(new Object[0]);
-    }
-
-    @Benchmark
-    public Object[] toArrayObjectSized() {
-        //flawed, as Object[] does not require "instanceof String" checks on assignment
-        return data.toArray(new Object[data.size()]);
-    }
-
-    @Benchmark
-    public String[] toArrayStringUnsized() {
-        return data.toArray(new String[0]);
-    }
-
-    @Benchmark
-    public String[] toArrayStringSized() {
-        return data.toArray(new String[data.size()]);
-    }
-
-    @Benchmark
-    public Object[] toArrayStream() {
-        return data.stream().toArray();
-    }
-
-    @Benchmark
-    public String[] toArrayStreamString() {
-        return data.stream().toArray(String[]::new);
-    }
 }

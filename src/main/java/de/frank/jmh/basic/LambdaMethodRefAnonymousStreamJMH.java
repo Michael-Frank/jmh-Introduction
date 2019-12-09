@@ -1,16 +1,6 @@
 package de.frank.jmh.basic;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
@@ -18,6 +8,8 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +22,7 @@ import java.util.stream.Collectors;
 /*--
 Point is to show that the different ways to "implement an interface"
  - simple lambda: x->foo(x)
- - mulitline lambda: x->{foo(x);}
+ - multiline lambda: x->{foo(x);}
  - MethodReferences: this::foo
  - anonymous classes: new Consumer<T>(){ public void accept(T x){ foo(x); };
  - concrete implementations fooConsumer.accept(foo);
@@ -78,7 +70,10 @@ public class LambdaMethodRefAnonymousStreamJMH {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
-                .include(".*"+LambdaMethodRefAnonymousStreamJMH.class.getSimpleName() + ".*")//
+                .include(LambdaMethodRefAnonymousStreamJMH.class.getName() + ".*")//
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        LambdaMethodRefAnonymousStreamJMH.class.getSimpleName()))
                 .addProfiler(GCProfiler.class)//
                 .build();
         new Runner(opt).run();

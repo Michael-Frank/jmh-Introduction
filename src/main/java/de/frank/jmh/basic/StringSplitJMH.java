@@ -1,23 +1,14 @@
 package de.frank.jmh.basic;
 
 import com.google.common.base.Splitter;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Param;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,6 +50,31 @@ public class StringSplitJMH {
         csvString = IntStream.rangeClosed(1, stringLen).mapToObj(Integer::toString).collect(Collectors.joining(","));
         commaDotString = IntStream.rangeClosed(1, stringLen).mapToObj(Integer::toString).collect(Collectors.joining(",."));
     }
+
+
+    @Benchmark
+    public List stringTokenizer() {
+        ArrayList<String> tokens = new ArrayList<>();
+        StringTokenizer st = new StringTokenizer(commaDotString);
+        while (st.hasMoreTokens()) {
+            tokens.add(st.nextToken());
+        }
+        return tokens;
+    }
+
+    @Benchmark
+    public List stringIndexOf() {
+        ArrayList<String> tokens = new ArrayList<>();
+
+        int pos = 0, end;
+        while ((end = commaDotString.indexOf(' ', pos)) >= 0) {
+            tokens.add(commaDotString.substring(pos, end));
+            pos = end + 1;
+        }
+        return tokens;
+    }
+
+
 
     @Benchmark
     public String[] singleChar() {

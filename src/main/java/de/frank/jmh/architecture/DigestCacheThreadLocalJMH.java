@@ -1,18 +1,7 @@
 package de.frank.jmh.architecture;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Param;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -21,6 +10,8 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 /*--
@@ -88,7 +79,10 @@ public class DigestCacheThreadLocalJMH {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
-                .include(".*" + DigestCacheThreadLocalJMH.class.getSimpleName() + ".*")//
+                .include(DigestCacheThreadLocalJMH.class.getName())//
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        DigestCacheThreadLocalJMH.class.getSimpleName()))
                 .addProfiler(GCProfiler.class).build();
         new Runner(opt).run();
     }

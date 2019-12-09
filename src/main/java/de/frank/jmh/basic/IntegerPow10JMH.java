@@ -6,6 +6,8 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 /*--
@@ -40,6 +42,16 @@ public class IntegerPow10JMH {
     long maxL;
 
     private static final double LOG10 = Math.log(10);
+
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()//
+                .include(IntegerPow10JMH.class.getName() + ".*")//
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        IntegerPow10JMH.class.getSimpleName()))
+                .build();
+        new Runner(opt).run();
+    }
 
     @Benchmark
     public int b_mathLog10() {
@@ -177,12 +189,5 @@ public class IntegerPow10JMH {
                 return i + 1;
     }
 
-    public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()//
-                .include(".*" + IntegerPow10JMH.class.getSimpleName() + ".*MaxL")//
-                .build();
-
-        new Runner(opt).run();
-    }
 
 }

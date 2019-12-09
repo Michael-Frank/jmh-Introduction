@@ -100,7 +100,7 @@ public class StringGetBytesCharsetEncoderCacheJMH {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
-                .include(".*" + StringGetBytesCharsetEncoderCacheJMH.class.getSimpleName() + ".*")//
+                .include(StringGetBytesCharsetEncoderCacheJMH.class.getName() + ".*")//
                 .addProfiler(GCProfiler.class)//
                 .jvmArgs("-Xmx128m")
                 .build();

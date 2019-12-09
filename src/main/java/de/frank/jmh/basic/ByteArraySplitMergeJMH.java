@@ -1,16 +1,7 @@
 package de.frank.jmh.basic;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -23,10 +14,17 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /*--
+Split and merge a byte array. Often required in assembling/parsing binary messages from a socket or splitting a crypto
+envelope into is parts (e.g. get/join SEED, HMAC, length and payload of an encrypted message)
+
+Arrays.copyOfRange() appears to be the winner.
+
  * Benchmark                    Mode  Cnt             Score  gc.alloc.rate.norm
  * join_arraysCopyOf           thrpt   30  58.165.499 ops/s   48 B/op # winner
  * join_systemArrayCopy        thrpt   30  50.576.451 ops/s   48 B/op
@@ -37,7 +35,6 @@ import java.util.concurrent.TimeUnit;
  * split_systemArrayCopy       thrpt   30  44.296.562 ops/s   64 B/op
  * split_byteBuffer            thrpt   30  42.570.929 ops/s   64 B/op
  * split_byteArrayInputStream  thrpt   30  38.444.425 ops/s   64 B/op
- *
  *
  */
 
@@ -53,6 +50,17 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark) // Important to be Scope.Benchmark
 @Threads(1)
 public class ByteArraySplitMergeJMH {
+
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()//
+                .include(ByteArraySplitMergeJMH.class.getName() + ".*")//
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        ByteArraySplitMergeJMH.class.getSimpleName()))
+                //.addProfiler(GCProfiler.class)//
+                .build();
+        new Runner(opt).run();
+    }
 
     @Benchmark
     public void split_byteBuffer(Blackhole bh, MyState state) {
@@ -171,12 +179,11 @@ public class ByteArraySplitMergeJMH {
         bh.consume(ArrayUtils.addAll(state.data16_a, state.data16_b));
     }
 
-
     @State(Scope.Thread)
     public static class MyState {
 
-        public static final SecureRandom RANDOM = getSecureRandom();
 
+        public static final SecureRandom RANDOM = getSecureRandom();
         public byte[] data32 = newRandomByteArray(32);
         public byte[] data16_a = newRandomByteArray(16);
         public byte[] data16_b = newRandomByteArray(16);
@@ -187,7 +194,6 @@ public class ByteArraySplitMergeJMH {
             RANDOM.nextBytes(data);
             return data;
         }
-
         private static SecureRandom getSecureRandom() {
             try {
                 return SecureRandom.getInstance("SHA1PRNG");
@@ -195,13 +201,6 @@ public class ByteArraySplitMergeJMH {
                 throw new RuntimeException(e);
             }
         }
-    }
 
-    public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()//
-                .include(".*" + ByteArraySplitMergeJMH.class.getSimpleName() + ".*")//
-                //.addProfiler(GCProfiler.class)//
-                .build();
-        new Runner(opt).run();
     }
 }

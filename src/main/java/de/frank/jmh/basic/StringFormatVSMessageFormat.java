@@ -67,7 +67,7 @@ public class StringFormatVSMessageFormat {
     public static void main(String[] args) throws RunnerException {
         verifyMethodsProduceSameResults();
         Options opt = new OptionsBuilder()//
-                .include(StringFormatVSMessageFormat.class.getName() + ".stringBuilder*")//
+                .include(StringFormatVSMessageFormat.class.getName() + ".*")//
                 .addProfiler(GCProfiler.class).build();
         new Runner(opt).run();
     }

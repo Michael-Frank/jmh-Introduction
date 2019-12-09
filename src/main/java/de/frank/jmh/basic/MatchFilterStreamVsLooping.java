@@ -1,14 +1,6 @@
 package de.frank.jmh.basic;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -16,6 +8,8 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +38,7 @@ allMatch_stream                71 ns/op   152 B/op
 @Fork(1)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-public class AllMatchStreamVSLoopsJMH {
+public class MatchFilterStreamVsLooping {
 
     @org.openjdk.jmh.annotations.State(Scope.Thread)
     public static class State {
@@ -69,7 +63,10 @@ public class AllMatchStreamVSLoopsJMH {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
-                .include(".*" + AllMatchStreamVSLoopsJMH.class.getSimpleName() + ".*")//
+                .include(MatchFilterStreamVsLooping.class.getName())//
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        MatchFilterStreamVsLooping.class.getSimpleName()))
                 .addProfiler(GCProfiler.class)//
                 .build();
         new Runner(opt).run();

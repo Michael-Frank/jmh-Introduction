@@ -1,25 +1,16 @@
 package de.frank.jmh.algorithms;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.springframework.util.Base64Utils;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  *                                      alloc     alloc      Eden      Eden Survivor Survivor       gc      gc                #
  *                                       rate rate.norm     total      norm    total     norm       gc    time     throughput #
  *                             unit->  MB/sec      B/op    MB/sec      B/op   MB/sec     B/op   counts      ms          ops/s # Comment
- * _______________________________________________________________________________________________________________________________________________                            
+ * _______________________________________________________________________________________________________________________________________________
  * java8_util_Base64_decode             900,8     240,0     890,5     237,0     0,09     0,02    262,0   234,0    5.903.631,9 # winner if >= java8
  * java8_util_Base64_encode           1.173,3     192,0   1.181,7     193,4     0,08     0,01    211,0   218,0    9.612.305,5 # winner if >= java8
  * javax_xml_Datatyeconverter_decode    350,5      72,0     360,3      74,3     0,03     0,01     58,0    49,0    7.659.230,5 # winner if <  java8
@@ -102,14 +93,15 @@ public class Base64EncoderDecoderJMH {
     }
 
     public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()//
-                .include(".*" + Base64EncoderDecoderJMH.class.getSimpleName() + ".*")//
+        new Runner(new OptionsBuilder()//
+                .include(Base64EncoderDecoderJMH.class.getName())//
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        Base64EncoderDecoderJMH.class.getSimpleName()))
                 .addProfiler(GCProfiler.class)//
-                .build();
-        new Runner(opt).run();
+                .build()).run();
     }
 
-   
 
     @Benchmark
     public String java8_util_Base64_encode(MyState state) {

@@ -1,20 +1,13 @@
 package de.frank.jmh.algorithms;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -90,6 +83,9 @@ public class FastUUIDImplJMH {
     public static void main(String[] args) throws Throwable {
         Options opt = new OptionsBuilder()
                 .include(FastUUIDImplJMH.class.getName())
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        FastUUIDImplJMH.class.getSimpleName()))
                 .build();
         new Runner(opt).run();
     }
@@ -207,6 +203,58 @@ public class FastUUIDImplJMH {
             return new String(buf, 0, UUID_STRING_LEN);
         }
 
+        public static String randomUUIDBuf(Random r) {
+            StringBuilder buf = new StringBuilder(UUID_STRING_LEN);
+            randomUUID(r, buf);
+            return buf.toString();
+        }
+
+        public static void randomUUIDBuf(Random r, StringBuilder buf) {
+            randomUUID(r, buf);
+        }
+
+        public static void randomUUID(Random r, StringBuilder buf) {
+            long msl = r.nextLong();
+            long lsl = r.nextLong();
+            toUUID(msl, lsl, buf, 0);
+        }
+
+        private static void toUUID(long msl, long lsl, StringBuilder chars, int offset) {
+
+            msl &= ~0xF000L;/* clear version */
+            msl |= 0x4000;/* set to version 4 */
+            lsl &= 0x3fFFFFFFFFFFFFFFL; /* clear variant */
+            lsl |= 0x8000000000000000L; /* set to IETF variant */
+
+            // fill array backwards <-
+            int charPos = offset + UUID_STRING_LEN;
+            charPos = digits(lsl, 12, chars, charPos);
+            chars.setCharAt(--charPos, '-');
+            charPos = digits(lsl >> 48, 4, chars, charPos);
+            chars.setCharAt(--charPos, '-');
+            charPos = digits(msl, 4, chars, charPos);
+            chars.setCharAt(-charPos, '-');
+            charPos = digits(msl >> 16, 4, chars, charPos);
+            chars.setCharAt(--charPos, '-');
+            digits(msl >> 32, 8, chars, charPos);
+        }
+
+        private static int digits(long val, int digits, StringBuilder chars, int charPos) {
+            long hi = 1L << (digits * 4);
+            return toHex(hi | (val & (hi - 1)), digits, chars, charPos);
+        }
+
+        private static int toHex(long value, int numDigits, StringBuilder buf, int charPos) {
+
+            do {
+                int aByte = (int) (value & 0xFF);
+                buf.setCharAt(--charPos, digitsONE[aByte]);
+                buf.setCharAt(--charPos, digitsTEN[aByte]);
+                value >>>= 8; // next 8 bits
+                numDigits -= 2;
+            } while (value != 0 && numDigits > 0);
+            return charPos;
+        }
         /**
          * Generates a generic UUID from two provided longs.<br>
          * The UUID is stored in the provided buffer. <br>

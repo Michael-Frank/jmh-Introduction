@@ -3,22 +3,15 @@ package de.frank.jmh.algorithms;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -52,7 +45,10 @@ public class JacksonReaderBenchmarkJMH {
     public static void main(String[] args) throws RunnerException, IOException {
         System.out.println((Map<String, String>) new SharedOjectReaderHolder().reader.readValue(new InputHolder().input));
 
-        Options opt = new OptionsBuilder().include(".*" + JacksonReaderBenchmarkJMH.class.getSimpleName() + ".*")//
+        Options opt = new OptionsBuilder().include(JacksonReaderBenchmarkJMH.class.getName())//
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        JacksonReaderBenchmarkJMH.class.getSimpleName()))
                 .forks(1)//
                 .build();//
         new Runner(opt).run();

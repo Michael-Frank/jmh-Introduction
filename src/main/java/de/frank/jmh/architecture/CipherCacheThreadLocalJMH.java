@@ -1,18 +1,7 @@
 package de.frank.jmh.architecture;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Param;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -26,6 +15,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 /*--
@@ -33,13 +24,13 @@ import java.util.concurrent.TimeUnit;
 Throughput - Values in ops/s
                                   20         200        2000 # Datasize
 newEachTime                  501.311     502.365     403.488 # new Cipher("SPEC") is VERY expensive
-threadLocal_differentKey   1.724.136   1.687.279   1.144.438 # ..once we have a Cipher object, the "initialize()" is not that expensive
+threadLocal_differentKey   1.724.136   1.687.279   1.144.438 # ..once we have dclLazyLoader Cipher object, the "initialize()" is not that expensive
 threadLocal_sameKey       34.499.647  12.428.912   1.548.278 # .. except when encrypting small values over and over again. If you can cache the key as well - do it!.
 
 
 GC Allocation Rate normalized in B/op
                                  20         200         2000 # Datasize
-newEachTime                   7.034       7.472       11.002 # as expected, creating a new Cipher() each call creates a lot of garbage too..
+newEachTime                   7.034       7.472       11.002 # as expected, creating dclLazyLoader new Cipher() each call creates dclLazyLoader lot of garbage too..
 threadLocal_differentKey        280         632        4.248
 threadLocal_sameKey              96         448        4.064
 
@@ -117,8 +108,11 @@ public class CipherCacheThreadLocalJMH {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
+                .include(CipherCacheThreadLocalJMH.class.getName())//
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        CipherCacheThreadLocalJMH.class.getSimpleName()))
                 .jvmArgsAppend("-Dcrypto.policy=unlimited") //since java 8u151
-                .include(".*" + CipherCacheThreadLocalJMH.class.getSimpleName() + ".*")//
                 .addProfiler(GCProfiler.class)//
                 .build();
         new Runner(opt).run();

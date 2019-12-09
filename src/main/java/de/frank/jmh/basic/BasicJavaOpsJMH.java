@@ -1,15 +1,6 @@
 package de.frank.jmh.basic;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.CompilerControl;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -19,6 +10,8 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 
@@ -2153,7 +2146,10 @@ public class BasicJavaOpsJMH {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(".*" + BasicJavaOpsJMH.class.getSimpleName() + ".Math_EXTRA*")
+                .include(BasicJavaOpsJMH.class.getName() + ".*")
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        BasicJavaOpsJMH.class.getSimpleName()))
                 .forks(1)
                 // #########
                 // COMPILER

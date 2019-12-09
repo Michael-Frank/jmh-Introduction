@@ -1,21 +1,14 @@
 package de.frank.jmh.basic;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,13 +59,11 @@ public class AtomicReferenceFieldUpdater {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
-                .include(".*" + AtomicReferenceFieldUpdater.class.getSimpleName() + ".*")//
+                .include(AtomicReferenceFieldUpdater.class.getName())//
+                .result(String.format("%s_%s.json",
+                        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                        java.util.concurrent.atomic.AtomicReferenceFieldUpdater.class.getSimpleName()))
                 .addProfiler(GCProfiler.class)//
-//                .param("dataSize", DATA_SIZE_PARAMS)
-//                .resultFormat(ResultFormatType.JSON)
-//                .result(format("%s_%s.json",//
-//                        new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(System.currentTimeMillis()),//
-//                        ListToArrayJMH.class.getSimpleName()))
                 .build();
         new Runner(opt).run();
     }
