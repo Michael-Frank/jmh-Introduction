@@ -40,48 +40,61 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
     <name>JMH benchmarks: intro, basic benchmarks, algorithms and some architectural support benchmarks</name>
 
-    <!--
-       This is the demo/sample template build script for building Java benchmarks with JMH.
-       Edit as needed.
-    -->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>1.8</maven.compiler.release>
-        <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
-        <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
+        <!--JMH version to use with this project.-->
+        <jmh.version>1.22</jmh.version>
 
+        <!-- Java source/target to use for compilation.-->
+        <javac.target>1.8</javac.target>
+
+        <!-- Name of the benchmark Uber-JAR to generate.-->
         <uberjar.name>benchmarks</uberjar.name>
 
 
-        <jmh.version>1.21</jmh.version>
+        <lombok.verison>1.18.10</lombok.verison>
 
+
+        <!-- dependency versions for benchmarks-->
         <spring-core.version>5.0.8.RELEASE</spring-core.version>
         <dsiutils.version>2.4.2</dsiutils.version>
         <commons-codec.version>1.11</commons-codec.version>
         <asciitable.version>0.3.2</asciitable.version>
         <jackson-databind.version>2.9.10.1</jackson-databind.version>
+        <net.openhft.lang.version>6.8.2</net.openhft.lang.version>
+        <com.github.tehleo.junion.version>1.1.1</com.github.tehleo.junion.version>
+        <com.github.chrisvest.stormpot.version>2.4.1</com.github.chrisvest.stormpot.version>
+        <org.appache.commons-pool2.version>2.6.0</org.appache.commons-pool2.version>
     </properties>
 
 
     <dependencies>
+
+        <!--********** Annotation processing dependencies *********-->
         <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-core</artifactId>
-            <version>${jmh.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-generator-annprocess</artifactId>
-            <version>${jmh.version}</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.verison}</version>
             <scope>provided</scope>
         </dependency>
+
 
         <!-- RandomNumbersGeneratorsJMH-->
         <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>dsiutils</artifactId>
             <version>${dsiutils.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Base64EncodersDecodersJMH-->
@@ -99,6 +112,12 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <groupId>de.vandermeer</groupId>
             <artifactId>asciitable</artifactId>
             <version>${asciitable.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 
@@ -125,17 +144,25 @@ THE POSSIBILITY OF SUCH DAMAGE.
                     <artifactId>tools</artifactId>
                     <groupId>com.sun.java</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>lang</artifactId>
-            <version>6.8.2</version>
+            <version>${net.openhft.lang.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>tools</artifactId>
                     <groupId>com.sun.java</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
                 </exclusion>
             </exclusions>
 
@@ -145,7 +172,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
         <dependency>
             <groupId>com.github.tehleo</groupId>
             <artifactId>junion</artifactId>
-            <version>1.1.1</version>
+            <version>${com.github.tehleo.junion.version}</version>
         </dependency>
 
 
@@ -153,38 +180,80 @@ THE POSSIBILITY OF SUCH DAMAGE.
         <dependency>
             <groupId>com.github.chrisvest</groupId>
             <artifactId>stormpot</artifactId>
-            <version>2.4.1</version>
+            <version>${com.github.chrisvest.stormpot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
-            <version>2.6.0</version>
+            <version>${org.appache.commons-pool2.version}</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>${jmh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>${jmh.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.0-alpha1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-ext</artifactId>
+            <version>2.0.0-alpha1</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.12.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j18-impl</artifactId>
+            <version>2.12.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-ext</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.10.0</version>
+        </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>versions-maven-plugin</artifactId>
-                <version>2.5</version>
-                <configuration>
-                    <generateBackupPoms>false</generateBackupPoms>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <!--<release>${maven.compiler.release}</release>-->
+                    <compilerVersion>${javac.target}</compilerVersion>
+                    <source>${javac.target}</source>
+                    <target>${javac.target}</target>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -198,9 +267,12 @@ THE POSSIBILITY OF SUCH DAMAGE.
                         <configuration>
                             <finalName>${uberjar.name}</finalName>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>org.openjdk.jmh.Main</mainClass>
                                 </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                             <filters>
                                 <filter>
@@ -223,7 +295,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
         </plugins>
         <pluginManagement>
             <plugins>
-
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>2.5</version>
