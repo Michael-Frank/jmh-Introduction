@@ -22,92 +22,124 @@ import java.util.concurrent.TimeUnit;
 
 # MacOS VM version: JDK 13.0.1, OpenJDK 64-Bit Server VM, 13.0.1+9
 
+Single-Shot Times us/op  (== cold jvm == no compiler optimization) - lower is better
+                   fib(n):    30       92       1000        10000     100000      1000000
+RECURSIVE                16.524
+RECURSIVE63               1.994
+BINET63                       3        10
+BINET                       106       170      3.612       37.254
+DYNAMIC                      14        13        125        2.142
+MATRIX                       22        28         58          701      8.261
+DOUBLING                     16        17         26          134      2.520       27.000
+DOUBLINGHYBRID               49        51         52          169      2.567       26.519
+DOUBLINGRECURSIVE            17        28        151         1393      7.136       60.842
+DOUBLINGRECURSIVEHYBRID      47        49         64          161      2.576       24.415
+
+
+HOT-Code us/op - lower is better
+                   fib(n):    30       92       1000        10000     100000      1000000
+RECURSIVE              7.318,674
+RECURSIVE63            1.970,760
+BINET63                    0,049    0,048
+BINET                      3,408   12,477    855,779   30.853,861
+DYNAMIC                    0,291    1,069     25,563    1.177,631
+MATRIX                     1,261    1,754      4,530      112,789  4.904,023
+DOUBLING                   0,301    0,472      1,219       14,157    659,424   24.078,775
+DOUBLINGHYBRID             0,012    0,016      0,021       12,487    699,252   22.682,791
+DOUBLINGRECURSIVE          1,158    3,266     34,706       382,86  4.350,171   57.118,853
+DOUBLINGRECURSIVEHYBRID    0,003    0,003      0,003       11,381    541,571   21.851,834
+
+
+RAW VALUES
+=================
 SINGLE-SHOT (== cold jvm == no compiler optimization)
 Benchmark                                  (test)  Mode  Cnt      Score      Error  Units
-FibonacciJMH.run                     RECURSIVE_30    ss  200   9811,174 ± 1903,838  us/op #already sucks at fib(30)
-FibonacciJMH.run                   RECURSIVE63_30    ss  200   1974,837 ±   43,501  us/op #already sucks at fib(30)
-FibonacciJMH.run                       DYNAMIC_30    ss  200      7,415 ±    2,345  us/op
-FibonacciJMH.run                       DYNAMIC_92    ss  200     12,596 ±    2,250  us/op
-FibonacciJMH.run                     DYNAMIC_1000    ss  200    122,169 ±  106,673  us/op
-FibonacciJMH.run                    DYNAMIC_10000    ss  200   2068,729 ±  339,536  us/op
-FibonacciJMH.run                        MATRIX_30    ss  200     26,175 ±   20,331  us/op
-FibonacciJMH.run                        MATRIX_92    ss  200     34,397 ±    7,540  us/op
-FibonacciJMH.run                      MATRIX_1000    ss  200     54,158 ±   22,412  us/op
-FibonacciJMH.run                     MATRIX_10000    ss  200    634,133 ±  172,740  us/op
-FibonacciJMH.run                    MATRIX_100000    ss  200   8400,478 ± 1888,139  us/op
-FibonacciJMH.run                       BINET63_30    ss  200      9,934 ±   19,709  us/op
-FibonacciJMH.run                       BINET63_92    ss  200      3,692 ±    0,911  us/op #fastest singlesshot time for values <=fib(92)
-FibonacciJMH.run                         BINET_30    ss  200    103,465 ±   30,698  us/op
-FibonacciJMH.run                         BINET_92    ss  200    163,776 ±   38,520  us/op
-FibonacciJMH.run                        BINET_100    ss  200    231,385 ±   74,837  us/op
-FibonacciJMH.run                       BINET_1000    ss  200   3707,805 ±  374,265  us/op
-FibonacciJMH.run                      BINET_10000    ss  200  37926,178 ± 5552,875  us/op #suffers from BigDecimal performance
-FibonacciJMH.run                      DOUBLING_30    ss  200     22,645 ±   20,512  us/op
-FibonacciJMH.run                      DOUBLING_92    ss  200     24,216 ±   22,165  us/op
-FibonacciJMH.run                    DOUBLING_1000    ss  200     26,782 ±    5,487  us/op
-FibonacciJMH.run                   DOUBLING_10000    ss  200    130,768 ±   29,735  us/op
-FibonacciJMH.run                  DOUBLING_100000    ss  200   2603,690 ±  264,621  us/op #WINNER
-FibonacciJMH.run                DOUBLINGHYBRID_30    ss  200     43,597 ±  138,554  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
-FibonacciJMH.run                DOUBLINGHYBRID_92    ss  200     54,573 ±  155,877  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
-FibonacciJMH.run              DOUBLINGHYBRID_1000    ss  200     48,186 ±  134,475  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
-FibonacciJMH.run             DOUBLINGHYBRID_10000    ss  200    188,820 ±  166,034  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
-FibonacciJMH.run            DOUBLINGHYBRID_100000    ss  200   2572,042 ±  373,465  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
-FibonacciJMH.run             DOUBLINGRECURSIVE_30    ss  200     26,417 ±   20,335  us/op
-FibonacciJMH.run             DOUBLINGRECURSIVE_92    ss  200     37,328 ±   21,635  us/op
-FibonacciJMH.run           DOUBLINGRECURSIVE_1000    ss  200    186,813 ±  151,200  us/op
-FibonacciJMH.run          DOUBLINGRECURSIVE_10000    ss  200   1542,429 ±  165,262  us/op
-FibonacciJMH.run         DOUBLINGRECURSIVE_100000    ss  200   8103,053 ± 2353,834  us/op
-FibonacciJMH.run        DOUBLINGRECURSIVE_1000000    ss  200  67939,418 ± 8421,389  us/op
-FibonacciJMH.run       DOUBLINGRECURSIVEHYBRID_30    ss  200     51,288 ±  149,720  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
-FibonacciJMH.run       DOUBLINGRECURSIVEHYBRID_92    ss  200     45,127 ±  147,129  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
-FibonacciJMH.run     DOUBLINGRECURSIVEHYBRID_1000    ss  200     53,147 ±  154,164  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
-FibonacciJMH.run    DOUBLINGRECURSIVEHYBRID_10000    ss  200    171,163 ±  166,168  us/op #22us overhead of initializing the lookup table - but amortizes for larger values
-FibonacciJMH.run   DOUBLINGRECURSIVEHYBRID_100000    ss  200   2663,127 ±  385,409  us/op #22us overhead of initializing the lookup table - but amortizes for larger values
-FibonacciJMH.run  DOUBLINGRECURSIVEHYBRID_1000000    ss  200  24790,609 ± 2924,822  us/op #22us overhead of initializing the lookup table - but amortizes for larger values
+FibonacciJMH.run                     RECURSIVE_30    ss  200  16524,505 ± 3100,713  us/op #already sucks at fib(30)
+FibonacciJMH.run                   RECURSIVE63_30    ss  200   1994,264 ±   47,288  us/op #already sucks at fib(30)
+FibonacciJMH.run                       DYNAMIC_30    ss  200     14,684 ±   25,563  us/op
+FibonacciJMH.run                       DYNAMIC_92    ss  200     13,638 ±    2,327  us/op
+FibonacciJMH.run                     DYNAMIC_1000    ss  200    125,715 ±  120,669  us/op
+FibonacciJMH.run                    DYNAMIC_10000    ss  200   2142,813 ±  352,553  us/op
+FibonacciJMH.run                        MATRIX_30    ss  200     22,099 ±    4,545  us/op
+FibonacciJMH.run                        MATRIX_92    ss  200     28,860 ±    6,193  us/op
+FibonacciJMH.run                      MATRIX_1000    ss  200     58,500 ±   24,248  us/op
+FibonacciJMH.run                     MATRIX_10000    ss  200    701,467 ±  177,337  us/op
+FibonacciJMH.run                    MATRIX_100000    ss  200   8261,439 ± 1621,868  us/op
+FibonacciJMH.run                       BINET63_30    ss  200      3,761 ±    0,783  us/op
+FibonacciJMH.run                       BINET63_92    ss  200     10,772 ±   23,128  us/op #fastest for values <=fib(92)
+FibonacciJMH.run                         BINET_30    ss  200    106,518 ±   30,437  us/op
+FibonacciJMH.run                         BINET_92    ss  200    170,384 ±   39,346  us/op
+FibonacciJMH.run                       BINET_1000    ss  200   3612,149 ±  388,769  us/op
+FibonacciJMH.run                      BINET_10000    ss  200  37254,568 ± 4184,686  us/op #big performance penalty from BigDecimal
+FibonacciJMH.run                      DOUBLING_30    ss  200     16,898 ±    2,784  us/op
+FibonacciJMH.run                      DOUBLING_92    ss  200     17,556 ±    3,450  us/op
+FibonacciJMH.run                    DOUBLING_1000    ss  200     26,214 ±    5,246  us/op
+FibonacciJMH.run                   DOUBLING_10000    ss  200    134,190 ±   30,648  us/op
+FibonacciJMH.run                  DOUBLING_100000    ss  200   2520,146 ±  292,479  us/op
+FibonacciJMH.run                 DOUBLING_1000000    ss  200  27000,213 ± 2981,988  us/op #WINNER
+FibonacciJMH.run                DOUBLINGHYBRID_30    ss  200     49,509 ±  138,939  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
+FibonacciJMH.run                DOUBLINGHYBRID_92    ss  200     51,421 ±  142,913  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
+FibonacciJMH.run              DOUBLINGHYBRID_1000    ss  200     52,241 ±  144,660  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
+FibonacciJMH.run             DOUBLINGHYBRID_10000    ss  200    169,630 ±  162,110  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
+FibonacciJMH.run            DOUBLINGHYBRID_100000    ss  200   2567,754 ±  386,170  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
+FibonacciJMH.run           DOUBLINGHYBRID_1000000    ss  200  26519,118 ± 3067,384  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
+FibonacciJMH.run             DOUBLINGRECURSIVE_30    ss  200     17,521 ±    4,194  us/op #rescurive is worse then iterative
+FibonacciJMH.run             DOUBLINGRECURSIVE_92    ss  200     28,250 ±    7,128  us/op #rescurive is worse then iterative
+FibonacciJMH.run           DOUBLINGRECURSIVE_1000    ss  200    151,003 ±  119,869  us/op #rescurive is worse then iterative
+FibonacciJMH.run          DOUBLINGRECURSIVE_10000    ss  200   1393,939 ±  160,679  us/op #rescurive is worse then iterative
+FibonacciJMH.run         DOUBLINGRECURSIVE_100000    ss  200   7136,734 ± 1501,185  us/op #rescurive is worse then iterative
+FibonacciJMH.run        DOUBLINGRECURSIVE_1000000    ss  200  60842,967 ± 3854,978  us/op #rescurive is worse then iterative
+FibonacciJMH.run       DOUBLINGRECURSIVEHYBRID_30    ss  200     47,236 ±  135,909  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
+FibonacciJMH.run       DOUBLINGRECURSIVEHYBRID_92    ss  200     49,771 ±  162,101  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
+FibonacciJMH.run     DOUBLINGRECURSIVEHYBRID_1000    ss  200     64,854 ±  189,976  us/op #22us overhead of initializing the lookup table - lookup not worth in singeShot
+FibonacciJMH.run    DOUBLINGRECURSIVEHYBRID_10000    ss  200    161,395 ±  156,253  us/op #22us overhead amortizes for larger values - iterative doubling is still the overall winner
+FibonacciJMH.run   DOUBLINGRECURSIVEHYBRID_100000    ss  200   2576,350 ±  389,616  us/op #22us overhead amortizes for larger values - iterative doubling is still the overall winner
+FibonacciJMH.run  DOUBLINGRECURSIVEHYBRID_1000000    ss  200  24415,162 ± 2802,508  us/op #22us overhead amortizes for larger values - iterative doubling is still the overall winner
 
-HOT code (compile) avg time:
-Benchmark                                  (test)  Mode  Cnt      Score       Error  Units
-FibonacciJMH.run                     RECURSIVE_30  avgt    5   6794,781 ±   353,983  us/op #already sucks at fib(30)
-FibonacciJMH.run                   RECURSIVE63_30  avgt    5   2135,619 ±  1372,263  us/op #already sucks at fib(30)
-FibonacciJMH.run                       DYNAMIC_30  avgt    5      0,354 ±     0,108  us/op
-FibonacciJMH.run                       DYNAMIC_92  avgt    5      1,254 ±     0,588  us/op
-FibonacciJMH.run                     DYNAMIC_1000  avgt    5     35,850 ±    22,551  us/op
-FibonacciJMH.run                    DYNAMIC_10000  avgt    5   1413,706 ±   810,477  us/op
-FibonacciJMH.run                        MATRIX_30  avgt    5      1,336 ±     0,232  us/op
-FibonacciJMH.run                        MATRIX_92  avgt    5      1,870 ±     0,255  us/op
-FibonacciJMH.run                      MATRIX_1000  avgt    5      4,638 ±     0,167  us/op
-FibonacciJMH.run                     MATRIX_10000  avgt    5    109,953 ±     4,666  us/op
-FibonacciJMH.run                    MATRIX_100000  avgt    5   4917,269 ±   605,038  us/op
-FibonacciJMH.run                       BINET63_30  avgt    5      0,047 ±     0,001  us/op
-FibonacciJMH.run                       BINET63_92  avgt    5      0,049 ±     0,004  us/op #fast - but cannot compute more the fib(92)
-FibonacciJMH.run                         BINET_30  avgt    5      3,520 ±     0,334  us/op
-FibonacciJMH.run                         BINET_92  avgt    5     12,061 ±     2,080  us/op
-FibonacciJMH.run                        BINET_100  avgt    5     13,272 ±     0,347  us/op
-FibonacciJMH.run                       BINET_1000  avgt    5    993,619 ±  1144,420  us/op
-FibonacciJMH.run                      BINET_10000  avgt    5  38268,670 ± 19996,826  us/op #binet suffers heavily form BigDecimal performance
-FibonacciJMH.run                      DOUBLING_30  avgt    5      0,302 ±     0,038  us/op
-FibonacciJMH.run                      DOUBLING_92  avgt    5      0,462 ±     0,060  us/op
-FibonacciJMH.run                    DOUBLING_1000  avgt    5      1,136 ±     0,172  us/op
-FibonacciJMH.run                   DOUBLING_10000  avgt    5     12,878 ±     0,309  us/op
-FibonacciJMH.run                  DOUBLING_100000  avgt    5    635,268 ±    19,582  us/op #WINNER
-FibonacciJMH.run                DOUBLINGHYBRID_30  avgt    5      0,012 ±     0,001  us/op
-FibonacciJMH.run                DOUBLINGHYBRID_92  avgt    5      0,016 ±     0,001  us/op
-FibonacciJMH.run              DOUBLINGHYBRID_1000  avgt    5      0,022 ±     0,002  us/op #hybrid shines for <= fib(1023)
-FibonacciJMH.run             DOUBLINGHYBRID_10000  avgt    5     11,469 ±     0,436  us/op
-FibonacciJMH.run            DOUBLINGHYBRID_100000  avgt    5    687,683 ±   399,699  us/op
-FibonacciJMH.run             DOUBLINGRECURSIVE_30  avgt    5      0,834 ±     0,045  us/op
-FibonacciJMH.run             DOUBLINGRECURSIVE_92  avgt    5      2,829 ±     0,090  us/op
-FibonacciJMH.run           DOUBLINGRECURSIVE_1000  avgt    5     31,630 ±     2,420  us/op
-FibonacciJMH.run          DOUBLINGRECURSIVE_10000  avgt    5    330,869 ±    17,699  us/op
-FibonacciJMH.run         DOUBLINGRECURSIVE_100000  avgt    5   4199,183 ±   347,973  us/op
-FibonacciJMH.run        DOUBLINGRECURSIVE_1000000  avgt    5  72173,930 ± 68756,302  us/op
-FibonacciJMH.run       DOUBLINGRECURSIVEHYBRID_30  avgt    5      0,003 ±     0,003  us/op
-FibonacciJMH.run       DOUBLINGRECURSIVEHYBRID_92  avgt    5      0,003 ±     0,001  us/op
-FibonacciJMH.run     DOUBLINGRECURSIVEHYBRID_1000  avgt    5      0,004 ±     0,003  us/op
-FibonacciJMH.run    DOUBLINGRECURSIVEHYBRID_10000  avgt    5      8,908 ±     0,185  us/op
-FibonacciJMH.run   DOUBLINGRECURSIVEHYBRID_100000  avgt    5    520,853 ±    15,548  us/op
-FibonacciJMH.run  DOUBLINGRECURSIVEHYBRID_1000000  avgt    5  28680,477 ± 23515,157  us/op #the doubling recursive also benefits from caching the first 1024 fibonacci results
-
+HOT code (compiled) avg time:
+Benchmark                                  (test)  Mode  Cnt      Score      Error  Units
+FibonacciJMH.run                     RECURSIVE_30  avgt    5   7318,674 ± 2661,933  us/op #already sucks at fib(30)
+FibonacciJMH.run                   RECURSIVE63_30  avgt    5   1970,760 ±  328,046  us/op #already sucks at fib(30)
+FibonacciJMH.run                       DYNAMIC_30  avgt    5      0,291 ±    0,094  us/op
+FibonacciJMH.run                       DYNAMIC_92  avgt    5      1,069 ±    0,276  us/op
+FibonacciJMH.run                     DYNAMIC_1000  avgt    5     25,563 ±   10,671  us/op
+FibonacciJMH.run                    DYNAMIC_10000  avgt    5   1177,631 ±   40,495  us/op
+FibonacciJMH.run                        MATRIX_30  avgt    5      1,261 ±    0,054  us/op
+FibonacciJMH.run                        MATRIX_92  avgt    5      1,754 ±    0,060  us/op
+FibonacciJMH.run                      MATRIX_1000  avgt    5      4,530 ±    1,050  us/op
+FibonacciJMH.run                     MATRIX_10000  avgt    5    112,789 ±    8,329  us/op
+FibonacciJMH.run                    MATRIX_100000  avgt    5   4904,023 ±  450,171  us/op
+FibonacciJMH.run                       BINET63_30  avgt    5      0,049 ±    0,011  us/op
+FibonacciJMH.run                       BINET63_92  avgt    5      0,048 ±    0,003  us/op
+FibonacciJMH.run                         BINET_30  avgt    5      3,408 ±    0,201  us/op
+FibonacciJMH.run                         BINET_92  avgt    5     12,477 ±    2,339  us/op
+FibonacciJMH.run                        BINET_100  avgt    5     17,362 ±   15,399  us/op
+FibonacciJMH.run                       BINET_1000  avgt    5    855,779 ±  271,974  us/op
+FibonacciJMH.run                      BINET_10000  avgt    5  30853,861 ± 1149,083  us/op
+FibonacciJMH.run                      DOUBLING_30  avgt    5      0,301 ±    0,025  us/op #iterative doubling has nice performance
+FibonacciJMH.run                      DOUBLING_92  avgt    5      0,472 ±    0,042  us/op
+FibonacciJMH.run                    DOUBLING_1000  avgt    5      1,219 ±    0,421  us/op
+FibonacciJMH.run                   DOUBLING_10000  avgt    5     14,157 ±    1,602  us/op
+FibonacciJMH.run                  DOUBLING_100000  avgt    5    659,424 ±   37,425  us/op
+FibonacciJMH.run                 DOUBLING_1000000  avgt    5  24078,775 ± 3800,707  us/op
+FibonacciJMH.run                DOUBLINGHYBRID_30  avgt    5      0,012 ±    0,001  us/op #hybrid shines for values <=fib(1023)
+FibonacciJMH.run                DOUBLINGHYBRID_92  avgt    5      0,016 ±    0,009  us/op #  -||-
+FibonacciJMH.run              DOUBLINGHYBRID_1000  avgt    5      0,021 ±    0,010  us/op #  -||-
+FibonacciJMH.run             DOUBLINGHYBRID_10000  avgt    5     12,487 ±    1,628  us/op #  and still has better perf for bigger values
+FibonacciJMH.run            DOUBLINGHYBRID_100000  avgt    5    699,252 ±  277,086  us/op #  -||-
+FibonacciJMH.run           DOUBLINGHYBRID_1000000  avgt    5  22682,791 ± 1820,359  us/op #  -||-
+FibonacciJMH.run             DOUBLINGRECURSIVE_30  avgt    5      1,158 ±    0,743  us/op #plain recursive Doubling is inferior to iterative Doubling
+FibonacciJMH.run             DOUBLINGRECURSIVE_92  avgt    5      3,266 ±    1,587  us/op #  -||-
+FibonacciJMH.run           DOUBLINGRECURSIVE_1000  avgt    5     34,706 ±    4,230  us/op #  -||-
+FibonacciJMH.run          DOUBLINGRECURSIVE_10000  avgt    5    382,860 ±  197,535  us/op #  -||-
+FibonacciJMH.run         DOUBLINGRECURSIVE_100000  avgt    5   4350,171 ±  613,642  us/op #  -||-
+FibonacciJMH.run        DOUBLINGRECURSIVE_1000000  avgt    5  57118,853 ± 4105,049  us/op #  -||-
+FibonacciJMH.run       DOUBLINGRECURSIVEHYBRID_30  avgt    5      0,003 ±    0,001  us/op # but recursive doubling + lookup has really good performance
+FibonacciJMH.run       DOUBLINGRECURSIVEHYBRID_92  avgt    5      0,003 ±    0,001  us/op #  especially for values <=fib(1023)
+FibonacciJMH.run     DOUBLINGRECURSIVEHYBRID_1000  avgt    5      0,003 ±    0,001  us/op #  especially for values <=fib(1023)
+FibonacciJMH.run    DOUBLINGRECURSIVEHYBRID_10000  avgt    5     11,381 ±   10,064  us/op #  and in recursive case also for bigger values
+FibonacciJMH.run   DOUBLINGRECURSIVEHYBRID_100000  avgt    5    541,571 ±   53,782  us/op #  and in recursive case also for bigger values
+FibonacciJMH.run  DOUBLINGRECURSIVEHYBRID_1000000  avgt    5  21851,834 ± 3664,835  us/op #  and in recursive case also for bigger values
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)
@@ -142,7 +174,6 @@ public class FibonacciJMH {
             //big-int variant
             "BINET_30",
             "BINET_92",//highest to fit into 2^63-1 (a java long)
-            "BINET_100",
             "BINET_1000",
             "BINET_10000",
             //"BINET_100000", //to slow already:  779722,371 ±  4566,813  us/op #
@@ -154,12 +185,14 @@ public class FibonacciJMH {
             "DOUBLING_1000",
             "DOUBLING_10000",
             "DOUBLING_100000",
+            "DOUBLING_1000000",
 
             "DOUBLINGHYBRID_30",
             "DOUBLINGHYBRID_92",//highest to fit into 2^63-1 (a java long)
             "DOUBLINGHYBRID_1000",
             "DOUBLINGHYBRID_10000",
             "DOUBLINGHYBRID_100000",
+            "DOUBLINGHYBRID_1000000",
 
 
             //recursive variant of "doubling" method
@@ -240,7 +273,6 @@ public class FibonacciJMH {
                         //big-int variant
                         "BINET_30",
                         "BINET_92",//highest to fit into 2^63-1 (a java long)
-                        "BINET_100",
                         "BINET_1000",
                         "BINET_10000",
                         //"BINET_100000", //to slow already:  779722,371 ±  4566,813  us/op #
@@ -252,6 +284,7 @@ public class FibonacciJMH {
                         "DOUBLING_1000",
                         "DOUBLING_10000",
                         "DOUBLING_100000",
+                        "DOUBLING_1000000",
 
 
                         "DOUBLINGHYBRID_30",
@@ -259,6 +292,7 @@ public class FibonacciJMH {
                         "DOUBLINGHYBRID_1000",
                         "DOUBLINGHYBRID_10000",
                         "DOUBLINGHYBRID_100000",
+                        "DOUBLINGHYBRID_1000000",
 
 
                         //recursive variant of "doubling" method
