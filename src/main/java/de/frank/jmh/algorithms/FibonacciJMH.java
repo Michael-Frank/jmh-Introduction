@@ -113,7 +113,6 @@ FibonacciJMH.run                       BINET63_30  avgt    5      0,049 ±    0,
 FibonacciJMH.run                       BINET63_92  avgt    5      0,048 ±    0,003  us/op
 FibonacciJMH.run                         BINET_30  avgt    5      3,408 ±    0,201  us/op
 FibonacciJMH.run                         BINET_92  avgt    5     12,477 ±    2,339  us/op
-FibonacciJMH.run                        BINET_100  avgt    5     17,362 ±   15,399  us/op
 FibonacciJMH.run                       BINET_1000  avgt    5    855,779 ±  271,974  us/op
 FibonacciJMH.run                      BINET_10000  avgt    5  30853,861 ± 1149,083  us/op
 FibonacciJMH.run                      DOUBLING_30  avgt    5      0,301 ±    0,025  us/op #iterative doubling has nice performance
