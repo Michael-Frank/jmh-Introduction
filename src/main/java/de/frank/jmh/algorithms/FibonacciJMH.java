@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 # MacOS VM version: JDK 13.0.1, OpenJDK 64-Bit Server VM, 13.0.1+9
 
 Single-Shot Times us/op  (== cold jvm == no compiler optimization) - lower is better
-                   fib(n):    30       92       1000        10000     100000      1000000
+                   fib(n):    30       92      1.000       10.000    100.000    1.000.000
 RECURSIVE                16.524
 RECURSIVE63               1.994
 BINET63                       3        10
@@ -37,7 +37,7 @@ DOUBLINGRECURSIVEHYBRID      47        49         64          161      2.576    
 
 
 HOT-Code us/op - lower is better
-                   fib(n):    30       92       1000        10000     100000      1000000
+                   fib(n):    30       92      1.000       10.000    100.000    1.000.000
 RECURSIVE              7.318,674
 RECURSIVE63            1.970,760
 BINET63                    0,049    0,048
