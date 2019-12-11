@@ -19,12 +19,12 @@ import java.util.concurrent.TimeUnit;
  Oracle JDK 1.8.0_161
  Run complete. Total time: 00:13:52
  Benchmark               Mode  Cnt       Score     Error  Units # Comment
- JDKrandomUUID          thrpt   30   1.387.488 ±  24.324  ops/s # uses SecureRandom internally
- JDKnewUUIDFrom2Longs   thrpt   30   2.682.555 ±  61.595  ops/s # own random but is still bad
- customUUID             thrpt   30  14.895.978 ± 350.588  ops/s # far less overhead and faster
- customUUIDFrom2Longs   thrpt   30  14.821.319 ± 256.184  ops/s # use-case specific variant
- customUUIDProvidedRNG  thrpt   30  14.964.418 ± 428.048  ops/s # use-case specific variant
- customUUIDReuseBuffer  thrpt   30  24.378.762 ± 719.431  ops/s # if possible (re-)use a buffer - then this version runs with ZERO GC-Allocations
+ JDK_RandomUUID          thrpt   30   1.387.488 ±  24.324  ops/s # uses SecureRandom internally
+ JDK_newUUIDFrom2Longs   thrpt   30   2.682.555 ±  61.595  ops/s # own random but is still bad
+ customUUID              thrpt   30  14.895.978 ± 350.588  ops/s # far less overhead and faster
+ customUUID_from2Longs   thrpt   30  14.821.319 ± 256.184  ops/s # use-case specific variant
+ customUUID_providedRNG  thrpt   30  14.964.418 ± 428.048  ops/s # use-case specific variant
+ customUUID_reuseBuffer  thrpt   30  24.378.762 ± 719.431  ops/s # if possible (re-)use a buffer - then this version runs with ZERO GC-Allocations
  */
 
 /**
@@ -37,11 +37,11 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(3)
 @State(Scope.Thread)
-public class FastUUIDImplJMH {
+public class UUIDFastImplsJMH {
 
 
     private ThreadLocalRandom r;
-    private char[] buffer = new char[UUID.UUID_STRING_LEN];
+    private char[] buffer = new char[FastUUID.UUID_STRING_LEN];
 
     @Setup
     public void setup() {
@@ -49,43 +49,43 @@ public class FastUUIDImplJMH {
     }
 
     @Benchmark
-    public String JDKrandomUUID() {
+    public String JDK_RandomUUID() {
         return java.util.UUID.randomUUID().toString();
     }
 
     @Benchmark
-    public String JDKnewUUIDFrom2Longs() {
+    public String JDK_newUUIDFrom2Longs() {
         return new java.util.UUID(r.nextLong(), r.nextLong()).toString();
     }
 
     @Benchmark
     public String customUUID() {
-        return UUID.randomUUID();
+        return FastUUID.randomUUID();
     }
 
     @Benchmark
-    public String customUUIDProvidedRNG() {
-        return UUID.randomUUID(r);
+    public String customUUID_providedRNG() {
+        return FastUUID.randomUUID(r);
     }
 
     @Benchmark
-    public String customUUIDFrom2Longs() {
-        return UUID.toUUID(r.nextLong(), r.nextLong());
+    public String customUUID_from2Longs() {
+        return FastUUID.toUUID(r.nextLong(), r.nextLong());
     }
 
     @Benchmark
-    public void customUUIDReuseBuffer(Blackhole bh) {
-        UUID.randomUUID(r, buffer);
+    public void customUUID_reuseBuffer(Blackhole bh) {
+        FastUUID.randomUUID(r, buffer);
         bh.consume(buffer);
     }
 
 
     public static void main(String[] args) throws Throwable {
         Options opt = new OptionsBuilder()
-                .include(FastUUIDImplJMH.class.getName())
+                .include(UUIDFastImplsJMH.class.getName())
                 .result(String.format("%s_%s.json",
                         DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
-                        FastUUIDImplJMH.class.getSimpleName()))
+                        UUIDFastImplsJMH.class.getSimpleName()))
                 .build();
         new Runner(opt).run();
     }
@@ -109,18 +109,18 @@ public class FastUUIDImplJMH {
      *
      * <pre>
      * Benchmark               Mode  Cnt         Score        Error  Units
-     * JDKrandomUUID          thrpt   30   1387488,927 ±  24324,277  ops/s #uses SecureRandom
-     * JDKnewUUIDFrom2Longs   thrpt   30   2682555,545 ±  61595,885  ops/s #still bad
+     * JDK_RandomUUID          thrpt   30   1387488,927 ±  24324,277  ops/s #uses SecureRandom
+     * JDK_newUUIDFrom2Longs   thrpt   30   2682555,545 ±  61595,885  ops/s #still bad
      * customUUID             thrpt   30  14895978,462 ± 350588,907  ops/s
-     * customUUIDFrom2Longs   thrpt   30  14821319,244 ± 256184,576  ops/s
-     * customUUIDProvidedRNG  thrpt   30  14964418,485 ± 428048,918  ops/s
-     * customUUIDReuseBuffer  thrpt   30  24378762,601 ± 719431,119  ops/s #if possible (re-)use a buffer - then this version runs with ZERO-Allocation
+     * customUUID_from2Longs   thrpt   30  14821319,244 ± 256184,576  ops/s
+     * customUUID_providedRNG  thrpt   30  14964418,485 ± 428048,918  ops/s
+     * customUUID_reuseBuffer  thrpt   30  24378762,601 ± 719431,119  ops/s #if possible (re-)use a buffer - then this version runs with ZERO-Allocation
      * </pre>
      *
      * @author Michael Frank
      * @version 1.0 22.11.2016
      */
-    public static class UUID {
+    public static class FastUUID {
         public static final int UUID_STRING_LEN = 36;
         private final static char[] digitsONE = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
                 'e', 'f',
