@@ -32,7 +32,7 @@ longMultLoopCustomLog10MaxL  2,6    2,3     4,9      4,9 #
 @Fork(1)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-public class IntegerPow10JMH {
+public class IntegerPow10Log10JMH {
 
     //small, medium, large
     //   @Param(value = {/*"999", "999999",*/ "" + Integer.MAX_VALUE})
@@ -45,10 +45,10 @@ public class IntegerPow10JMH {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
-                .include(IntegerPow10JMH.class.getName() + ".*")//
+                .include(IntegerPow10Log10JMH.class.getName() + ".*")//
                 .result(String.format("%s_%s.json",
                         DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
-                        IntegerPow10JMH.class.getSimpleName()))
+                        IntegerPow10Log10JMH.class.getSimpleName()))
                 .build();
         new Runner(opt).run();
     }

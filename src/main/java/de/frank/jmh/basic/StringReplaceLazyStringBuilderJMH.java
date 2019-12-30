@@ -15,25 +15,29 @@ import java.util.concurrent.TimeUnit;
 
 /*--
 
-Task: escape certain chars in a string IF such chars are present (input is a Regex stored into a system where we need to escape the / char into \\.
+Task:
+=======
+Escape certain chars in a string IF such chars are present (input is a Regex stored into a system where we need to escape the / char into \\.
 Problem: we always copy the string into a StringBuilder - even if we do not escape anything (NO_MATCH_*) and thus input==output
 Benchmark: try to avoid the StringBuilder or at least the resizing of the builder
   - original - always allocate new StringBuilder()
   - preSized - at least preSize the StringBuilder(original.size())
   - lazy - lazily allocate the StringBuilder at first match and at end: return builder==null?original:builder.toString();
 
-Result: best approach depends on expected "hit-rate" and input length
+Result:
+======
+best approach depends on expected "hit-rate" and input length
  - original performs best for string sizes < 16 - except if it does not need to escape anything -> lazy
  - preSize is nice for longer strings but has a penalty for short strings
  - Lazy is best if most of the time we do not need to escape anything, especially if we mostly have large input
 
 if( (avgStringLength < 16 && hitRate < 50%)  //short and at least half of the input does not require escaping
   || avgStringLength > 16 && hitRate < 80%)) //or long input and at most 80% requires escaping
-     use lazy as default
+    => use lazy as default
 }else{ avgStringLength < 16 && hitRate > 50)  == mostly short regexes and mostly in need of escaping
-     use original
+     => use original
 }else if(avgStringLength > 16 ){
-     use preSized
+     => use preSized
 }
 
 
@@ -271,14 +275,14 @@ LazyInitStringBuilderJMH.preSized:·gc.time                            SHORT    
 @Fork(value = 1, jvmArgsAppend = {"-XX:+UseParallelGC", "-Xms1g", "-Xmx1g"})
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-public class LazyInitStringBuilderJMH {
+public class StringReplaceLazyStringBuilderJMH {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()//
-                .include(LazyInitStringBuilderJMH.class.getName() + ".*")//
+                .include(StringReplaceLazyStringBuilderJMH.class.getName() + ".*")//
                 .result(String.format("%s_%s.json",
                         DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
-                        LazyInitStringBuilderJMH.class.getSimpleName()))
+                        StringReplaceLazyStringBuilderJMH.class.getSimpleName()))
                 .addProfiler(GCProfiler.class)//
                 .build();
         new Runner(opt).run();

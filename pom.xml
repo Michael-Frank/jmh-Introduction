@@ -71,6 +71,12 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
     <dependencies>
 
+        <dependency>
+            <groupId>com.yevdo</groupId>
+            <artifactId>jwildcard</artifactId>
+            <version>1.4</version>
+        </dependency>
+
         <!--********** Annotation processing dependencies *********-->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -187,6 +193,24 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <artifactId>commons-pool2</artifactId>
             <version>${org.appache.commons-pool2.version}</version>
         </dependency>
+        <!-- TODO openhft pool -->
+
+
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>8.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>8.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analyzers-common</artifactId>
+            <version>8.3.1</version>
+        </dependency>
 
 
         <dependency>
@@ -250,8 +274,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
                 <version>3.8.0</version>
                 <configuration>
                     <compilerVersion>${javac.target}</compilerVersion>
-                    <source>${javac.target}</source>
-                    <target>${javac.target}</target>
+                    <source>9</source>
+                    <target>9</target>
                 </configuration>
             </plugin>
             <plugin>
