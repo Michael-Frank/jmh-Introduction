@@ -4,12 +4,24 @@ Partly from real life projects and partly of personal interest.
 
 The benchmarks are roughly organized into 4 different packages
 - basic:  comparing Java language  and JVM features
-- algorithms: comparing different alogrithms (e.g. bas64 encoders, uuid implementations, String-Replace/Tokenize/Concat patterns, ..)
+- algorithms: comparing different algorithms (e.g. bas64 encoders, uuid implementations, String-Replace/Tokenize/Concat patterns, ..)
 - architecture: mostly "good patterns" e.g. lazyInitialization and stuff worth (ThreadLocal) caching
 - intro: Examples form my basic introduction to JMH and why __you__ should start using JMH.
 
 ## Requirements
+- java >= 11
+- maven
+ 
+## Run the Benchmarks 
+Rn the `main` method in each benchmark class: 
+  - A) its easiest to run the benchmarks from IDE starting the main method
+    - for intellij you can install the JMH plugin
+  - B) or run from console 
+      ```bash
+      java -cp target/benchmarks.jar de.frank.jmh.basic.<benchmarkClass> -p <paramName>=<paramValue>
+      ```
 
+(JMH recommended way is `java -jar benchmarks.jar <benchmarksToRunRegex` but often den benchmark classes use some kind of automation inside the `main`s  )
 
 ## JMH
 Please read the project page of  [JMH - Java Microbenchmarking Harness](http://openjdk.java.net/projects/code-tools/jmh/)
