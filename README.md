@@ -1,6 +1,17 @@
-# jmh-Introduction
-Examples form my basic introduction to JMH and why __you__ should start using JMH.
+# jmh-benchmarks collection
+Started out with an introduction talk to JMH and ended up writing and collecting many interesting benchmarks.
+Partly from real life projects and partly of personal interest.
 
+The benchmarks are roughly organized into 4 different packages
+- basic:  comparing Java language  and JVM features
+- algorithms: comparing different alogrithms (e.g. bas64 encoders, uuid implementations, String-Replace/Tokenize/Concat patterns, ..)
+- architecture: mostly "good patterns" e.g. lazyInitialization and stuff worth (ThreadLocal) caching
+- intro: Examples form my basic introduction to JMH and why __you__ should start using JMH.
+
+## Requirements
+
+
+## JMH
 Please read the project page of  [JMH - Java Microbenchmarking Harness](http://openjdk.java.net/projects/code-tools/jmh/)
 
 If you want to learn how to work with JMH - work through all of the [official JMH-Examples](http://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/) first!
