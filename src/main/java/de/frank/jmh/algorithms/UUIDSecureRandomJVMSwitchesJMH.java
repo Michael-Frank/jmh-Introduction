@@ -27,6 +27,36 @@ import java.util.concurrent.TimeUnit;
 /*-
 Generating many secure UUID's fast has some pitfalls. The most common way is to simply call: java.util.UUID.randomUUID()
 
+JDK 8 Contended Benchmark                                       Mode  Cnt   Score    Error Units  gc.alloc.rate.norm
+default java.util.UUID.randomUUID()
+   *jdkUUID_default_egdDefault_16Threads              27775 ± 1545 ns/op 864 B/op
+    jdkUUID_default_egdRandom_16Threads               27877 ± 1432 ns/op 864 B/op
+    jdkUUID_default_egdUrandom_16Threads               9785 ±  150 ns/op 832 B/op
+threadLocal of SHA1PRNG
+    jdkUUID_threadLocalSHA1_egdDefault_16Threads       1675 ±   19 ns/op 895 B/op
+   *jdkUUID_threadLocalSHA1_egdUrand_16Threads         1732 ±  157 ns/op 896 B/op
+   *fastUuid_threadLocalSHA1_egdDefault_16Threads      1116 ±   19 ns/op 328 B/op
+    fastUuid_threadLocalSHA1_egdUrand_16Threads        1110 ±   16 ns/op 328 B/op
+threadLocal of default new SecureRandom() - defaults to NativePRNG which should be in "MIXED" mode but appears to be in "BLOCKING" mode
+    jdkUUID_threadLocalDefault_egdDefault_16Threads   44714 ± 1764 ns/op 960 B/op
+    jdkUUID_threadLocalDefault_egdUrand_16Threads      1670 ±  110 ns/op 864 B/op
+    fastUuid_threadLocalDefault_egdDefault_16Threads  45233 ± 2459 ns/op 424 B/op
+    fastUuid_threadLocalDefault_egdUrand_16Threads     1047 ±   26 ns/op 328 B/op
+
+
+Java 13 Contended Benchmark                                  Mode  Cnt  Score   Error  Units  gc.alloc.rate.norm
+default java.util.UUID.randomUUID()
+   *jdkUUID_default_egdDefault_16Threads              28104 ± 1519 ns/op 176 B/op
+    jdkUUID_default_egdRandom_16Threads               28411 ± 1717 ns/op 176 B/op
+    jdkUUID_default_egdUrandom_16Threads              28248 ± 2012 ns/op 176 B/op
+threadLocal of SHA1PRNG
+    jdkUUID_threadLocalSHA1_egdDefault_16Threads        974 ±   16 ns/op 208 B/op
+    jdkUUID_threadLocalSHA1_egdUrand_16Threads         1071 ±   19 ns/op 208 B/op
+threadLocal of default new SecureRandom()
+    jdkUUID_threadLocalDefault_egdDefault_16Threads   41542 ± 4099 ns/op 304 B/op
+    jdkUUID_threadLocalDefault_egdUrand_16Threads     41676 ± 4826 ns/op 304 B/op
+
+
 
 Conclusion:
 - creation of new SecureRandom instances is expensive - Make sure to use a ThreadLocal<SecureRandom> to generate UUID's and other crypto stuff, especially in a webserver context!
@@ -38,6 +68,44 @@ Conclusion:
 - JDK >=12 has very nice String concatenation optimizations, rendering fastUUID obsolete
     -  but JDK12 java.util.UUID still has the single shared SecureRandom instance, and makes it suffer form the lock contention in SecureRandomSpi#engineNextBytes, killing performance!
 
+
+
+
+JDK 8 Contended Benchmark                                       Mode  Cnt   Score    Error Units  gc.alloc.rate.norm
+    default java.util.UUID.randomUUID()
+       *jdkUUID_default_egdDefault_16Threads                    avgt   10   27775 ±   1545 ns/op   864 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
+        jdkUUID_default_egdRandom_16Threads                     avgt   10   27877 ±   1432 ns/op   864 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
+        jdkUUID_default_egdUrandom_16Threads                    avgt   10    9785 ±    150 ns/op   832 B/op # -||- but egd /dev/urandom really helps
+    threadLocal of SHA1PRNG
+        jdkUUID_threadLocalSHA1_egdDefault_16Threads            avgt   10    1675 ±     19 ns/op   895 B/op #as we are using sha1prng and ThreadLocal the egd changes have no real impact
+       *jdkUUID_threadLocalSHA1_egdUrand_16Threads              avgt   10    1732 ±    157 ns/op   896 B/op
+       *fastUuid_threadLocalSHA1_egdDefault_16Threads           avgt   10    1116 ±     19 ns/op   328 B/op #
+        fastUuid_threadLocalSHA1_egdUrand_16Threads             avgt   10    1110 ±     16 ns/op   328 B/op
+    threadLocal of default new SecureRandom() - defaults to NativePRNG which should be in "MIXED" mode but appears to be in "BLOCKING" mode
+        jdkUUID_threadLocalDefault_egdDefault_16Threads         avgt   10   44714 ±   1764 ns/op   960 B/op #
+        jdkUUID_threadLocalDefault_egdUrand_16Threads           avgt   10    1670 ±    110 ns/op   864 B/op
+        fastUuid_threadLocalDefault_egdDefault_16Threads        avgt   10   45233 ±   2459 ns/op   424 B/op
+        fastUuid_threadLocalDefault_egdUrand_16Threads          avgt   10    1047 ±     26 ns/op   328 B/op
+
+
+Java 13 Contended Benchmark                                  Mode  Cnt  Score   Error  Units  gc.alloc.rate.norm
+    default java.util.UUID.randomUUID()
+       *jdkUUID_default_egdDefault_16Threads                 avgt   10   28104 ±   1519 ns/op    176 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
+        jdkUUID_default_egdRandom_16Threads                  avgt   10   28411 ±   1717 ns/op    176 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
+        jdkUUID_default_egdUrandom_16Threads                 avgt   10   28248 ±   2012 ns/op    176 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
+    threadLocal of SHA1PRNG
+        jdkUUID_threadLocalSHA1_egdDefault_16Threads         avgt   10     974 ±     16 ns/op    208 B/op #winner by 29x speedup- ThreadLocal<SecureRandom> eliminates the lock contention and SecureRandom "SHA1PRNG" does not need syscalls to /dev/urandom except for seeding
+        jdkUUID_threadLocalSHA1_egdUrand_16Threads           avgt   10    1071 ±     19 ns/op    208 B/op #2nd - ThreadLocal<SecureRandom> eliminates the lock contention
+    threadLocal of default new SecureRandom()
+        jdkUUID_threadLocalDefault_egdDefault_16Threads      avgt   10   41542 ±   4099 ns/op    304 B/op #default new SecureRandom() algo is very slow
+        jdkUUID_threadLocalDefault_egdUrand_16Threads        avgt   10   41676 ±   4826 ns/op    304 B/op #default new SecureRandom() algo is very slow
+
+
+########### DETAILS ##############
+
+
+
+VM: JDK 12
 Benchmark                                                    Mode  Cnt  Score   Error  Units  gc.alloc.rate.norm
 Contended
     default java.util.UUID.randomUUID()

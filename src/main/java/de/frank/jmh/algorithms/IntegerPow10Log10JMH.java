@@ -1,4 +1,4 @@
-package de.frank.jmh.basic;
+package de.frank.jmh.algorithms;
 
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;

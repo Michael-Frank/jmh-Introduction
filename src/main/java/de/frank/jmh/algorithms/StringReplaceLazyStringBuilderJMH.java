@@ -1,4 +1,4 @@
-package de.frank.jmh.basic;
+package de.frank.jmh.algorithms;
 
 import org.apache.commons.lang3.Validate;
 import org.openjdk.jmh.annotations.*;

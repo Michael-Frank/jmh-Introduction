@@ -21,18 +21,20 @@ import java.util.concurrent.TimeUnit;
 
 /*--
 
+Thread local cache your Cipher objects if you can - but beware of leaking key/crypto material across threads!
+
 Throughput - Values in ops/s
-                                  20         200        2000 # Datasize
-newEachTime                  501.311     502.365     403.488 # new Cipher("SPEC") is VERY expensive
-threadLocal_differentKey   1.724.136   1.687.279   1.144.438 # ..once we have dclLazyLoader Cipher object, the "initialize()" is not that expensive
-threadLocal_sameKey       34.499.647  12.428.912   1.548.278 # .. except when encrypting small values over and over again. If you can cache the key as well - do it!.
+                    Datasize->      20         200        2000  #
+newEachTime                    501.311     502.365     403.488  # new Cipher("SPEC") is VERY expensive
+threadLocal_differentSecKey  1.724.136   1.687.279   1.144.438  # ..once we have dclLazyLoader Cipher object, the "initialize()" is not that expensive
+threadLocal_sameKey         34.499.647  12.428.912   1.548.278  # .. except when encrypting small values over and over again. If you can cache the key as well - do it!.
 
 
 GC Allocation Rate normalized in B/op
-                                 20         200         2000 # Datasize
-newEachTime                   7.034       7.472       11.002 # as expected, creating dclLazyLoader new Cipher() each call creates dclLazyLoader lot of garbage too..
-threadLocal_differentKey        280         632        4.248
-threadLocal_sameKey              96         448        4.064
+                     Datasize->     20         200         2000  #
+newEachTime                      7.034       7.472       11.002  # as expected, creating dclLazyLoader new Cipher() each call creates dclLazyLoader lot of garbage too..
+threadLocal_differentSecKey        280         632        4.248  #
+threadLocal_sameKey                 96         448        4.064  #
 
  */
 

@@ -1,4 +1,4 @@
-package de.frank.jmh.basic;
+package de.frank.jmh.algorithms;
 
 import com.google.common.base.Splitter;
 import org.apache.commons.lang3.StringUtils;
