@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 
 WINNER: removeIf() - (internally makes 2 passes - first: scan and mark in bitset, second: shift elements)
 
-enchmark                                              Mode  Cnt         Score        Error  Units
+Benchmark                                              Mode  Cnt         Score        Error  Units
 ListFilteringJMH.MixedWorkload.removeIfArrayList      thrpt   30  10897305,211 ± 398831,925  ops/s
 ListFilteringJMH.MixedWorkload.removeByIterArrayList  thrpt   30   9855625,240 ±  93163,750  ops/s
 ListFilteringJMH.MixedWorkload.removeIfLinkedList     thrpt   30   6924750,856 ±  76589,106  ops/s
@@ -331,10 +331,28 @@ public class ListFilteringJMH {
         return result;
     }
 
+    public static String[] filterArray(List<String> searchTerms) {
+        String[] filtered = new String[searchTerms.size()];
+        int next = 0;
+        for (String e : searchTerms) {
+            if (!(e == null || e.isEmpty())) {
+                filtered[next] = e;
+            }
+        }
+        return filtered;
+    }
+
+
     public static List<String> filterStream(List<String> searchTerms) {
         return searchTerms.stream()
                 .filter(x -> x != null && !x.isEmpty())
                 .collect(Collectors.toList());
+    }
+
+    public static String[] filterStreamToArray(List<String> searchTerms) {
+        return searchTerms.stream()
+                .filter(x -> x != null && !x.isEmpty())
+                .toArray(String[]::new);
     }
 
     public static <T> List<T> filterStreamGeneric(Collection<T> searchTerms, Predicate<T> filter) {
