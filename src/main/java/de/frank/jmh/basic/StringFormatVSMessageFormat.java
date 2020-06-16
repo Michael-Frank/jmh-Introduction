@@ -14,18 +14,18 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /*--
-	Compares the performance of various approaches of String concatenation and String-/Message-format implementations
+    Compares the performance of various approaches of String concatenation and String-/Message-format implementations
 
     Learning's:
     - String-/Message-formatter's are fairly expensive! Don't use them mindlessly in hot code paths.
     - String.format is the most expensive but also the most powerful. Use wisely.
     - Use + based String concatenation pattern wherever possible. e.g: String msg  = "hello" + name + "!";
 
-	###Disclaimer#######################################
-	all of this obviously only matters in HOT code paths
-	####################################################
+    ###Disclaimer#######################################
+    all of this obviously only matters in HOT code paths
+    ####################################################
 
-	Lower is better- SINGLE THREADED  @ JDK 1.8.0_212, OpenJDK 64-Bit Server VM, 25.212-b04
+    Lower is better- SINGLE THREADED  @ JDK 1.8.0_212, OpenJDK 64-Bit Server VM, 25.212-b04
     Benchmark                                   Mode  Cnt     Score     Error   Units  gc.alloc.rate.norm
     concatString_4Strings                       avgt   15    47,300 ±   7,376  ns/op   392,000 ± 0,001 B/op # clear winner in this case - simple and fast
     stringBuilder_4Strings                      avgt   15    43,847 ±   4,372  ns/op   392,000 ± 0,001 B/op # same ase concatString but less readable
@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
     plusEqualsConcatAntiPattern_4Strings        avgt   15    47,774 ±   6,798  ns/op   392,000 ± 0,001 B/op # yes it work well in simple cases..
     plusEqualsConcatAntiPatternLoop_4Strings    avgt   15   148,897 ±   6,044  ns/op  1880,000 ± 0,001 B/op # ..but add a loop and suffer!
 
-	*/
+    */
 
 /**
  * @author Michael Frank
