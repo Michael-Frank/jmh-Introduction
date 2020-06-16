@@ -165,7 +165,7 @@ toWrapperTypeCached       3,04     3,50     3,14    3,67    3,80      n/a      n
 toWrapperTypeUncached      n/a     4,92     4,83    4,98    5,30     4,79     5,43 (int->Integer, long->Long, ...)
 
 Loop
-SumLoop_100000          62.988	 62.562	  62.604   2.410  31.187   93.759   93.657
+SumLoop_100000          62.988     62.562      62.604   2.410  31.187   93.759   93.657
 MultLoop_100000        125.043  125.387  125.732  94.144  93.821  155.834  156.272
 SumLoop per inter.        0,63     0,63     0,63    0,02    0,31     0,94     0,94
 MultLoop per inter.       1,25     1,25     1,26    0,94    0,94     1,56     1,56
@@ -210,7 +210,7 @@ toWrapperTypeCached       0,32     0,79     0,43    0,95    1,08      n/a      n
 toWrapperTypeUncached      n/a     2,21     2,12    2,27    2,58     2,07     2,71 (int->Integer, long->Long, ...)
 
 Loop
-SumLoop_100000          62.988	 62.562	  62.604   2.410  31.187   93.759   93.657
+SumLoop_100000          62.988     62.562      62.604   2.410  31.187   93.759   93.657
 MultLoop_100000        125.043  125.387  125.732  94.144  93.821  155.834  156.272
 SumLoop per inter.        0,63     0,63     0,63    0,02    0,31     0,94     0,94
 MultLoop per inter.       1,25     1,25     1,26    0,94    0,94     1,56     1,56
@@ -224,7 +224,7 @@ rotateRight                                         0,19    0,23
 ##################################################################################
 BigInteger/BigDecimal tests -  every value in ns/Op
 ##################################################################################
-|            bigInteger		           |   bigDecimal
+|            bigInteger                   |   bigDecimal
 |            small  LongMax  RealyBig  |   small   LongMax  RealyBig
 Add          22,33    22,84     26,92  |    5,61     19,33     38,12
 Substract    24,72    25,83     29,18  |    5,74      5,87     36,08
@@ -434,11 +434,11 @@ double_toWrapper                 avgt   5        5,11 ±      0,04 ns/op        
 double_SumLoop100000             avgt   5      93.768 ±     2.477 ns/op      93.765      0,94
 double_multLoop100000            avgt   5     156.000 ±     4.911 ns/op     155.997      1,56
 Math:
-double_SQRT         		     avgt    5       6,23 ±     0,14 ns/op
-double_pow0_5         		     avgt    5      73,93 ±     5,45 ns/op
-double_pow1_5         		     avgt    5      72,74 ±     1,64 ns/op
-double_pow2           		     avgt    5       3,35 ±     0,94 ns/op
-double_powX           		     avgt    5      73,81 ±     2,21 ns/op
+double_SQRT                      avgt    5       6,23 ±     0,14 ns/op
+double_pow0_5                      avgt    5      73,93 ±     5,45 ns/op
+double_pow1_5                      avgt    5      72,74 ±     1,64 ns/op
+double_pow2                        avgt    5       3,35 ±     0,94 ns/op
+double_powX                        avgt    5      73,81 ±     2,21 ns/op
 
 
 bigDecimal_LongMax_Add           avgt   5       22,02 ±      0,20 ns/op       19,33

@@ -179,8 +179,8 @@ public class RandomNumberGeneratorsJMH {
         double result = r.nextDouble() * double_bound;
 
         //correct bounded double:
-        //		result= (result < double_bound) ?  result : // correct for rounding
-        //		Double.longBitsToDouble(Double.doubleToLongBits(double_bound) - 1);
+        //        result= (result < double_bound) ?  result : // correct for rounding
+        //        Double.longBitsToDouble(Double.doubleToLongBits(double_bound) - 1);
 
         bh.consume(result);
     }
