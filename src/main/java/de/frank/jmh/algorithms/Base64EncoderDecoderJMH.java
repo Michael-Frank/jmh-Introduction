@@ -102,7 +102,6 @@ public class Base64EncoderDecoderJMH {
                 .build()).run();
     }
 
-
     @Benchmark
     public String java8_util_Base64_encode(MyState state) {
         return Base64.getEncoder().encodeToString(state.rawData);

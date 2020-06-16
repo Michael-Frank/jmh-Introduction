@@ -14,9 +14,12 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /*--
-	Compares the performance of various String-/Message-format implementations
+	Compares the performance of various approaches of String concatenation and String-/Message-format implementations
 
-    Learning's: Most String-/Message-formatter's are fairly expensive! Don't use them mindlessly in hot code paths.
+    Learning's:
+    - String-/Message-formatter's are fairly expensive! Don't use them mindlessly in hot code paths.
+    - String.format is the most expensive but also the most powerful. Use wisely.
+    - Use + based String concatenation pattern wherever possible. e.g: String msg  = "hello" + name + "!";
 
 	###Disclaimer#######################################
 	all of this obviously only matters in HOT code paths
@@ -35,7 +38,8 @@ import java.util.concurrent.TimeUnit;
 
     some VERY special cases, showing what is possible API wise but which probably are not worth it.
     Please don't use that in production code :-)
-    concatManualPreCalculated_sharedBuffer      avgt   15    39,709 ±   4,088  ns/op   392,000 ± 0,001 B/op # best you could do - but unlikely to be of relevance in production
+    concatManualPreCalculated_sharedBuffer      avgt   15    39,709 ±   4,088  ns/op   392,000 ± 0,001 B/op # best you could do manually, but extremely unlikely corner case
+    preCalcBufferAndCopyInto                    avgt   15    82,515 ±   5,713  ns/op   632,000 ± 0,001 B/op #  lamdaMetaFactory can automatically do this trick for you - but 3x better in terms of performance
 
     AntiPatterns - dont do them
     plusEqualsConcatAntiPattern_4Strings        avgt   15    47,774 ±   6,798  ns/op   392,000 ± 0,001 B/op # yes it work well in simple cases..
@@ -61,15 +65,37 @@ public class StringFormatVSMessageFormat {
     private String param2 = UUID.randomUUID().toString();
     private String param3 = UUID.randomUUID().toString();
 
-    private static final String MESSAGE_FORMAT_TEMPLATE = "SomeToStringClass:\nparam0 {0}\nparam1 {1}\nparam2 {2}\nparam3 {3}";
+    private static final String MESSAGE_FORMAT_TEMPLATE =
+            "SomeToStringClass:\nparam0 {0}\nparam1 {1}\nparam2 {2}\nparam3 {3}";
     private static final MessageFormat MESSAGE_FORMAT = new MessageFormat(MESSAGE_FORMAT_TEMPLATE);
 
     public static void main(String[] args) throws RunnerException {
         verifyMethodsProduceSameResults();
-        Options opt = new OptionsBuilder()//
+        Options opt = new OptionsBuilder()
                 .include(StringFormatVSMessageFormat.class.getName() + ".*")//
-                .addProfiler(GCProfiler.class).build();
+                .addProfiler(GCProfiler.class)
+                .build();
         new Runner(opt).run();
+    }
+
+
+    @Benchmark
+    public String concatString_4Strings() {
+        return "SomeToStringClass:\nparam0 " + param0//
+               + "\nparam1 " + param1 //
+               + "\nparam2 " + param3//
+               + "\nparam3 " + param2;//
+    }
+
+    @Benchmark
+    //Essentially equal to concatString();
+    public String stringBuilder_4Strings() {
+        return new StringBuilder()//
+                                  .append("SomeToStringClass:\nparam0 ").append(param0)//
+                                  .append("\nparam1 ").append(param1)//
+                                  .append("\nparam2 ").append(param3)//
+                                  .append("\nparam3 ").append(param2)//
+                                  .toString();//
     }
 
     @Benchmark
@@ -93,32 +119,14 @@ public class StringFormatVSMessageFormat {
     public String slf4jMessageFormatter_4Strings() {
         return org.slf4j.helpers.MessageFormatter
                 .arrayFormat("SomeToStringClass:\nparam0 {}\nparam1 {}\nparam2 {}\nparam3 {}",
-                        new Object[]{param0, param1, param3, param2})
+                             new Object[]{param0, param1, param3, param2})
                 .getMessage();
     }
 
     @Benchmark
     public String stringFormat_4Strings() {
-        return String.format("SomeToStringClass:\nparam0 %s\nparam1 %s\nparam2 %s\nparam3 %s", param0, param1, param3, param2);
-    }
-
-    @Benchmark
-    public String concatString_4Strings() {
-        return "SomeToStringClass:\nparam0 " + param0//
-                + "\nparam1 " + param1 //
-                + "\nparam2 " + param3//
-                + "\nparam3 " + param2;//
-    }
-
-    @Benchmark
-    //Essentially equal to concatString();
-    public String stringBuilder_4Strings() {
-        return new StringBuilder()//
-                .append("SomeToStringClass:\nparam0 ").append(param0)//
-                .append("\nparam1 ").append(param1)//
-                .append("\nparam2 ").append(param3)//
-                .append("\nparam3 ").append(param2)//
-                .toString();//
+        return String.format("SomeToStringClass:\nparam0 %s\nparam1 %s\nparam2 %s\nparam3 %s", param0, param1, param3,
+                             param2);
     }
 
 
@@ -153,6 +161,28 @@ public class StringFormatVSMessageFormat {
     }
 
 
+    @Benchmark
+    public String preCalcBufferAndCopyInto() {
+        //basically what the LamdaMetaFactory can do automatically for you 3x better.
+        // we do not have its access to the cool jdk internal 0-Copy new String access paths :(
+        String[] params = {"SomeToStringClass:\nparam0 ", param0, "\nparam1 ", param1, "\nparam2 ",
+                param3, "\nparam3 ", param2};
+        int len = 0;
+        for (String s : params) {
+            len += s.length();
+        }
+        int pos = 0;
+        char[] buf = new char[len];
+
+        for (String s : params) {
+            int count = s.length();
+            s.getChars(0, count, buf, pos);
+            pos += count;
+        }
+        return new String(buf);
+    }
+
+
     // *insert into pre-filled* variant
     // This variant only works if the length of the tokens never changes!!!
     private int[] insertPos = {26, 52, 96, 140};
@@ -168,7 +198,6 @@ public class StringFormatVSMessageFormat {
         return new String(buffer);
     }
 
-
     // VERIFICATION
 
     private static void verifyMethodsProduceSameResults() {
@@ -176,8 +205,8 @@ public class StringFormatVSMessageFormat {
         String expected = b.concatString_4Strings();
         System.out.println("Expected: " + expected);
         Arrays.stream(StringFormatVSMessageFormat.class.getMethods())
-                .filter(m -> m.getAnnotation(Benchmark.class) != null)
-                .forEach(method -> b.methodProducesExpectedResult(method, expected));
+              .filter(m -> m.getAnnotation(Benchmark.class) != null)
+              .forEach(method -> b.methodProducesExpectedResult(method, expected));
     }
 
     private void methodProducesExpectedResult(Method method, String expected) {
@@ -185,7 +214,8 @@ public class StringFormatVSMessageFormat {
             String r = (String) method.invoke(this, null);
             if (!r.equals(expected)) {
                 throw new VerifyError(
-                        "ERROR: method '" + method.getName() + "' does not produce expected result. but returned: \n" + r + "\nExpected:\n" + expected);
+                        "ERROR: method '" + method.getName() + "' does not produce expected result. but returned: \n" +
+                        r + "\nExpected:\n" + expected);
             }
         } catch (Exception e) {
             e.printStackTrace();
