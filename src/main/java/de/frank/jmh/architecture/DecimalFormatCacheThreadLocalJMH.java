@@ -1,25 +1,22 @@
 package de.frank.jmh.architecture;
 
-import com.yevdo.jwildcard.JWildcard;
+import com.yevdo.jwildcard.*;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.profile.GCProfiler;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.profile.*;
+import org.openjdk.jmh.runner.*;
+import org.openjdk.jmh.runner.options.*;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
+import java.text.*;
+import java.time.*;
+import java.time.format.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 /*--
 Test: Create new DecimalFormat pattern each time vs ThreadLocal cache them (Pattern: "0.000")
 Result: yes, its much better to cache them, offering a 2-6x improvement, depending on the formatting overhead itself.
 
-
+Higher is better!
 Benchmark                      (data)   Mode         Score   Units   gc.alloc.rate.norm
 newEachTime                      20.0  thrpt     1.316.115   ops/s   1840 B/op
 newEachTime   314159265358979323846.0  thrpt       940.076   ops/s   2008 B/op
