@@ -13,7 +13,7 @@ The benchmarks are roughly organized into 4 different packages
 - maven
  
 ## Run the Benchmarks 
-Rn the `main` method in each benchmark class: 
+Run the `main` method in each benchmark class: 
   - A) its easiest to run the benchmarks from IDE starting the main method
     - for intellij you can install the JMH plugin
   - B) or run from console 
