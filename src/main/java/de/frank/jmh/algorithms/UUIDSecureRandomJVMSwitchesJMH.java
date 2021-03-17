@@ -1,33 +1,26 @@
 package de.frank.jmh.algorithms;
 
-import de.frank.jmh.algorithms.UUIDFastImplsJMH.FastUUID;
-import org.jetbrains.annotations.NotNull;
+import de.frank.jmh.algorithms.UUIDFastImplsJMH.*;
+import org.jetbrains.annotations.*;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.profile.GCProfiler;
-import org.openjdk.jmh.results.RunResult;
-import org.openjdk.jmh.results.format.ResultFormatType;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.profile.*;
+import org.openjdk.jmh.results.*;
+import org.openjdk.jmh.results.format.*;
+import org.openjdk.jmh.runner.*;
+import org.openjdk.jmh.runner.options.*;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.io.*;
+import java.security.*;
+import java.time.*;
+import java.time.format.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /*-
 Generating many secure UUID's fast has some pitfalls. The most common way is to simply call: java.util.UUID.randomUUID()
 
-JDK 8 Contended Benchmark                                       Mode  Cnt   Score    Error Units  gc.alloc.rate.norm
+JDK 8 Contended Benchmark                             Score    Error Units  gc.alloc.rate.norm
 default java.util.UUID.randomUUID()
    *jdkUUID_default_egdDefault_16Threads              27775 ± 1545 ns/op 864 B/op
     jdkUUID_default_egdRandom_16Threads               27877 ± 1432 ns/op 864 B/op

@@ -56,20 +56,30 @@ THE POSSIBILITY OF SUCH DAMAGE.
         <asciitable.version>0.3.2</asciitable.version>
 
         <!-- dependency versions for benchmarks-->
-        <spring-core.version>5.0.8.RELEASE</spring-core.version>
+        <spring-core.version>5.2.8.RELEASE</spring-core.version>
+
         <dsiutils.version>2.4.2</dsiutils.version>
         <commons-codec.version>1.11</commons-codec.version>
-        <asciitable.version>0.3.2</asciitable.version>
-        <jackson-databind.version>2.9.10.3</jackson-databind.version>
+
         <net.openhft.lang.version>6.8.2</net.openhft.lang.version>
+
+        <!-- object pooling-->
         <com.github.tehleo.junion.version>1.1.1</com.github.tehleo.junion.version>
         <com.github.chrisvest.stormpot.version>3.0</com.github.chrisvest.stormpot.version>
         <org.appache.commons-pool2.version>2.8.0</org.appache.commons-pool2.version>
 
+        <!-- serializers-->
+        <jackson.version>2.11.2</jackson.version>
+
+        <!-- JaxB-->
+        <org.eclipse.persistence.moxy.version>2.7.7</org.eclipse.persistence.moxy.version>
+        <threeten-jaxb-core.version>1.2</threeten-jaxb-core.version>
+        <protobuf.version>3.10.0</protobuf.version>
+
+
         <lucene.version>8.3.1</lucene.version>
         <slf4j-api.version>2.0.0-alpha1</slf4j-api.version>
         <log4j2.version>2.12.1</log4j2.version>
-        <protobuf.version>3.10.0</protobuf.version>
         <chronicle-values.version>2.16.1</chronicle-values.version>
     </properties>
 
@@ -108,6 +118,12 @@ THE POSSIBILITY OF SUCH DAMAGE.
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.uuid</groupId>
+            <artifactId>java-uuid-generator</artifactId>
+            <version>4.0</version>
+        </dependency>
+
         <!-- Base64EncodersDecodersJMH-->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -132,12 +148,47 @@ THE POSSIBILITY OF SUCH DAMAGE.
         </dependency>
 
 
+        <!-- jaxb provider for xml marshalling/unmarshalling -->
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.moxy</artifactId>
+            <version>${org.eclipse.persistence.moxy.version}</version>
+        </dependency>
+
+        <!-- Till today there is no sufficient java.util.time support in jaxb. Therefore we need some adapters.
+             https://github.com/eclipse-ee4j/jaxb-ri/issues/1174
+        -->
+        <!-- JAXB XmlJavaTypeAdapters for java.time.* (JSR-310) types e.g. OffsetDateTime, Instant, Duration,betc. -->
+        <!-- https://mvnrepository.com/artifact/io.github.threeten-jaxb/threeten-jaxb-core -->
+        <dependency>
+            <groupId>io.github.threeten-jaxb</groupId>
+            <artifactId>threeten-jaxb-core</artifactId>
+            <version>${threeten-jaxb-core.version}</version>
+        </dependency>
+
         <!-- JacksonReaderBenchmarkJMH-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson-databind.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-parameter-names</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
@@ -266,6 +317,25 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.16.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.6.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.3.3</version>
         </dependency>
 
     </dependencies>

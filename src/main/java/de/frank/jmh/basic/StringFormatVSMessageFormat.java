@@ -1,19 +1,26 @@
 package de.frank.jmh.basic;
 
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.profile.GCProfiler;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.profile.*;
+import org.openjdk.jmh.runner.*;
+import org.openjdk.jmh.runner.options.*;
 
-import java.lang.reflect.Method;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.lang.reflect.*;
+import java.text.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 /*--
+
+Benchmark                                    Score
+concatString_4Strings                       47 ns/operation
+stringBuilder_4Strings                      43 ns/operation
+slf4jMessageFormatter_4Strings             181 ns/operation
+messageFormat_4Strings                     728 ns/operation
+  messageFormatExternalPattern_4Strings    797 ns/operation
+  messageFormatCached_4Strings             288 ns/operation
+stringFormat_4Strings                     1100 ns/operation
+
     Compares the performance of various approaches of String concatenation and String-/Message-format implementations
 
     Learning's:

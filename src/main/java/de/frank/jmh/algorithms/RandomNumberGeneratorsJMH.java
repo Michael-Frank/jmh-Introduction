@@ -1,23 +1,16 @@
 package de.frank.jmh.algorithms;
 
-import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well44497b;
-import org.apache.commons.math3.random.Well512a;
+import org.apache.commons.math3.random.*;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.infra.Blackhole;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.infra.*;
+import org.openjdk.jmh.runner.*;
+import org.openjdk.jmh.runner.options.*;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Random;
-import java.util.SplittableRandom;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.security.*;
+import java.time.*;
+import java.time.format.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 /*--
 
@@ -35,7 +28,7 @@ JDK.ThreadLocalRandom          228.848.173  192.477.756  202.704.545  115.587.55
 JDK.SecureRandom_SHA1           24.040.454    4.631.773    4.581.726    8.863.876    9.117.086    4.644.490     9.313.234 # way to go for normal secure stuff (crypto keys, salts, ....)
 JDK.SecureRandom_STRONG             12.492        6.760        6.585       13.609      13.598         6.651         9.949 # ULTRA slow - no reallife benefit over SecureRandom_SHA1 - only viable for you CA Master Private Key
 
-commons.MerseneTwister         130.504.838   69.272.325   77.490.124   77.615.564  134.250.753   92.389.524    96.920.521 # well known but special - long period
+commons.MersenneTwister        130.504.838   69.272.325   77.490.124   77.615.564  134.250.753   92.389.524    96.920.521 # well known but special - long period
 commons.Well44497b              77.605.088   34.802.570   35.024.216   55.943.941   81.154.884   36.773.720    53.550.737 # well known but special - very long period
 commons.Well512a               105.534.028   59.444.862   59.526.684   66.699.357  107.752.658   57.129.972    76.014.594 # well known but special - long period
 dsi.XoRoShiRo128PlusRandom*    229.216.318  181.556.846  201.642.720   56.639.801  240.527.720  261.998.544   195.263.658 # current state of the art in super fast medium period PRNG's
@@ -55,7 +48,7 @@ JDK.ThreadLocalRandom          227.544.151  194.500.916  160.835.113   87.871.80
 JDK.SecureRandom_SHA1           32.716.090    4.432.020    4.649.020    9.601.989    9.065.637    5.512.551     10.996.218
 JDK.SecureRandom_STRONG             12.746        4.766        5.588       12.005       10.605        6.627          8.723
 
-commons.MerseneTwister         130.539.263   63.523.568   64.603.732   65.960.251  129.267.386   89.266.765     90.526.828
+commons.MersenneTwister        130.539.263   63.523.568   64.603.732   65.960.251  129.267.386   89.266.765     90.526.828
 commons.Well44497b              83.922.486   30.177.240   31.733.013   53.928.039   70.456.861   36.337.797     51.092.573
 commons.Well512a               103.263.483   51.662.151   52.029.243   67.210.906   86.372.272   64.045.734     70.763.965
 dsi.XoRoShiRo128PlusRandom*    228.149.480  162.502.615  168.092.234   55.604.014  227.019.846  253.364.841    182.455.505
@@ -83,7 +76,7 @@ public class RandomNumberGeneratorsJMH {
             "JDK.SecureRandom_STRONG",
             "commons.Well512a",
             "commons.Well44497b",
-            "commons.MerseneTwister",
+            "commons.MersenneTwister",
 //            "dsi.SplitMix64Random*",
             "dsi.XoRoShiRo128PlusRandom*",
 //            "dsi.XorShift1024StarRandom*",
@@ -121,7 +114,7 @@ public class RandomNumberGeneratorsJMH {
             case "JDK.SplitableRandom":
                 r = new JDKSplitableRandomWrapper(new SplittableRandom());
                 break;
-            case "commons.MerseneTwister":
+            case "commons.MersenneTwister":
                 r = new JDKRandomWrapper(new MersenneTwister());
                 break;
             case "commons.Well512a":
