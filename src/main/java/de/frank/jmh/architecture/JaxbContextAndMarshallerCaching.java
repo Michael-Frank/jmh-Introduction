@@ -3,6 +3,8 @@ package de.frank.jmh.architecture;
 
 import de.frank.impl.jaxb.*;
 import de.frank.jmh.model.*;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.*;
 import org.eclipse.persistence.jaxb.*;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.results.*;
@@ -11,8 +13,6 @@ import org.openjdk.jmh.runner.*;
 import org.openjdk.jmh.runner.options.*;
 import org.xml.sax.*;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.*;
 import javax.xml.validation.*;
 import java.io.*;
 import java.lang.reflect.*;
@@ -253,7 +253,7 @@ public class JaxbContextAndMarshallerCaching {
 
         try {
             Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            marshaller.setProperty(jakarta.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, true);
             marshaller.setProperty(MarshallerProperties.JSON_MARSHAL_EMPTY_COLLECTIONS, true);
             return marshaller;
         } catch (JAXBException e) {

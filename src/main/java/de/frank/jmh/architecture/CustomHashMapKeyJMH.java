@@ -1,21 +1,16 @@
 package de.frank.jmh.architecture;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Value;
-import org.apache.commons.lang3.RandomStringUtils;
+import lombok.*;
+import org.apache.commons.lang3.*;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.infra.Blackhole;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.infra.*;
+import org.openjdk.jmh.runner.*;
+import org.openjdk.jmh.runner.options.*;
 
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.time.*;
+import java.time.format.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /*--
@@ -33,7 +28,7 @@ badCache_getAndPut                         thrpt   30   3400767,115 ±  110719,6
 betterCache_getAndPut                      thrpt   30  58577668,167 ± 2241150,405  ops/s
 betterCache_putIfAbsent                    thrpt   30  36324723,639 ± 1701861,795  ops/s
 betterCache_computeIfAbsent                thrpt   30  46825796,505 ± 2503221,561  ops/s
-goodIntentionsBadResult_computeIfAbsent    thrpt   30      1298,560 ±     151,183  ops/s
+goodIntentionsBadResult_computeIfAbsent    thrpt   30      1298,560 ±     151,183  ops/s //TODO explain why this sucks
 
  */
 

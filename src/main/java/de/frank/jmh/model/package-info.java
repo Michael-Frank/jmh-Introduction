@@ -15,34 +15,17 @@
         @XmlJavaTypeAdapter(type = LocalTime.class, value = LocalTimeXmlAdapter.class),
         @XmlJavaTypeAdapter(type = OffsetTime.class, value = OffsetTimeXmlAdapter.class),
         @XmlJavaTypeAdapter(type = ZoneId.class, value = ZoneIdXmlAdapter.class),
+        //other:
         @XmlJavaTypeAdapter(type = Locale.class, value = LocaleXmlAdapter.class)
 })
 @XmlAccessorOrder(XmlAccessOrder.ALPHABETICAL)
-package com.virtualvenue.model;
+package de.frank.jmh.model;
 
-import io.github.threetenjaxb.core.DurationXmlAdapter;
-import io.github.threetenjaxb.core.InstantXmlAdapter;
-import io.github.threetenjaxb.core.LocalDateTimeXmlAdapter;
-import io.github.threetenjaxb.core.LocalDateXmlAdapter;
-import io.github.threetenjaxb.core.LocalTimeXmlAdapter;
-import io.github.threetenjaxb.core.OffsetDateTimeXmlAdapter;
-import io.github.threetenjaxb.core.OffsetTimeXmlAdapter;
-import io.github.threetenjaxb.core.ZoneIdXmlAdapter;
-import io.github.threetenjaxb.core.ZonedDateTimeXmlAdapter;
+import de.frank.impl.jaxb.adapter.*;
+import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.*;
 
-import javax.xml.bind.annotation.XmlAccessOrder;
-import javax.xml.bind.annotation.XmlAccessorOrder;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Locale;
+import java.time.*;
+import java.util.*;
 
 

@@ -1,11 +1,11 @@
 package de.frank.impl.jaxb;
 
+import jakarta.xml.bind.*;
 import lombok.*;
 import org.apache.commons.lang3.*;
 import org.xml.sax.*;
 
 import javax.xml.*;
-import javax.xml.bind.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.validation.*;

@@ -1,19 +1,19 @@
 package de.frank.impl.jaxb;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.*;
 import lombok.*;
 import lombok.experimental.*;
 import org.eclipse.persistence.jaxb.*;
 import org.xml.sax.*;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.*;
 import javax.xml.validation.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * Marshall javax.xml.bind.annotation.* annotated classes to and from XML
+ * Marshall jakarta.xml.bindannotation.* annotated classes to and from XML
  */
 @UtilityClass
 public class CachedJaxbXmlMapper {

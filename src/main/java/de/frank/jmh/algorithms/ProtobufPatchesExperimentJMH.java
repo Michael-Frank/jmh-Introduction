@@ -1,21 +1,16 @@
 package de.frank.jmh.algorithms;
 
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.infra.Blackhole;
-import org.openjdk.jmh.profile.GCProfiler;
-import org.openjdk.jmh.profile.HotspotMemoryProfiler;
-import org.openjdk.jmh.results.format.ResultFormatType;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.infra.*;
+import org.openjdk.jmh.profile.*;
+import org.openjdk.jmh.results.format.*;
+import org.openjdk.jmh.runner.*;
+import org.openjdk.jmh.runner.options.*;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.concurrent.TimeUnit;
+import java.io.*;
+import java.time.*;
+import java.time.format.*;
+import java.util.concurrent.*;
 
 /*--
 
@@ -111,7 +106,6 @@ public class ProtobufPatchesExperimentJMH {
                         DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
                         ProtobufPatchesExperimentJMH.class.getSimpleName()))
                 .addProfiler(GCProfiler.class)
-                .addProfiler(HotspotMemoryProfiler.class)
                 .build();
         new Runner(opt).run();
     }

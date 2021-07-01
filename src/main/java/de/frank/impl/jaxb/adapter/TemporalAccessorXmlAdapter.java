@@ -1,4 +1,4 @@
-package de.frank.impl.jaxb;
+package de.frank.impl.jaxb.adapter;
 
 import jakarta.xml.bind.annotation.adapters.*;
 
@@ -12,8 +12,8 @@ public class TemporalAccessorXmlAdapter<T extends TemporalAccessor> extends XmlA
     private final TemporalQuery<? extends T> temporalQuery;
 
     public TemporalAccessorXmlAdapter(DateTimeFormatter formatter, TemporalQuery<? extends T> temporalQuery) {
-        this.formatter = (DateTimeFormatter)Objects.requireNonNull(formatter, "formatter must not be null");
-        this.temporalQuery = (TemporalQuery)Objects.requireNonNull(temporalQuery, "temporal query must not be null");
+        this.formatter = (DateTimeFormatter) Objects.requireNonNull(formatter, "formatter must not be null");
+        this.temporalQuery = (TemporalQuery) Objects.requireNonNull(temporalQuery, "temporal query must not be null");
     }
 
     public T unmarshal(String stringValue) {

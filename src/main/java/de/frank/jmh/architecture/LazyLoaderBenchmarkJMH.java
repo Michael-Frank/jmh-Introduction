@@ -1,23 +1,18 @@
 package de.frank.jmh.architecture;
 
-import com.google.common.base.Suppliers;
-import lombok.Getter;
-import org.apache.commons.lang3.concurrent.AtomicInitializer;
-import org.apache.commons.lang3.concurrent.AtomicSafeInitializer;
-import org.apache.commons.lang3.concurrent.ConcurrentException;
-import org.apache.commons.lang3.concurrent.LazyInitializer;
+import com.google.common.base.*;
+import lombok.*;
+import org.apache.commons.lang3.concurrent.*;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.profile.GCProfiler;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.profile.*;
+import org.openjdk.jmh.runner.*;
+import org.openjdk.jmh.runner.options.*;
 
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
+import java.time.*;
+import java.time.format.*;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 import java.util.function.Supplier;
 
 /*--
@@ -86,11 +81,16 @@ public class LazyLoaderBenchmarkJMH {
         Supplier<String> atomicSafeReference = AtomicSafeLazyLoader.of(this::expensiveOperation);
 
         //3rd party library impls
+
+        //Lombok
         @Getter(lazy = true)
         private final String lombokLazyGetter = expensiveOperation();
 
-        com.google.common.base.Supplier<String> guava = Suppliers.memoize(this::expensiveOperation); //same as doubleCheckedLockingBool
+        //guava
+        com.google.common.base.Supplier<String> guava = Suppliers.memoize(this::expensiveOperation);
+        //same as doubleCheckedLockingBool
 
+        //apache commons
         LazyInitializer<String> apacheLazy = new LazyInitializer<String>() {
             @Override
             protected String initialize() {
@@ -103,7 +103,6 @@ public class LazyLoaderBenchmarkJMH {
                 return expensiveOperation();
             }
         };
-
         AtomicSafeInitializer<String> apacheAtomicSafeInitializer = new AtomicSafeInitializer<String>() {
             @Override
             protected String initialize() {

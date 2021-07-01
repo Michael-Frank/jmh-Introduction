@@ -12,13 +12,16 @@ import com.yevdo.jwildcard.*;
 import de.frank.impl.jaxb.*;
 import de.frank.jmh.model.*;
 import de.javakaffee.kryoserializers.*;
+import io.protostuff.*;
+import io.protostuff.runtime.*;
 import lombok.*;
 import org.apache.commons.lang3.*;
+import org.jetbrains.annotations.*;
 import org.mapstruct.*;
 import org.mapstruct.control.*;
 import org.mapstruct.factory.*;
 import org.modelmapper.*;
-import org.objenesis.strategy.*;
+import org.modelmapper.module.jsr310.*;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.results.*;
 import org.openjdk.jmh.results.format.*;
@@ -33,66 +36,114 @@ import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.*;
 
+// Results:
+//@ JMH version: 1.2, JDK 15.0.2, OpenJDK 64-Bit Server VM 15.0.2+7, MacOS  Intel i7-6700HQ@2,7GHz
 /*--
+Q: Why would it want a deep copy?
+A: e.g. for a cache, or for defensive programming (e.g. a in-memory model layer that shares a mutable copy to be used by downstream layers)
+
+Q: what is the fastest (more most feasible) way of creating a DeepCopy of a provided Object or Object graph?
+A:Undoubtedly, writing hand crafted copy constructors for all your model files is fastest.
+However, that is sometimes overkill, not maintainable or simply impossible due to classes outside your control.
+In such cases a generic tool is wanted.
+Some of the analysed tools are pure deepCopiers but most of them are some kind of generic serialization/deserialization libraries.
+Many of the evaluated tools work quite well or "good-enough", so we can take into account which dependencies we want (or are allowed to) use to do the job.
+Read the results!
+
+Q: are these all the tools?
+A: hell no, aint nobody got time for that. They are the fastest, most common or easiest to work with i found. Feel free to contribute.
+
+WARNING: keep in mind that
+- you clone tool is most likely to be used in a concurrent context, and not all of them are thread safe or event concurrent
+- threadSafe != concurrent - the former only ensure nothing breaks (and could potentially use a global lock) while the second may also consider performance implications
+- sometimes just allocating on demand is faster than caching or threadLocal caching - ThreadLocal is not the holy grail
+- data matters! its a huge difference if you serialize deeply nested big graphs, or just a single simple pojo!
+=> Adapt this benchmark to your case - preferably switch the HierarchicalMockModel to a model you use in production!!
 
 
-Uncontended results (forks 1, threads 1)
+Conclusion:
+- Handcrafted copy constructor is the fastest but the most complicated and the most error prone
+- Kryo is sometimes a pain to set up, but delivers amazing results
+- protobuf is a nice candidate and easy to make a maintainable generic deepClone util out of. Especially if you program is already doing protobuf. Protostuff is the best protobuf implementation (IMHO)
+- jackson databind does reasonably well, and is readily available in most projects - use the intermediate "TokenBuffer" instead of to/from json. Easy and fast.
+- If you want a dedicated cloning library that "just works" -> kostaskougios CloningLib is a solid choice. But wrap it in a ThreadLocal as it suffers from thread contention.
+- stuck in legacy land? apache commonsLang SerializationUtils might help. However, it relies on java Serialization interface and thus requires ALL your model files to implement Serializable
+- never ever use gson or jaxb/moxy
+
+
+
+Uncontended results (forks 1, threads 1) - lower is better
 ----------------------------------------
-Benchmark                                                       Mode  Cnt     Score     Error  Units
-DeepCopyJMH.commonsLangClone                                   avgt   10  1424,957 ±  27,038  us/op
-DeepCopyJMH.copyConstructor                                    avgt   10    15,745 ±   0,170  us/op
-DeepCopyJMH.gson_cached                                        avgt   10  4901,697 ±  91,668  us/op
-DeepCopyJMH.gson_threadLocal                                   avgt   10  4999,078 ± 373,655  us/op
-DeepCopyJMH.jackson_cached2_generic_toTokenBuffer              avgt   10   587,379 ±  20,881  us/op
-DeepCopyJMH.jackson_cachedThreadLocal_generic_toTokenBuffer    avgt   10   572,950 ±  18,529  us/op
-DeepCopyJMH.jackson_cached_generic_toBytes                     avgt   10  1248,203 ±  13,937  us/op
-DeepCopyJMH.jackson_cached_generic_toTokenBuffer               avgt   10   569,766 ±  29,556  us/op
-DeepCopyJMH.jackson_cached_typed_toBytes                       avgt   10  1192,116 ±  14,194  us/op
-DeepCopyJMH.jackson_cached_typed_toString                      avgt   10  1328,386 ±  12,972  us/op
-DeepCopyJMH.jackson_cached_typed_toTokenBuffer                 avgt   10   576,335 ±   9,028  us/op
-DeepCopyJMH.jackson_new2_typed_toString                        avgt   10  1624,295 ±  91,926  us/op
-DeepCopyJMH.jackson_new_generic_toString                       avgt   10  1596,581 ±  34,901  us/op
-DeepCopyJMH.jackson_new_typed_toString                         avgt   10  1606,599 ±  52,431  us/op
-DeepCopyJMH.jackson_threadLocalEverything_typed_toTokenBuffer  avgt   10   603,741 ±  16,318  us/op
-DeepCopyJMH.jaxbMoxy_cached                                    avgt   10  7630,968 ± 172,118  us/op
-DeepCopyJMH.kostaskougiosCloningLib_cached                     avgt   10   684,948 ±  23,559  us/op
-DeepCopyJMH.kostaskougiosCloningLib_threadLocal                avgt   10   684,416 ±  11,755  us/op
-DeepCopyJMH.kryo_cached                                        avgt   10   156,190 ±  17,673  us/op
-DeepCopyJMH.modelMapper_cached                                 avgt   10     0,102 ±   0,001  us/op
-DeepCopyJMH.modelMapper_threadLocal                            avgt   10     0,098 ±   0,001  us/op
-DeepCopyJMH.springSerialize                                    avgt   10  1360,370 ±  16,726  us/op
+Benchmark                                                      Mode  Cnt     Score      Error  Units
+DeepCopyJMH.copyConstructor                                   avgt 10 13,102   ± 2,016    us/op
+DeepCopyJMH.kryo_cached                                       avgt 10 149,329  ± 13,284   us/op
+DeepCopyJMH.protostuff_static                                 avgt 10 544,208  ± 67,374   us/op
+DeepCopyJMH.protostuff_copy_reuse_runtimeschema_buffer        avgt 10 581,715  ± 90,344   us/op
+DeepCopyJMH.protostuff_copy_reuse_TL_schema_buffer            avgt 10 596,357  ± 173,892  us/op
+DeepCopyJMH.protostuff_cachedSchema                           avgt 10 623,088  ± 113,602  us/op
+DeepCopyJMH.jackson_cachedThreadLocal_generic_toTokenBuffer   avgt 10 664,305  ± 40,786   us/op
+DeepCopyJMH.jackson_cached_typed_toTokenBuffer                avgt 10 668,782  ± 55,507   us/op
+DeepCopyJMH.jackson_cached_generic_toTokenBuffer              avgt 10 671,478  ± 41,879   us/op
+DeepCopyJMH.jackson_cached2_generic_toTokenBuffer             avgt 10 703,605  ± 111,487  us/op
+DeepCopyJMH.kostaskougiosCloningLib_threadLocal               avgt 10 706,779  ± 44,579   us/op
+DeepCopyJMH.kostaskougiosCloningLib_cached                    avgt 10 803,779  ± 198,025  us/op
+DeepCopyJMH.jackson_threadLocalEverything_typed_toTokenBuffer avgt 10 912,996  ± 381,484  us/op
+DeepCopyJMH.commonsLangClone                                  avgt 10 1170,309 ± 44,064   us/op
+DeepCopyJMH.jackson_cached_generic_toBytes                    avgt 10 1230,111 ± 74,252   us/op
+DeepCopyJMH.jackson_cached_typed_toBytes                      avgt 10 1272,306 ± 139,190  us/op
+DeepCopyJMH.jackson_cached_typed_toString                     avgt 10 1379,892 ± 268,460  us/op
+DeepCopyJMH.springSerialize                                   avgt 10 1402,167 ± 245,269  us/op
+DeepCopyJMH.jackson_new_typed_toString                        avgt 10 1738,089 ± 310,950  us/op
+DeepCopyJMH.jackson_new_generic_toString                      avgt 10 1863,538 ± 770,218  us/op
+DeepCopyJMH.jackson_new2_typed_toString                       avgt 10 2165,512 ± 891,361  us/op
+DeepCopyJMH.modelMapper_threadLocal                           avgt 10 3420,660 ± 510,550  us/op
+DeepCopyJMH.modelMapper_cached                                avgt 10 3918,275 ± 961,079  us/op
+DeepCopyJMH.gson_threadLocal                                  avgt 10 4878,577 ± 199,474  us/op
+DeepCopyJMH.gson_cached                                       avgt 10 4992,306 ± 449,850  us/op
+DeepCopyJMH.jaxbMoxy_cached                                   avgt 10 8709,603 ± 2726,208 us/op
 
-Contended results (forks 1, threads 32)
+
+Contended results (forks 1, threads 32) - lower is better
 ----------------------------------------
-Benchmark                                                       Mode  Cnt      Score       Error  Units
-DeepCopyJMH.copyConstructor                                    avgt   10    199,353 ±     5,579  us/op
-DeepCopyJMH.jackson_cached_typed_toTokenBuffer                 avgt   10   5634,017 ±   219,688  us/op
-DeepCopyJMH.jackson_cached2_generic_toTokenBuffer              avgt   10   5675,313 ±   111,679  us/op
-DeepCopyJMH.jackson_cached_generic_toTokenBuffer               avgt   10   6062,692 ±   316,370  us/op
-DeepCopyJMH.jackson_cachedThreadLocal_generic_toTokenBuffer    avgt   10   5812,336 ±   228,990  us/op
-DeepCopyJMH.jackson_threadLocalEverything_typed_toTokenBuffer  avgt   10   6165,216 ±   420,225  us/op
-DeepCopyJMH.jackson_cached_generic_toBytes                     avgt   10  10542,001 ±   338,734  us/op
-DeepCopyJMH.jackson_cached_typed_toBytes                       avgt   10  10776,638 ±   182,298  us/op
-DeepCopyJMH.jackson_cached_typed_toString                      avgt   10  10999,531 ±   440,923  us/op
-DeepCopyJMH.jackson_new2_typed_toString                        avgt   10  24647,483 ±  4457,954  us/op
-DeepCopyJMH.jackson_new_generic_toString                       avgt   10  29448,229 ± 14704,570  us/op
-DeepCopyJMH.jackson_new_typed_toString                         avgt   10  20355,571 ±  7231,071  us/op
-DeepCopyJMH.commonsLangClone                                   avgt   10  10557,899 ±   984,620  us/op
-DeepCopyJMH.gson_cached                                        avgt   10  36897,026 ±  2286,447  us/op
-DeepCopyJMH.gson_threadLocal                                   avgt   10  35640,850 ±  2265,355  us/op
-DeepCopyJMH.jaxbMoxy_cached                                    avgt   10  66656,486 ±  2086,503  us/op
-DeepCopyJMH.kryo_cached                                        avgt   10   1195,145 ±    67,907  us/op
-DeepCopyJMH.kostaskougiosCloningLib_cached                     avgt   10   5170,461 ±   155,091  us/op
-DeepCopyJMH.kostaskougiosCloningLib_threadLocal                avgt   10   5341,027 ±   280,713  us/op
-DeepCopyJMH.modelMapper_cached                                 avgt   10      1,547 ±     0,011  us/op
-DeepCopyJMH.modelMapper_threadLocal                            avgt   10      1,593 ±     0,020  us/op
-DeepCopyJMH.springSerialize                                    avgt   10  11236,535 ±  1207,929  us/op
+Benchmark                                                      Mode  Cnt       Score       Error  Units
+DeepCopyJMH.copyConstructor                                   avgt 10 148,843    ± 20,652    us/op
+DeepCopyJMH.kryo_cached                                       avgt 10 1326,178   ± 232,830   us/op
+DeepCopyJMH.protostuff_static                                 avgt 10 5115,453   ± 231,857   us/op
+DeepCopyJMH.kostaskougiosCloningLib_threadLocal               avgt 10 5468,118   ± 903,604   us/op
+DeepCopyJMH.protostuff_copy_reuse_runtimeschema_buffer        avgt 10 5873,032   ± 1146,258  us/op
+DeepCopyJMH.kostaskougiosCloningLib_cached                    avgt 10 6101,636   ± 906,655   us/op
+DeepCopyJMH.protostuff_copy_reuse_TL_schema_buffer            avgt 10 6257,055   ± 1465,978  us/op
+DeepCopyJMH.jackson_cached_generic_toTokenBuffer              avgt 10 6416,757   ± 626,858   us/op
+DeepCopyJMH.jackson_cachedThreadLocal_generic_toTokenBuffer   avgt 10 6825,192   ± 1398,428  us/op
+DeepCopyJMH.protostuff_cachedSchema                           avgt 10 7092,253   ± 1729,510  us/op
+DeepCopyJMH.jackson_threadLocalEverything_typed_toTokenBuffer avgt 10 7115,618   ± 1489,128  us/op
+DeepCopyJMH.springSerialize                                   avgt 10 9206,732   ± 1015,981  us/op
+DeepCopyJMH.commonsLangClone                                  avgt 10 9552,800   ± 2292,853  us/op
+DeepCopyJMH.jackson_cached_generic_toBytes                    avgt 10 11375,475  ± 2187,300  us/op
+DeepCopyJMH.jackson_cached_typed_toTokenBuffer                avgt 10 12486,088  ± 3082,981  us/op
+DeepCopyJMH.jackson_cached_typed_toBytes                      avgt 10 12805,771  ± 2048,417  us/op
+DeepCopyJMH.jackson_new2_typed_toString                       avgt 10 14663,639  ± 2838,194  us/op
+DeepCopyJMH.jackson_cached2_generic_toTokenBuffer             avgt 10 15606,528  ± 9205,637  us/op
+DeepCopyJMH.jackson_cached_typed_toString                     avgt 10 17733,439  ± 7297,026  us/op
+DeepCopyJMH.jackson_new_typed_toString                        avgt 10 21040,426  ± 10049,313 us/op
+DeepCopyJMH.jackson_new_generic_toString                      avgt 10 21080,263  ± 10247,715 us/op
+DeepCopyJMH.modelMapper_cached                                avgt 10 26129,203  ± 4693,008  us/op
+DeepCopyJMH.modelMapper_threadLocal                           avgt 10 42265,292  ± 33937,149 us/op
+DeepCopyJMH.gson_cached                                       avgt 10 46997,629  ± 7301,741  us/op
+DeepCopyJMH.jaxbMoxy_cached                                   avgt 10 75382,409  ± 11357,673 us/op
+DeepCopyJMH.gson_threadLocal                                  avgt 10 153278,350 ± 80752,593 us/op
 
-     */
+
+
+
+
+*/
 @State(Scope.Benchmark)
 public class DeepCopyJMH {
+
     static final Class<HierarchicalMockModel> MODEL_CLASS = HierarchicalMockModel.class;
 
+    //The model under test
     @State(Scope.Thread)
     @NoArgsConstructor
     @AllArgsConstructor
@@ -100,34 +151,27 @@ public class DeepCopyJMH {
         HierarchicalMockModel model = HierarchicalMockModel.newInstance(10, 10, 10);
     }
 
-    ObjectMapper cachedGenericMapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
-    ObjectReader cachedGenericReader = cachedGenericMapper.reader();
-    ObjectWriter cachedGenericWriter = cachedGenericMapper.writer();
-    ObjectReader cachedTypedReader = cachedGenericMapper.readerFor(MODEL_CLASS);
-    ObjectWriter cachedTypedWriter = cachedGenericMapper.writerFor(MODEL_CLASS);
 
-
-    ObjectMapper cached2Mapper = new JsonMapper().registerModule(new JavaTimeModule());
-    ObjectReader cached2TypedReader = cached2Mapper.readerFor(MODEL_CLASS);
-    ObjectWriter cached2TypedWriter = cached2Mapper.writerFor(MODEL_CLASS);
-
-
-    ThreadLocal<ObjectReader> threadLocalReader =
-            ThreadLocal.withInitial(() -> cachedGenericMapper.readerFor(MODEL_CLASS));
-    ThreadLocal<ObjectWriter> threadLocalWriter =
-            ThreadLocal.withInitial(() -> cachedGenericMapper.writerFor(MODEL_CLASS));
-
-    ThreadLocal<ObjectMapperInstances> threadLocalEverything =
-            ThreadLocal.withInitial(() -> new ObjectMapperInstances(MODEL_CLASS));
-
+    // https://github.com/google/gson
     Gson gson = new Gson();
     ThreadLocal<Gson> threadLocalGson = ThreadLocal.withInitial(Gson::new);
 
+    // https://github.com/kostaskougios/cloning
     Cloner kostaskougiosCloningLib = new Cloner();
     ThreadLocal<Cloner> threadLocalKostaskougiosCloningLib = ThreadLocal.withInitial(Cloner::new);
 
-    ModelMapper modelMapper = new ModelMapper();
-    ThreadLocal<ModelMapper> threadLocalModelMapper = ThreadLocal.withInitial(ModelMapper::new);
+    // http://modelmapper.org/
+    ModelMapper modelMapper = getModelMapper();
+    ThreadLocal<ModelMapper> threadLocalModelMapper = ThreadLocal.withInitial(DeepCopyJMH::getModelMapper);
+
+    @NotNull
+    private static ModelMapper getModelMapper() {
+        var mm = new ModelMapper();
+        mm.registerModule(new Jsr310Module());
+        mm.getConfiguration().setDeepCopyEnabled(true);
+        return mm;
+    }
+
 
     //kryo is not thread safe https://github.com/EsotericSoftware/kryo#thread-safety
     ThreadLocal<Kryo> kryo = ThreadLocal.withInitial(DeepCopyJMH::newKryo);
@@ -138,7 +182,7 @@ public class DeepCopyJMH {
         //kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
 
         //fix npe Cannot read the array length because "elementData" is null
-        kryo.register( Arrays.asList( "" ).getClass(), new ArraysAsListSerializer() );
+        kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
 
         kryo.register(Collections.EMPTY_LIST.getClass(), new CollectionsEmptyListSerializer());
         kryo.register(Collections.EMPTY_MAP.getClass(), new CollectionsEmptyMapSerializer());
@@ -154,12 +198,37 @@ public class DeepCopyJMH {
     }
 
 
+    // https://mapstruct.org/
     @Mapper(mappingControl = DeepClone.class)
     public interface MapStructCloneMapper {
         MapStructCloneMapper INSTANCE = Mappers.getMapper(MapStructCloneMapper.class);
 
         HierarchicalMockModel clone(HierarchicalMockModel model);
     }
+
+    // com.fasterxml.jackson.databind
+    ObjectMapper cachedGenericMapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
+    ObjectReader cachedGenericReader = cachedGenericMapper.reader();
+    ObjectWriter cachedGenericWriter = cachedGenericMapper.writer();
+    ObjectReader cachedTypedReader = cachedGenericMapper.readerFor(MODEL_CLASS);
+    ObjectWriter cachedTypedWriter = cachedGenericMapper.writerFor(MODEL_CLASS);
+
+
+    ObjectMapper cached2Mapper = new JsonMapper().registerModule(new JavaTimeModule());
+    ObjectReader cached2TypedReader = cached2Mapper.readerFor(MODEL_CLASS);
+    ObjectWriter cached2TypedWriter = cached2Mapper.writerFor(MODEL_CLASS);
+
+    ThreadLocal<ObjectReader> threadLocalReader =
+            ThreadLocal.withInitial(() -> cachedGenericMapper.readerFor(MODEL_CLASS));
+    ThreadLocal<ObjectWriter> threadLocalWriter =
+            ThreadLocal.withInitial(() -> cachedGenericMapper.writerFor(MODEL_CLASS));
+
+    ThreadLocal<ObjectMapperInstances> threadLocalEverything =
+            ThreadLocal.withInitial(() -> new ObjectMapperInstances(MODEL_CLASS));
+
+    ProtostuffDeepCopy<HierarchicalMockModel> protostuffDeepCopy =
+            new ProtostuffDeepCopy<>(HierarchicalMockModel.class);
+
 
     @Getter
     private static class ObjectMapperInstances {
@@ -173,6 +242,10 @@ public class DeepCopyJMH {
             this.writer = mapper.writerFor(z);
         }
     }
+
+    //==========================================
+    // Benchmarks
+    //==========================================
 
 
     @Benchmark
@@ -327,17 +400,40 @@ public class DeepCopyJMH {
         return local.getReader().readValue(tokens.asParser(), MODEL_CLASS);
     }
 
+    @Benchmark
+    public HierarchicalMockModel protostuff_static(MyState state) {
+        return ProtostuffDeepCopy.copy(state.model);
+    }
+
+    @Benchmark
+    public HierarchicalMockModel protostuff_cachedSchema(MyState state) {
+        return protostuffDeepCopy.copy_cachedSchema_newBuffer(state.model);
+    }
+
+    @Benchmark
+    public HierarchicalMockModel protostuff_copy_reuse_TL_schema_buffer(MyState state) {
+        return protostuffDeepCopy.copy_threadLocalSchemaAndBuffer(state.model);
+    }
+
+    @Benchmark
+    public HierarchicalMockModel protostuff_copy_reuse_runtimeschema_buffer(MyState state) {
+        return protostuffDeepCopy.copy_cachedRuntimeSchema_cachedBuffer(state.model);
+    }
+
+    //==========================================
+    // Support stuff
+    //==========================================
 
     public static void main(String[] args) throws Exception {
         DeepCopyJMH bench = new DeepCopyJMH();
+
         //test all impls if they produces the same result as the original model
         bench.verifyImplementationCorrectness();
 
-        //quick overview to filter out extremely bad candidates
-        var state = new MyState(HierarchicalMockModel.newInstance(2, 2, 3));
-        simpleBench(15_000, 1000, () -> bench.jackson_cached_generic_toTokenBuffer(state));
+        //String winnerMethod = "jackson_cached_genericWithTime_toTokenBuffer";
+        //var state = new MyState(HierarchicalMockModel.newInstance(2, 2, 3));
+        //simpleBench(15_000, 1000, () -> bench.jackson_cached_generic_toTokenBuffer(state));
 
-        String winnerMethod = "jackson_cached_genericWithTime_toTokenBuffer";
         var uncontenedResult = bench.benchmarkAllDeepCopyApproaches(1, 1);
         var contendResult = bench.benchmarkAllDeepCopyApproaches(1, 32);
         //var winnerInDepthResult = bench.benchmarkWinnerMoreDeeply(winnerMethod);
@@ -406,7 +502,7 @@ public class DeepCopyJMH {
 
     private void verifyImplementationCorrectness() {
         var state = new MyState(HierarchicalMockModel.newInstance(2, 2, 2));
-        var modified = HierarchicalMockModel.newInstance("TAMPERED_",2, 3, 1).getSubTypes();
+        var modified = HierarchicalMockModel.newInstance("TAMPERED_", 2, 3, 1).getSubTypes();
         Arrays.stream(this.getClass().getDeclaredMethods())
               .filter(m -> m.isAnnotationPresent(Benchmark.class))
               //.filter(m -> m.getName().startsWith(prefix))
@@ -425,25 +521,27 @@ public class DeepCopyJMH {
                       var bak = state.model.getSubTypes();
                       state.model.setSubTypes(modified);
                       assertThat(result)
-                              .withFailMessage("Detected shared reference of mutable instance! '%s' produces wrong result. Expecting:\n"
-                                               + " %s%n"
-                                               + "to be NOT equal to:%n"
-                                               + " %s%n", m.getName(), state.model, result)
+                              .withFailMessage(
+                                      "Detected shared reference of mutable instance! '%s' produces wrong result. Expecting:\n"
+                                      + " %s%n"
+                                      + "to be NOT equal to:%n"
+                                      + " %s%n", m.getName(), state.model, result)
                               .isNotEqualTo(state.model);
                       //revert modification
                       state.model.setSubTypes(bak);
 
                       //check if list contents are all deep clones
                       var bak2 = state.model.getSubTypes().get(0);
-                      state.model.getSubTypes().set(0,modified.get(0));
+                      state.model.getSubTypes().set(0, modified.get(0));
                       assertThat(result)
-                              .withFailMessage("Detected shared reference of mutable instance! '%s' produces wrong result. Expecting:\n"
-                                               + " %s%n"
-                                               + "to be NOT equal to:%n"
-                                               + " %s%n", m.getName(), state.model, result)
+                              .withFailMessage(
+                                      "Detected shared reference of mutable instance! '%s' produces wrong result. Expecting:\n"
+                                      + " %s%n"
+                                      + "to be NOT equal to:%n"
+                                      + " %s%n", m.getName(), state.model, result)
                               .isNotEqualTo(state.model);
                       //revert modification
-                      state.model.getSubTypes().set(0,bak2);
+                      state.model.getSubTypes().set(0, bak2);
 
                   } catch (ReflectiveOperationException e) {
                       throw new RuntimeException(e);
@@ -491,4 +589,66 @@ public class DeepCopyJMH {
         return v;
     }
 
+
+    public static class ProtostuffDeepCopy<T> {
+        private final Schema<T> schema;
+        private final RuntimeSchema<T> sharedRTSchema;
+
+        ThreadLocal<CachedStuff<T>> tlCache;
+
+        @Value
+        private static class CachedStuff<T> {
+            Schema schema;
+            LinkedBuffer buffer;
+        }
+
+
+        public ProtostuffDeepCopy(Class<T> t) {
+            this.schema = RuntimeSchema.getSchema(t);
+            this.sharedRTSchema = RuntimeSchema.createFrom(t);
+
+            this.tlCache = ThreadLocal
+                    .withInitial(() -> new CachedStuff<T>(RuntimeSchema.getSchema(t), LinkedBuffer.allocate(1024)));
+        }
+
+
+        public T copy_cachedSchema_newBuffer(T t) {
+            LinkedBuffer buffer = LinkedBuffer.allocate(1024);
+            return copy(t, schema, buffer);
+        }
+
+
+        public T copy_cachedRuntimeSchema_cachedBuffer(T t) {
+            LinkedBuffer buffer = LinkedBuffer.allocate(1024);
+            return copy(t, sharedRTSchema, buffer);
+        }
+
+        public T copy_threadLocalSchemaAndBuffer(T t) {
+            var cache = tlCache.get();
+            final Schema<T> schema = cache.getSchema();
+            final LinkedBuffer buffer = cache.getBuffer();
+            return copy(t, schema, buffer);
+        }
+
+        public static <V> V copy(V t) {
+            Schema<V> schema = (Schema<V>) RuntimeSchema.getSchema(t.getClass());
+            // Re-use (manage) this buffer to avoid allocating on every serialization
+            LinkedBuffer buffer = LinkedBuffer.allocate(1024);
+            return copy(t, schema, buffer);
+        }
+
+        private static <T> T copy(T t, Schema<T> schema, LinkedBuffer buffer) {
+            // ser
+            final byte[] serialized;
+            try {
+                serialized = ProtostuffIOUtil.toByteArray(t, schema, buffer);
+            } finally {
+                buffer.clear();
+            }
+            // deser
+            T parsed = schema.newMessage();
+            ProtostuffIOUtil.mergeFrom(serialized, parsed, schema);
+            return parsed;
+        }
+    }
 }

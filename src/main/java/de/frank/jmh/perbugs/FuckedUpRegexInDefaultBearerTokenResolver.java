@@ -11,10 +11,25 @@ import java.util.regex.*;
 
 
 /*--
+Small Performance issue in: org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver
+Stupid and pointless pre-check of authorization header with an fucked up regex.
+Stupid:
+ - has a massive performance bug
+ - is only performed if token is in header but not if token is passed as request parameter
+Pointless: token is validated by JWT parser anyway.
+
 Cold-singleshot times
 Benchmark                                    Mode  Cnt  Score   Error  Units
 matchesAndGroup_base            ss  100  4,286 ± 0,695  ms/op
 matchesAndGroup_fixedPattern    ss  100  4,422 ± 0,541  ms/op
+
+Warm avg times                Mode  Cnt   Score   Error  Units
+matchesAndGroup_base          avgt   30  12,169 ± 0,105  us/op
+matchesAndGroup_fixedPattern  avgt   30   7,898 ± 0,181  us/op
+matchesAndSplit_v1            avgt   30   7,860 ± 0,173  us/op
+matchesAndSplit_v2            avgt   30   7,844 ± 0,101  us/op
+split_customVerify            avgt   30   6,888 ± 0,263  us/op
+split_noVerify                avgt   30   0,091 ± 0,001  us/op
 
 #Single Threaded
 Benchmark                      Mode  Cnt      Score    Error  Units
@@ -36,15 +51,17 @@ split_noVerify                thrpt   30 11.968.489 ± 96009,280  ops/s # hittin
 
  */
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.SECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Threads(1)
 @Fork(3)
 @Warmup(iterations = 4, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @State(Scope.Thread)
-public class FuckedUpRegex {
+public class FuckedUpRegexInDefaultBearerTokenResolver {
     private static final String BEARER = "bearer ";
 
+    // the baseline ... even sonar lint tells you whats wrong with this
+    // (disclaimer: the best fix is to delete this useless piece of junk regex, as this validation is not required in the first place)
     private static final Pattern authorizationPattern = Pattern.compile(
             "^Bearer (?<token>[a-zA-Z0-9-._~+/]+=*)$",
             Pattern.CASE_INSENSITIVE);
@@ -59,7 +76,7 @@ public class FuckedUpRegex {
             "^Bearer [a-z0-9-._~+/]+=*$",
             Pattern.CASE_INSENSITIVE);
 
-    //just verify the token. Other chores done by substring and equals checks.
+    //just verify the token. Other chores done by plain old substring and equals checks.
     private static final Pattern authorizationPatternOptimized2 = Pattern.compile(
             "[a-z0-9-._~+/]+=*",
             Pattern.CASE_INSENSITIVE);
@@ -101,6 +118,9 @@ public class FuckedUpRegex {
     }
 
 
+    /*
+    Just get the token... ditch that stupid regex
+     */
     @Benchmark
     public String split_noVerify() {
         if (startsWithBearerIgnoreCase(input)) {
@@ -147,7 +167,7 @@ public class FuckedUpRegex {
     }
 
     private static boolean startsWithBearerIgnoreCase(String input) {
-        boolean hasMinLength = input != null && input.length() >= (BEARER.length() + 1);
+        boolean hasMinLength = StringUtils.length(input) >= (BEARER.length() + 1);
         return hasMinLength && BEARER.equalsIgnoreCase(input.substring(0, BEARER.length()));
     }
 
@@ -157,7 +177,7 @@ public class FuckedUpRegex {
 
         //System.setProperty("jmh.perfasm.xperf.dir", "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit");
         new Runner(new OptionsBuilder()
-                           .include(FuckedUpRegex.class.getName() + ".*")
+                           .include(FuckedUpRegexInDefaultBearerTokenResolver.class.getName() + ".*")
                            //##########
                            // Profilers
                            //############
@@ -242,8 +262,8 @@ public class FuckedUpRegex {
     }
 
     public static void verifyAllImpls(String expected) {
-        FuckedUpRegex instance = new FuckedUpRegex();
-        Arrays.stream(FuckedUpRegex.class.getDeclaredMethods())
+        FuckedUpRegexInDefaultBearerTokenResolver instance = new FuckedUpRegexInDefaultBearerTokenResolver();
+        Arrays.stream(FuckedUpRegexInDefaultBearerTokenResolver.class.getDeclaredMethods())
               .filter(m -> m.getDeclaredAnnotation(Benchmark.class) != null)
               .forEach(m -> {
                   try {

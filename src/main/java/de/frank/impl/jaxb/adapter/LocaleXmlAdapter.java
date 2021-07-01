@@ -1,14 +1,15 @@
-package com.virtualvenue.model;
+package de.frank.impl.jaxb.adapter;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import java.util.Locale;
+import jakarta.xml.bind.annotation.adapters.*;
+
+import java.util.*;
 
 
 /**
  * {@code XmlAdapter} mapping  {@code java.util.Locale} from and to the {@link Locale#toLanguageTag()}
  * <p>
  *
- * @see java.util.Locale
+ * @see Locale
  */
 public class LocaleXmlAdapter extends XmlAdapter<String, Locale> {
     @Override
