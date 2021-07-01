@@ -35,7 +35,7 @@ split_customVerify            thrpt   30    751.407 ± 33392,378  ops/s # even a
 split_noVerify                thrpt   30 11.968.489 ± 96009,280  ops/s # hitting gc saturation?
 
  */
-@BenchmarkMode(Mode.Throughput)
+@BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Threads(1)
 @Fork(3)
