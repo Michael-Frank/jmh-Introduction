@@ -63,6 +63,7 @@ SearchAndRedactLogMessagesJMH.regex                         0.5               10
 SearchAndRedactLogMessagesJMH.regex                         1.0               10             100  avgt    5    85,4 ±    3,4 us/op
 SearchAndRedactLogMessagesJMH.regex                         0.0              100             100  avgt    5    59,0 ±    2,1 us/op
 SearchAndRedactLogMessagesJMH.regex                         1.0              100             100  avgt    5    81,0 ±   14,4 us/op
+As regex impl is currently wrong, it produces errors with string of 100000 - so results are missing.
 
  */
 @BenchmarkMode(Mode.AverageTime)
@@ -92,15 +93,16 @@ public class SearchAndRedactLogMessagesJMH {
     int stringLength;
 
     @Param({
-            "0.0",
-            "0.5",
-            "1.0"
+            "0.0",//0%
+            "0.5",//50%
+            "1.0"//100%
     })
     double hasTokenChance;
 
     private String stringWithoutToken;
     private String stringWithToken;
 
+    //Different implementations we test against each other
     private TokenFinder_Simple tokenFinder_Simple;
     private TokenFinder_ahoCorasick tokenFinder_ahoCorasick;
     private TokenFinder_regex tokenFinder_regex;
@@ -145,9 +147,11 @@ public class SearchAndRedactLogMessagesJMH {
         }
         //this could probably be optimized
         StringBuilder buf = new StringBuilder(replacement);
+        //buf.replace might be a perf pitfall! as it MIGHT need to shift the string's char array - todo benchmark against a "overwrite single chars" with setCharAt variant
         found.forEach(match -> buf.replace(match.getStart(), match.getEnd(), replacement));
         return buf.toString();
     }
+
 
     public static class TokenFinder_Simple {
         private static final int TOKEN_MAX_LEN = 17;
@@ -289,7 +293,7 @@ public class SearchAndRedactLogMessagesJMH {
             //  - "BUUUUT my professor said..." - shhhhh, if your regex engine impl would adhere to the formal chomsky hierarchy of a "RegularExpressionLanguage" it would be a DFA, and it would be fast and simple.
             //     But there is no mainstream engine that simple.
             //     Most engines support advanced stuff like backtracking and lookarounds, which is expensive. Supporting lookaround/ahead/behind makes the engine no longer "regular" but a "Context-sensitive grammar" (just one step below turing complete)
-            //     In my opinion, such Regexengines just re-invent the wheel. You are mostly using them from a turing complete language like java - but you decide to limit yourself to an un-debuggable un-readable mess of characters (trying) to express your intent as regex, while wasting yours and everybody else's time reading your mess, instead of writing proper code.
+            //     In my opinion, such RegexEngines just re-invent the wheel. You are mostly using them from a turing complete language like java - but you decide to limit yourself to an un-debuggable un-readable mess of characters (trying) to express your intent as regex, while wasting yours and everybody else's time reading your mess, instead of writing proper code.
             final String regex = "(?=(?:.*+){0,17}\\d)(?=(?:.*+){0,17}[a-zA-Z])(?:[a-zA-Z\\d]*){17}";
             this.searchPattern = Pattern.compile(regex);
         }
