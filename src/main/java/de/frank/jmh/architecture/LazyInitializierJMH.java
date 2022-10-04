@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  * dclLazyLoader:·gc.alloc.rate.norm                   thrpt  30        ≈ 10⁻⁵              B/op
  * atomicReference_inline                              thrpt  30   951.313.180 ± 19.286.816 ops/s #4rd - simple and good perf
  * atomicReference_inline:·gc.alloc.rate.norm          thrpt  30        ≈ 10⁻⁵              B/op
- * atomicReferenceFieldLazyLoader                      thrpt  30   951.980.431 ± 32.283.514 ops/s #5rd - good perf  and mid complexiy
+ * atomicReferenceFieldLazyLoader                      thrpt  30   951.980.431 ± 32.283.514 ops/s #5rd - good perf  and mid complexity
  * atomicReferenceFieldLazyLoader:·gc.alloc.rate.norm  thrpt  30        ≈ 10⁻⁵              B/op
  * atomicReferenceLazyLoader                           thrpt  30   852.729.858 ± 22.291.655 ops/s #6th - simple and still reasonable perf
  * atomicReferenceLazyLoader:·gc.alloc.rate.norm       thrpt  30        ≈ 10⁻⁴              B/op
@@ -238,6 +238,13 @@ public class LazyInitializierJMH {
         }
     }
 
+    /**
+     * Benefits of this {@link AtomicReferenceFieldUpdater} vs {@link AtomicReferenceLazyLoader}: memory efficiency.
+     * It requires one less object indirection (the AtomicReference wrapper)
+     * The AtomicReferenceFieldUpdater itself is static.
+     *
+     * @param <T>
+     */
     public static class AtomicReferenceFieldLazyLoader<T> {
 
         private static final AtomicReferenceFieldUpdater<AtomicReferenceFieldLazyLoader, Object> REF_UPDATER = AtomicReferenceFieldUpdater.newUpdater(AtomicReferenceFieldLazyLoader.class, Object.class, "cachedObj");

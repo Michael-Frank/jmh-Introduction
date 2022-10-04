@@ -363,7 +363,7 @@ public class IndentationJMH {
                 //
                 // required for external profilers like "perf" to show java
                 // frames in their traces
-                .jvmArgsAppend("-XX:+PerserveFramePointer")
+                .jvmArgsAppend("-XX:+PreserveFramePointer")
                 .build();
         new Runner(opt).run();
 

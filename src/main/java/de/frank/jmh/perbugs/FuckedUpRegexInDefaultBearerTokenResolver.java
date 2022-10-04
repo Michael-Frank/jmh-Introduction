@@ -1,13 +1,14 @@
 package de.frank.jmh.perbugs;
 
-import org.apache.commons.lang3.*;
+import org.apache.commons.lang3.StringUtils;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.runner.*;
-import org.openjdk.jmh.runner.options.*;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.regex.*;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 
 /*--
@@ -211,9 +212,9 @@ public class FuckedUpRegexInDefaultBearerTokenResolver {
                            // this in turn requires hsdis (hotspot disassembler) binaries to be copied into e.g C:\Program Files\Java\jdk1.8.0_161\jre\bin\server
                            // For Windows you can download pre-compiled hsdis module from http://fcml-lib.com/download.html
                            //.jvmArgsAppend("-XX:+PrintAssembly") //requires hsdis binary in jdk - enable if you use the perf or winperf profiler
-                           ///required for external profilers like "perf" to show java frames in their traces
-                           //.jvmArgsAppend("-XX:+PerserveFramePointer")
-                           //XPERF  - windows xperf must be installed - this is included in WPT (windows performance toolkit) wich in turn is windows ADK included in https://developer.microsoft.com/en-us/windows/hardware/windows-assessment-deployment-kit
+                ///required for external profilers like "perf" to show java frames in their traces
+                //.jvmArgsAppend("-XX:+PreserveFramePointer")
+                //XPERF  - windows xperf must be installed - this is included in WPT (windows performance toolkit) wich in turn is windows ADK included in https://developer.microsoft.com/en-us/windows/hardware/windows-assessment-deployment-kit
                            //WARNING - MUST RUN WITH ADMINISTRATIVE PRIVILEGES (must start your console or your IDE with admin rights!
                            //WARNING - first ever run of xperf takes VERY VERY long (1h+) because it has to download and process symbols
                            //.addProfiler(WinPerfAsmProfiler.class)
@@ -231,9 +232,9 @@ public class FuckedUpRegexInDefaultBearerTokenResolver {
                            // .jvmArgsAppend("-XX:+DebugNonSafepoints")
                            //
                            // required for external profilers like "perf" to show java
-                           // frames in their traces
-                           // .jvmArgsAppend("-XX:+PerserveFramePointer")
-                           //
+                // frames in their traces
+                // .jvmArgsAppend("-XX:+PreserveFramePointer")
+                //
                            // #########
                            // COMPILER
                            // #########

@@ -1,44 +1,64 @@
 package de.frank.jmh.algorithms;
 
-import com.esotericsoftware.kryo.*;
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.json.*;
-import com.fasterxml.jackson.databind.util.*;
-import com.fasterxml.jackson.datatype.jsr310.*;
-import com.google.gson.*;
-import com.rits.cloning.*;
-import com.yevdo.jwildcard.*;
-import de.frank.impl.jaxb.*;
-import de.frank.jmh.model.*;
+import com.esotericsoftware.kryo.Kryo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.util.TokenBuffer;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.gson.Gson;
+import com.rits.cloning.Cloner;
+import com.yevdo.jwildcard.JWildcard;
+import de.frank.impl.jaxb.CachedJaxbXmlMapper;
+import de.frank.jmh.model.HierarchicalMockModel;
 import de.javakaffee.kryoserializers.*;
-import io.protostuff.*;
-import io.protostuff.runtime.*;
-import lombok.*;
-import org.apache.commons.lang3.*;
-import org.jetbrains.annotations.*;
-import org.mapstruct.*;
-import org.mapstruct.control.*;
-import org.mapstruct.factory.*;
-import org.modelmapper.*;
-import org.modelmapper.module.jsr310.*;
-import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.results.*;
-import org.openjdk.jmh.results.format.*;
-import org.openjdk.jmh.runner.*;
-import org.openjdk.jmh.runner.options.*;
+import io.protostuff.LinkedBuffer;
+import io.protostuff.ProtostuffIOUtil;
+import io.protostuff.Schema;
+import io.protostuff.runtime.RuntimeSchema;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Value;
+import org.apache.commons.lang3.SerializationUtils;
+import org.jetbrains.annotations.NotNull;
+import org.mapstruct.Mapper;
+import org.mapstruct.control.DeepClone;
+import org.mapstruct.factory.Mappers;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.module.jsr310.Jsr310Module;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.results.RunResult;
+import org.openjdk.jmh.results.format.ResultFormatFactory;
+import org.openjdk.jmh.results.format.ResultFormatType;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.runner.options.TimeValue;
 
-import java.io.*;
-import java.nio.charset.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.time.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 // Results:
-//@ JMH version: 1.2, JDK 15.0.2, OpenJDK 64-Bit Server VM 15.0.2+7, MacOS  Intel i7-6700HQ@2,7GHz
 /*--
+Q: How do i run this benchmark?
+A: please run the main method included in this class. It will configure and run a battery of tests.
+
 Q: Why would it want a deep copy?
 A: e.g. for a cache, or for defensive programming (e.g. a in-memory model layer that shares a mutable copy to be used by downstream layers)
 
@@ -73,70 +93,68 @@ Conclusion:
 
 
 Uncontended results (forks 1, threads 1) - lower is better
+@ JMH version: 1.28, JDK 15.0.2, OpenJDK 64-Bit Server VM 15.0.2+7, MacOS  Intel i7-6700HQ@2,7GHz
+----------------------------------------
+Uncontended results (forks 1, threads 1)
 ----------------------------------------
 Benchmark                                                      Mode  Cnt     Score      Error  Units
-DeepCopyJMH.copyConstructor                                   avgt 10 13,102   ± 2,016    us/op
-DeepCopyJMH.kryo_cached                                       avgt 10 149,329  ± 13,284   us/op
-DeepCopyJMH.protostuff_static                                 avgt 10 544,208  ± 67,374   us/op
-DeepCopyJMH.protostuff_copy_reuse_runtimeschema_buffer        avgt 10 581,715  ± 90,344   us/op
-DeepCopyJMH.protostuff_copy_reuse_TL_schema_buffer            avgt 10 596,357  ± 173,892  us/op
-DeepCopyJMH.protostuff_cachedSchema                           avgt 10 623,088  ± 113,602  us/op
-DeepCopyJMH.jackson_cachedThreadLocal_generic_toTokenBuffer   avgt 10 664,305  ± 40,786   us/op
-DeepCopyJMH.jackson_cached_typed_toTokenBuffer                avgt 10 668,782  ± 55,507   us/op
-DeepCopyJMH.jackson_cached_generic_toTokenBuffer              avgt 10 671,478  ± 41,879   us/op
-DeepCopyJMH.jackson_cached2_generic_toTokenBuffer             avgt 10 703,605  ± 111,487  us/op
-DeepCopyJMH.kostaskougiosCloningLib_threadLocal               avgt 10 706,779  ± 44,579   us/op
-DeepCopyJMH.kostaskougiosCloningLib_cached                    avgt 10 803,779  ± 198,025  us/op
-DeepCopyJMH.jackson_threadLocalEverything_typed_toTokenBuffer avgt 10 912,996  ± 381,484  us/op
-DeepCopyJMH.commonsLangClone                                  avgt 10 1170,309 ± 44,064   us/op
-DeepCopyJMH.jackson_cached_generic_toBytes                    avgt 10 1230,111 ± 74,252   us/op
-DeepCopyJMH.jackson_cached_typed_toBytes                      avgt 10 1272,306 ± 139,190  us/op
-DeepCopyJMH.jackson_cached_typed_toString                     avgt 10 1379,892 ± 268,460  us/op
-DeepCopyJMH.springSerialize                                   avgt 10 1402,167 ± 245,269  us/op
-DeepCopyJMH.jackson_new_typed_toString                        avgt 10 1738,089 ± 310,950  us/op
-DeepCopyJMH.jackson_new_generic_toString                      avgt 10 1863,538 ± 770,218  us/op
-DeepCopyJMH.jackson_new2_typed_toString                       avgt 10 2165,512 ± 891,361  us/op
-DeepCopyJMH.modelMapper_threadLocal                           avgt 10 3420,660 ± 510,550  us/op
-DeepCopyJMH.modelMapper_cached                                avgt 10 3918,275 ± 961,079  us/op
-DeepCopyJMH.gson_threadLocal                                  avgt 10 4878,577 ± 199,474  us/op
-DeepCopyJMH.gson_cached                                       avgt 10 4992,306 ± 449,850  us/op
-DeepCopyJMH.jaxbMoxy_cached                                   avgt 10 8709,603 ± 2726,208 us/op
+DeepCopyJMH.copyConstructor                                   avgt 30 10,156   ± 0,091    us/op
+DeepCopyJMH.kryo_cached                                       avgt 30 165,828  ± 6,139    us/op
+DeepCopyJMH.kostaskougiosCloningLib_threadLocal               avgt 30 331,250  ± 9,536    us/op
+DeepCopyJMH.kostaskougiosCloningLib_cached                    avgt 30 340,124  ± 11,277   us/op
+DeepCopyJMH.jackson_cachedThreadLocal_generic_toTokenBuffer   avgt 30 564,739  ± 4,185    us/op
+DeepCopyJMH.jackson_cached2_generic_toTokenBuffer             avgt 30 569,348  ± 3,350    us/op
+DeepCopyJMH.jackson_cached_typed_toTokenBuffer                avgt 30 573,985  ± 8,429    us/op
+DeepCopyJMH.jackson_cached_generic_toTokenBuffer              avgt 30 578,445  ± 9,753    us/op
+DeepCopyJMH.protostuff_copy_reuse_TL_schema_buffer            avgt 30 579,898  ± 8,042    us/op
+DeepCopyJMH.protostuff_cachedSchema                           avgt 30 595,741  ± 10,816   us/op
+DeepCopyJMH.protostuff_static                                 avgt 30 596,880  ± 13,978   us/op
+DeepCopyJMH.protostuff_copy_reuse_runtimeschema_buffer        avgt 30 603,951  ± 38,564   us/op
+DeepCopyJMH.jackson_threadLocalEverything_typed_toTokenBuffer avgt 30 795,476  ± 68,194   us/op
+DeepCopyJMH.commonsLangClone                                  avgt 30 997,923  ± 15,329   us/op
+DeepCopyJMH.jackson_cached_generic_toBytes                    avgt 30 1109,778 ± 10,032   us/op
+DeepCopyJMH.jackson_cached_typed_toBytes                      avgt 30 1116,167 ± 12,105   us/op
+DeepCopyJMH.jackson_cached_typed_toString                     avgt 30 1191,119 ± 7,674    us/op
+DeepCopyJMH.jackson_new2_typed_toString                       avgt 30 1381,921 ± 6,235    us/op
+DeepCopyJMH.springSerialize                                   avgt 30 1569,072 ± 237,495  us/op
+DeepCopyJMH.jackson_new_generic_toString                      avgt 30 1621,853 ± 164,792  us/op
+DeepCopyJMH.jackson_new_typed_toString                        avgt 30 3196,530 ± 1307,020 us/op
+DeepCopyJMH.modelMapper_cached                                avgt 30 3828,482 ± 123,046  us/op
+DeepCopyJMH.modelMapper_threadLocal                           avgt 30 3940,539 ± 178,672  us/op
+DeepCopyJMH.gson_cached                                       avgt 30 4183,107 ± 26,918   us/op
+DeepCopyJMH.gson_threadLocal                                  avgt 30 4202,343 ± 20,727   us/op
+DeepCopyJMH.jaxbMoxy_cached                                   avgt 30 8824,832 ± 270,818  us/op
 
 
-Contended results (forks 1, threads 32) - lower is better
+Contended results (forks 1, threads 32)
 ----------------------------------------
-Benchmark                                                      Mode  Cnt       Score       Error  Units
-DeepCopyJMH.copyConstructor                                   avgt 10 148,843    ± 20,652    us/op
-DeepCopyJMH.kryo_cached                                       avgt 10 1326,178   ± 232,830   us/op
-DeepCopyJMH.protostuff_static                                 avgt 10 5115,453   ± 231,857   us/op
-DeepCopyJMH.kostaskougiosCloningLib_threadLocal               avgt 10 5468,118   ± 903,604   us/op
-DeepCopyJMH.protostuff_copy_reuse_runtimeschema_buffer        avgt 10 5873,032   ± 1146,258  us/op
-DeepCopyJMH.kostaskougiosCloningLib_cached                    avgt 10 6101,636   ± 906,655   us/op
-DeepCopyJMH.protostuff_copy_reuse_TL_schema_buffer            avgt 10 6257,055   ± 1465,978  us/op
-DeepCopyJMH.jackson_cached_generic_toTokenBuffer              avgt 10 6416,757   ± 626,858   us/op
-DeepCopyJMH.jackson_cachedThreadLocal_generic_toTokenBuffer   avgt 10 6825,192   ± 1398,428  us/op
-DeepCopyJMH.protostuff_cachedSchema                           avgt 10 7092,253   ± 1729,510  us/op
-DeepCopyJMH.jackson_threadLocalEverything_typed_toTokenBuffer avgt 10 7115,618   ± 1489,128  us/op
-DeepCopyJMH.springSerialize                                   avgt 10 9206,732   ± 1015,981  us/op
-DeepCopyJMH.commonsLangClone                                  avgt 10 9552,800   ± 2292,853  us/op
-DeepCopyJMH.jackson_cached_generic_toBytes                    avgt 10 11375,475  ± 2187,300  us/op
-DeepCopyJMH.jackson_cached_typed_toTokenBuffer                avgt 10 12486,088  ± 3082,981  us/op
-DeepCopyJMH.jackson_cached_typed_toBytes                      avgt 10 12805,771  ± 2048,417  us/op
-DeepCopyJMH.jackson_new2_typed_toString                       avgt 10 14663,639  ± 2838,194  us/op
-DeepCopyJMH.jackson_cached2_generic_toTokenBuffer             avgt 10 15606,528  ± 9205,637  us/op
-DeepCopyJMH.jackson_cached_typed_toString                     avgt 10 17733,439  ± 7297,026  us/op
-DeepCopyJMH.jackson_new_typed_toString                        avgt 10 21040,426  ± 10049,313 us/op
-DeepCopyJMH.jackson_new_generic_toString                      avgt 10 21080,263  ± 10247,715 us/op
-DeepCopyJMH.modelMapper_cached                                avgt 10 26129,203  ± 4693,008  us/op
-DeepCopyJMH.modelMapper_threadLocal                           avgt 10 42265,292  ± 33937,149 us/op
-DeepCopyJMH.gson_cached                                       avgt 10 46997,629  ± 7301,741  us/op
-DeepCopyJMH.jaxbMoxy_cached                                   avgt 10 75382,409  ± 11357,673 us/op
-DeepCopyJMH.gson_threadLocal                                  avgt 10 153278,350 ± 80752,593 us/op
-
-
-
-
-
+Benchmark                                                      Mode  Cnt       Score      Error  Units
+DeepCopyJMH.copyConstructor                                   avgt 30 207,898    ± 6,459    us/op
+DeepCopyJMH.kryo_cached                                       avgt 30 2105,272   ± 81,623   us/op
+DeepCopyJMH.kostaskougiosCloningLib_threadLocal               avgt 30 4016,538   ± 132,252  us/op
+DeepCopyJMH.kostaskougiosCloningLib_cached                    avgt 30 4367,219   ± 156,462  us/op
+DeepCopyJMH.protostuff_cachedSchema                           avgt 30 7645,974   ± 246,463  us/op
+DeepCopyJMH.protostuff_copy_reuse_runtimeschema_buffer        avgt 30 7649,374   ± 259,132  us/op
+DeepCopyJMH.protostuff_static                                 avgt 30 7678,049   ± 203,398  us/op
+DeepCopyJMH.protostuff_copy_reuse_TL_schema_buffer            avgt 30 7883,275   ± 205,596  us/op
+DeepCopyJMH.jackson_cached2_generic_toTokenBuffer             avgt 30 10324,883  ± 265,273  us/op
+DeepCopyJMH.jackson_cached_typed_toTokenBuffer                avgt 30 10572,224  ± 358,393  us/op
+DeepCopyJMH.jackson_cachedThreadLocal_generic_toTokenBuffer   avgt 30 10665,744  ± 276,739  us/op
+DeepCopyJMH.jackson_threadLocalEverything_typed_toTokenBuffer avgt 30 10694,957  ± 297,900  us/op
+DeepCopyJMH.jackson_cached_generic_toTokenBuffer              avgt 30 11134,311  ± 418,073  us/op
+DeepCopyJMH.springSerialize                                   avgt 30 15840,783  ± 471,570  us/op
+DeepCopyJMH.commonsLangClone                                  avgt 30 16338,170  ± 402,404  us/op
+DeepCopyJMH.jackson_cached_typed_toBytes                      avgt 30 19942,008  ± 534,589  us/op
+DeepCopyJMH.jackson_cached_generic_toBytes                    avgt 30 20319,409  ± 724,155  us/op
+DeepCopyJMH.jackson_cached_typed_toString                     avgt 30 21247,110  ± 642,285  us/op
+DeepCopyJMH.jackson_new_generic_toString                      avgt 30 24279,864  ± 925,031  us/op
+DeepCopyJMH.jackson_new_typed_toString                        avgt 30 25754,157  ± 760,301  us/op
+DeepCopyJMH.jackson_new2_typed_toString                       avgt 30 26371,262  ± 4683,951 us/op
+DeepCopyJMH.modelMapper_threadLocal                           avgt 30 48496,786  ± 1367,234 us/op
+DeepCopyJMH.gson_threadLocal                                  avgt 30 64827,040  ± 1746,201 us/op
+DeepCopyJMH.gson_cached                                       avgt 30 69650,841  ± 2303,813 us/op
+DeepCopyJMH.modelMapper_cached                                avgt 30 91016,509  ± 5439,031 us/op
+DeepCopyJMH.jaxbMoxy_cached                                   avgt 30 116948,379 ± 3665,064 us/op
 */
 @State(Scope.Benchmark)
 public class DeepCopyJMH {
@@ -157,8 +175,21 @@ public class DeepCopyJMH {
     ThreadLocal<Gson> threadLocalGson = ThreadLocal.withInitial(Gson::new);
 
     // https://github.com/kostaskougios/cloning
-    Cloner kostaskougiosCloningLib = new Cloner();
-    ThreadLocal<Cloner> threadLocalKostaskougiosCloningLib = ThreadLocal.withInitial(Cloner::new);
+    Cloner kostaskougiosCloningLib = getCloner();
+
+    @NotNull
+    private Cloner getCloner() {
+        var c = new Cloner();
+        // immutable classes are not cloned
+        c.registerImmutable(OffsetDateTime.class);
+        c.registerImmutable(LocalDateTime.class);
+        c.registerImmutable(LocalTime.class);
+        c.registerImmutable(OffsetTime.class);
+        c.registerImmutable(ZonedDateTime.class);
+        return c;
+    }
+
+    ThreadLocal<Cloner> threadLocalKostaskougiosCloningLib = ThreadLocal.withInitial(this::getCloner);
 
     // http://modelmapper.org/
     ModelMapper modelMapper = getModelMapper();
@@ -183,7 +214,6 @@ public class DeepCopyJMH {
 
         //fix npe Cannot read the array length because "elementData" is null
         kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
-
         kryo.register(Collections.EMPTY_LIST.getClass(), new CollectionsEmptyListSerializer());
         kryo.register(Collections.EMPTY_MAP.getClass(), new CollectionsEmptyMapSerializer());
         kryo.register(Collections.EMPTY_SET.getClass(), new CollectionsEmptySetSerializer());
@@ -434,8 +464,9 @@ public class DeepCopyJMH {
         //var state = new MyState(HierarchicalMockModel.newInstance(2, 2, 3));
         //simpleBench(15_000, 1000, () -> bench.jackson_cached_generic_toTokenBuffer(state));
 
-        var uncontenedResult = bench.benchmarkAllDeepCopyApproaches(1, 1);
-        var contendResult = bench.benchmarkAllDeepCopyApproaches(1, 32);
+        //more forks: more reliable result but multiplies benchmark execution time
+        var uncontenedResult = bench.benchmarkAllDeepCopyApproaches(3, 1);
+        var contendResult = bench.benchmarkAllDeepCopyApproaches(3, 32);
         //var winnerInDepthResult = bench.benchmarkWinnerMoreDeeply(winnerMethod);
 
         //format results
@@ -543,8 +574,8 @@ public class DeepCopyJMH {
                       //revert modification
                       state.model.getSubTypes().set(0, bak2);
 
-                  } catch (ReflectiveOperationException e) {
-                      throw new RuntimeException(e);
+                  } catch (Exception e) {
+                      throw new RuntimeException("Failed to instantiate/verify implementation: " + m.getName(), e);
                   }
               });
         System.out.println("All Implementations are OK and produces expected results.");

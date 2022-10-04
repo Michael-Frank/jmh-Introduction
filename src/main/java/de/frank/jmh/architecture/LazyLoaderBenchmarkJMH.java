@@ -1,22 +1,41 @@
 package de.frank.jmh.architecture;
 
-import com.google.common.base.*;
-import lombok.*;
-import org.apache.commons.lang3.concurrent.*;
+import com.google.common.base.Suppliers;
+import lombok.Getter;
+import org.apache.commons.lang3.concurrent.AtomicInitializer;
+import org.apache.commons.lang3.concurrent.AtomicSafeInitializer;
+import org.apache.commons.lang3.concurrent.ConcurrentException;
+import org.apache.commons.lang3.concurrent.LazyInitializer;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.profile.*;
-import org.openjdk.jmh.runner.*;
-import org.openjdk.jmh.runner.options.*;
+import org.openjdk.jmh.profile.GCProfiler;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.time.*;
-import java.time.format.*;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 /*--
 Result: use whatever fancies your needs. The variants are all almost identically good.
+
+Tl;dr:
+if (You are writing a lib) {
+   if ( using lombok ) {  use lombok's  @Getter(lazy = true)
+   } else if ( apache in class path ) {  use apache LazyInitializer
+   } else { copy paste DCLLazyLoader }
+   //you should not use guava in a library - guava versions are not very backward compatible!
+} else { //assuming you are writing something that has its own main()
+  if ( using lombok ) {  use lombok's  @Getter(lazy = true)
+  } else if ( guava in classpath ){  use  Suppliers.memoize(this::expensiveOperation); its nicer to use then apache LazyInitializer }
+  } else if ( apache in class path ) {  use apache LazyInitializer
+  } else { copy paste DCLLazyLoader }
+}
+
 
 
 JDK 1.8.0_212, OpenJDK 64-Bit Server VM, 25.212-b04
@@ -82,27 +101,31 @@ public class LazyLoaderBenchmarkJMH {
 
         //3rd party library impls
 
-        //Lombok
+        //Lombok - most convenient to use and generates a classic doubleCheckedLocking pattern in the background
         @Getter(lazy = true)
         private final String lombokLazyGetter = expensiveOperation();
 
-        //guava
+        //guava - same as doubleCheckedLockingBool - it has a nicer usage pattern then apaches Lazy.. abstract class extensions
         com.google.common.base.Supplier<String> guava = Suppliers.memoize(this::expensiveOperation);
-        //same as doubleCheckedLockingBool
 
-        //apache commons
+
+        //Uses classic doubleCheckedLocking - initialize() is guaranteed to be called only once
         LazyInitializer<String> apacheLazy = new LazyInitializer<String>() {
             @Override
             protected String initialize() {
                 return expensiveOperation();
             }
         };
+        //Uses AtomicReference internally - initialize() my be called multiple times - no real benefit over LazyInitializer
+        // at the end, all fast paths still must read the initialized value from a volatile.
         AtomicInitializer<String> apacheAtomicInitializer = new AtomicInitializer<String>() {
             @Override
             protected String initialize() {
                 return expensiveOperation();
             }
         };
+        //Uses AtomicReference internally - initialize() only called once - much more complicated and still real benefit over LazyInitializer except some corner cases
+        // at the end, all fast paths still must read the initialized value from a volatile.
         AtomicSafeInitializer<String> apacheAtomicSafeInitializer = new AtomicSafeInitializer<String>() {
             @Override
             protected String initialize() {
@@ -164,8 +187,6 @@ public class LazyLoaderBenchmarkJMH {
     public String lombokLazyGetter(MyState state) {
         return state.getLombokLazyGetter();
     }
-
-
 
 
     /**
@@ -236,6 +257,42 @@ public class LazyLoaderBenchmarkJMH {
 
 
             return cachedObject;
+        }
+    }
+
+    public static class DCLLazyLoader2<T> implements Supplier<T> {
+
+
+        private volatile T cachedObject;
+        private Supplier<T> supplier;
+
+        private DCLLazyLoader2(Supplier<T> supplier) {
+            this.supplier = Objects.requireNonNull(supplier);
+        }
+
+        public static <T> Supplier<T> of(Supplier<T> supplier) {
+            return new DCLLazyLoader2<>(supplier);
+        }
+
+        public T get() {
+            // This DCL idiom requires Java >=1.5 and volatile to work but then it is
+            // guaranteed to be correct
+            // On doubt read:
+            // https://docs.oracle.com/javase/specs/jls/se7/html/jls-17.html#jls-17.4.5
+            // https://shipilev.net/blog/2014/safe-public-construction/#_safe_publication
+
+            T cachedRef = cachedObject; //minimize volatile reads by local caching
+            if (cachedRef == null) {
+                synchronized (this) {
+                    cachedRef = cachedObject; //MUST re-read after synchronized
+                    if (cachedRef == null) {
+                        cachedObject = cachedRef = supplier.get();
+                        supplier = null; //we no longer need it
+                    }
+                }
+            }
+
+            return cachedRef;
         }
     }
 

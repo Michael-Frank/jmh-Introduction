@@ -1,20 +1,27 @@
 package de.frank.jmh.algorithms;
 
-import de.frank.jmh.algorithms.UUIDFastImplsJMH.*;
-import org.jetbrains.annotations.*;
+import de.frank.jmh.algorithms.UUIDFastImplsJMH.FastUUID;
+import org.jetbrains.annotations.NotNull;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.profile.*;
-import org.openjdk.jmh.results.*;
-import org.openjdk.jmh.results.format.*;
-import org.openjdk.jmh.runner.*;
-import org.openjdk.jmh.runner.options.*;
+import org.openjdk.jmh.profile.GCProfiler;
+import org.openjdk.jmh.results.RunResult;
+import org.openjdk.jmh.results.format.ResultFormatType;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.io.*;
-import java.security.*;
-import java.time.*;
-import java.time.format.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 
 /*-
@@ -246,10 +253,16 @@ Single Thread
 @State(Scope.Benchmark)
 public class UUIDSecureRandomJVMSwitchesJMH {
 
-    private static final ThreadLocal<SecureRandom> SECURE_RAND_DEF = ThreadLocal.withInitial(SecureRandom::new);
+    private static final ThreadLocal<SecureRandom> SECURE_RAND_DEF = ThreadLocal.withInitial(() -> {
+        SecureRandom rnd = new SecureRandom();
+        rnd.nextLong();//force seeding
+        return rnd;
+    });
     private static final ThreadLocal<SecureRandom> SECURE_RAND_SHA1 = ThreadLocal.withInitial(() -> {
         try {
-            return SecureRandom.getInstance("SHA1PRNG");
+            SecureRandom rnd = SecureRandom.getInstance("SHA1PRNG");
+            rnd.nextLong();//force seeding
+            return rnd;
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }

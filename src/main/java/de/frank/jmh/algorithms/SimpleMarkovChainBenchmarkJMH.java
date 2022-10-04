@@ -684,7 +684,7 @@ public class SimpleMarkovChainBenchmarkJMH {
                 // For Windows you can download pre-compiled hsdis module from http://fcml-lib.com/download.html
                 //.jvmArgsAppend("-XX:+PrintAssembly") //requires hsdis binary in jdk - enable if you use the perf or winperf profiler
                 ///required for external profilers like "perf" to show java frames in their traces
-                //.jvmArgsAppend("-XX:+PerserveFramePointer")
+                //.jvmArgsAppend("-XX:+PreserveFramePointer")
                 //XPERF  - windows xperf must be installed - this is included in WPT (windows performance toolkit) wich in turn is windows ADK included in https://developer.microsoft.com/en-us/windows/hardware/windows-assessment-deployment-kit
                 //WARNING - MUST RUN WITH ADMINISTRATIVE PRIVILEGES (must start your console or your IDE with admin rights!
                 //WARNING - first ever run of xperf takes VERY VERY long (1h+) because it has to download and process symbols
@@ -704,7 +704,7 @@ public class SimpleMarkovChainBenchmarkJMH {
                 //
                 // required for external profilers like "perf" to show java
                 // frames in their traces
-                // .jvmArgsAppend("-XX:+PerserveFramePointer")
+                // .jvmArgsAppend("-XX:+PreserveFramePointer")
                 //
                 // #########
                 // COMPILER

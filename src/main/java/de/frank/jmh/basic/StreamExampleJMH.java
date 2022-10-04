@@ -1,18 +1,7 @@
 package de.frank.jmh.basic;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Param;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Threads;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
@@ -248,7 +237,7 @@ public class StreamExampleJMH {
                 // For Windows you can download pre-compiled hsdis module from http://fcml-lib.com/download.html
                 //.jvmArgsAppend("-XX:+PrintAssembly") //requires hsdis binary in jdk - enable if you use the perf or winperf profiler
                 ///required for external profilers like "perf" to show java frames in their traces
-                //.jvmArgsAppend("-XX:+PerserveFramePointer")
+                //.jvmArgsAppend("-XX:+PreserveFramePointer")
                 //XPERF  - windows xperf must be installed - this is included in WPT (windows performance toolkit) wich in turn is windows ADK included in https://developer.microsoft.com/en-us/windows/hardware/windows-assessment-deployment-kit
                 //WARNING - MUST RUN WITH ADMINISTRATIVE PRIVILEGES (must start your console or your IDE with admin rights!
                 //WARNING - first ever run of xperf takes VERY VERY long (1h+) because it has to download and process symbols
@@ -268,7 +257,7 @@ public class StreamExampleJMH {
                 //
                 // required for external profilers like "perf" to show java
                 // frames in their traces
-                // .jvmArgsAppend("-XX:+PerserveFramePointer")
+                // .jvmArgsAppend("-XX:+PreserveFramePointer")
                 //
                 // #########
                 // COMPILER

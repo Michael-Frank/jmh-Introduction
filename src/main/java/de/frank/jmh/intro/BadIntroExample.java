@@ -18,7 +18,9 @@ import java.util.Arrays;
  */
 public class BadIntroExample {
 
-    private static final int TEST_ITERATIONS = 15;
+    //keep increasing this till compile kicks in and performs dead code optimizations and folding
+    private static final int TEST_ITERATIONS = 150000;
+    private static final boolean sampling = false;
 
     public static void main(String[] args) {
         //timer resolution currentTimeMillis depending on OS and kernel settings! May be as coarse as 33ms!
@@ -28,7 +30,7 @@ public class BadIntroExample {
         // test data, test data size, and benchmark iterations have a HUGE impact on the results you get!
 
         // TODO: to show the all the flaws, ->YOU<- have to adjust the data size so, that  each run executes at around ~1.8ms at YOUR machine
-        final int[] data = new int[2_000_00];
+        final int[] data = new int[5_000_000];
         Arrays.fill(data, 42);
         long t1 = System.currentTimeMillis();
 
@@ -43,7 +45,7 @@ public class BadIntroExample {
 
             execTimes += duration;
 
-            if (showSample(i))
+            if (sampling && showSample(i))
                 System.out.printf("%2d: Took: %d ms%n", i, duration);
         }
 
