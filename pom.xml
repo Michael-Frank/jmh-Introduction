@@ -20,7 +20,7 @@
 
         <!-- Benchmark support -->
         <jmh.version>1.28</jmh.version>   <!--JMH version to use with this project.-->
-        <lombok.version>1.18.20</lombok.version>
+        <lombok.version>1.18.24</lombok.version>
         <jwildcard.version>1.4</jwildcard.version>
         <asciitable.version>0.3.2</asciitable.version>
 

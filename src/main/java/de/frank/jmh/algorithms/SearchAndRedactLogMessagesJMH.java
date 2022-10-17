@@ -68,7 +68,7 @@ SearchAndRedactLogMessagesJMH.regex                         1.0              100
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Threads(1)
-@Fork(1) //if you promise to not use this machine during benchmarking, 1 is ok. Watching youtube? set to 3
+@Fork(1) //if you promise to not use this machine during benchmarking->1 is ok. Watching youtube?-> set to 3
 @Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)//read @Fork comment - consider setting to 10
 @State(Scope.Thread)
@@ -358,7 +358,8 @@ public class SearchAndRedactLogMessagesJMH {
         String prefix = (String) prefixes.toArray()[r.nextInt(prefixes.size())];//choose a random prefix
         String token;
         do {
-            token = prefix + RandomStringUtils.randomAlphanumeric(TOKEN_LENGTH - prefix.length());
+
+            token = prefix + RandomStringUtils.randomAlphanumeric(- prefix.length());
             //simple rejection sampling
         } while (!TokenFinder_Simple.satiesfiesTokenRules(token));
 
@@ -419,7 +420,6 @@ public class SearchAndRedactLogMessagesJMH {
 
     public static void main(String[] args) throws Exception {
 
-        System.exit(0);
         Set<String> prefixes = randomUniqueStrings(10, PREFIX_LEN, PREFIX_ALPHABET);
         System.out.println("Prefixes: " + prefixes);
         String tokenToFind = generateValidToken(prefixes);
