@@ -43,7 +43,7 @@
         <!-- JaxB-->
         <org.eclipse.persistence.moxy.version>3.0.1</org.eclipse.persistence.moxy.version>
         <threeten-jaxb-core.version>1.2</threeten-jaxb-core.version>
-        <protobuf.version>3.16.1</protobuf.version>
+        <protobuf.version>3.16.3</protobuf.version>
 
 
         <lucene.version>8.3.1</lucene.version>
