@@ -14,11 +14,11 @@ import java.util.concurrent.TimeUnit;
 
 /*--
 single threaded @ 1000 prefixes and a 25% match rate in 25000 tokens
-Benchmark     Mode  Cnt      Score       Error  Units
-patriciaTrie thrpt   30  7.996.055 ±   426.255  ops/s
-sortedList   thrpt   30    326.267 ±    32.443  ops/s
-treeMap      thrpt   30    100.396 ±    22.313  ops/s
-treeSet      thrpt   30     83.120 ±     8.659  ops/s
+Benchmark     Mode  Cnt      Score      Error  Units
+patriciaTrie thrpt   30  8.416.393 ±  106.310  ops/s
+sortedList   thrpt   30    364.990 ±   42.173  ops/s
+treeMap      thrpt   30     70.211 ±    7.369  ops/s
+treeSet      thrpt   30     89.214 ±    5.346  ops/s
 
 //single threaded  @ 5 prefixes and a  38% match rate
 Benchmark     Mode  Cnt       Score       Error  Units
@@ -30,7 +30,7 @@ treeSet      thrpt   30  10.092.850 ± 1.005.189  ops/s
 @BenchmarkMode({Mode.Throughput})
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 4, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(3)
 @State(Scope.Benchmark)
 public class LongestPrefixMatcherWithSubstitutionBenchmark {
