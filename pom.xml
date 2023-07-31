@@ -64,6 +64,12 @@
             <version>${jwildcard.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.4</version> <!-- Check the latest version -->
+        </dependency>
+
         <!--********** Annotation processing dependencies *********-->
         <dependency>
             <groupId>org.projectlombok</groupId>
