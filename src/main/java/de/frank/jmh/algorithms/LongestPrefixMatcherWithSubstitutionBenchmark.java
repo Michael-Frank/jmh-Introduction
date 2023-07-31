@@ -14,14 +14,14 @@ import java.util.concurrent.TimeUnit;
 
 /*--
 single threaded @ 1000 prefixes and a 25% match rate in 25000 tokens
-Benchmark                                   Mode  Cnt      Score       Error  Units
+Benchmark     Mode  Cnt      Score       Error  Units
 patriciaTrie thrpt   30  7.996.055 ±   426.255  ops/s
 sortedList   thrpt   30    326.267 ±    32.443  ops/s
 treeMap      thrpt   30    100.396 ±    22.313  ops/s
 treeSet      thrpt   30     83.120 ±     8.659  ops/s
 
 //single threaded  @ 5 prefixes and a  38% match rate
-Benchmark                                  Mode  Cnt       Score       Error  Units
+Benchmark     Mode  Cnt       Score       Error  Units
 patriciaTrie thrpt   30  19.801.164 ±   256.800  ops/s
 sortedList   thrpt   30  19.423.753 ± 1.469.290  ops/s
 treeMap      thrpt   30  10.711.479 ±   280.535  ops/s
@@ -101,12 +101,12 @@ public class LongestPrefixMatcherWithSubstitutionBenchmark {
 
     @Benchmark
     public String treeSet(TestData args) {
-        return treeSet.getLongestMatchingPrefix(args.getArgument());
+        return treeSet.getLongestMatchingPrefixValue(args.getArgument());
     }
 
     @Benchmark
     public String treeMap(TestData args) {
-        return treeMap.getLongestMatchingPrefix(args.getArgument());
+        return treeMap.getLongestMatchingPrefixValue(args.getArgument());
     }
 
     @Benchmark
@@ -129,12 +129,16 @@ public class LongestPrefixMatcherWithSubstitutionBenchmark {
             });
         }
 
-        public T getLongestMatchingPrefix(String input) {
+        public T getLongestMatchingPrefixValue(String input) {
+            String key = getLongestMatchingPrefix(input);
+            return key == null ? null : map.get(key);
+        }
+
+        public String getLongestMatchingPrefix(String input) {
             for (String key : list) {
                 if (input.startsWith(key)) {
-                    return map.get(key);
+                    return key;
                 }
-
             }
             return null;
         }
@@ -149,12 +153,20 @@ public class LongestPrefixMatcherWithSubstitutionBenchmark {
             this.trie = new PatriciaTrie<>(in);
         }
 
-        public T getLongestMatchingPrefix(String input) {
+        public T getLongestMatchingPrefixValue(String input) {
             String longestMatchingKey = trie.selectKey(input);
             if (!input.startsWith(longestMatchingKey)) {
                 return null;//reject partial matches
             }
             return trie.selectValue(longestMatchingKey);
+        }
+
+        public String getLongestMatchingPrefix(String input) {
+            String longestMatchingKey = trie.selectKey(input);
+            return input.startsWith(longestMatchingKey)
+                    ? longestMatchingKey
+                    : null;//reject partial matches
+
         }
     }
 
@@ -165,12 +177,22 @@ public class LongestPrefixMatcherWithSubstitutionBenchmark {
             this.prefixes = new TreeMap<>(prefixes);
         }
 
-        private T getLongestMatchingPrefix(String in) {
+        private String getLongestMatchingPrefixKey(String in) {
+            Map.Entry<String, T> prefix = getLongestMatchingPrefixEntry(in);
+            return prefix == null ? null : prefix.getKey();
+        }
+
+        private T getLongestMatchingPrefixValue(String in) {
+            Map.Entry<String, T> prefix = getLongestMatchingPrefixEntry(in);
+            return prefix == null ? null : prefix.getValue();
+        }
+
+        private Map.Entry<String, T> getLongestMatchingPrefixEntry(String in) {
             Map.Entry<String, T> prefix = prefixes.floorEntry(in);
             while (prefix != null && !in.startsWith(prefix.getKey())) {
                 prefix = prefixes.floorEntry(prefix.getKey().substring(0, prefix.getKey().length() - 1));
             }
-            return prefix == null ? null : prefix.getValue();
+            return prefix;
         }
     }
 
@@ -181,7 +203,7 @@ public class LongestPrefixMatcherWithSubstitutionBenchmark {
             this.prefixSet = new TreeSet<>(prefixes);
         }
 
-        private String getLongestMatchingPrefix(String in) {
+        private String getLongestMatchingPrefixValue(String in) {
             String prefix = prefixSet.floor(in);
             while (prefix != null && !in.startsWith(prefix)) {
                 prefix = prefixSet.floor(prefix.substring(0, prefix.length() - 1));
@@ -226,10 +248,10 @@ public class LongestPrefixMatcherWithSubstitutionBenchmark {
         PatriciaTriePrefixMatcher<String> patricia = new PatriciaTriePrefixMatcher<>(FEW_PREFIXES);
 
         INPUT_TOKENS.forEach(n -> System.out.println(n + "-> "
-                                                     + " TreeSet: " + treeSet.getLongestMatchingPrefix(n)
-                                                     + ", TreeMap: " + treeMap.getLongestMatchingPrefix(n)
-                                                     + ", SortedList: " + sortedList.getLongestMatchingPrefix(n)
-                                                     + ", Patricia: " + patricia.getLongestMatchingPrefix(n)));
+                                                     + " TreeSet: " + treeSet.getLongestMatchingPrefixValue(n)
+                                                     + ", TreeMap: " + treeMap.getLongestMatchingPrefixValue(n)
+                                                     + ", SortedList: " + sortedList.getLongestMatchingPrefixValue(n)
+                                                     + ", Patricia: " + patricia.getLongestMatchingPrefixValue(n)));
     }
 
 
