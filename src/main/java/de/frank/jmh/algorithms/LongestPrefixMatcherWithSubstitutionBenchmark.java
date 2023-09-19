@@ -119,7 +119,7 @@ public class LongestPrefixMatcherWithSubstitutionBenchmark {
         private final ArrayList<String> list;
 
         public SortedListLongestPrefixMapper(Map<String, T> prefixes) {
-            this.map = new TreeMap<>(prefixes);
+            this.map = new HashMap<>(prefixes);
             this.list = new ArrayList<>(prefixes.keySet());
             list.sort((s1, s2) -> {
                 if (s1.length() != s2.length()) {
