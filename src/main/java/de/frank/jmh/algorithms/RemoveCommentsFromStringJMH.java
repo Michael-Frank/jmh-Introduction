@@ -16,15 +16,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /*--
+
 Statemachine: easy to write, easy to maintain and extend,fast and constant linear performance for arbitrary large texts.
-
-Regex, as always, fails at rather trivial tasks.
-Hard to write correctly, hard to read and debug, horrible runtime performance (even worse at "no-match"))
-and catastrophic failures at rather small inputs.
-
 - removeCommentsFixedStateMachine: whole parser code is in approx 40 lines
 - removeCommentsExtensibleStateMachine: state machine logic is encapsulated, and custom "removers" can be easily written and added without manipulating the existing state machine. However, it is slightly slower than the fixed state machine.
-- regex: WHY!!!!! even the "good-ones" suck.... In less time i spent googling/debugging the regex, i have implemented the state machine.
+- regex: WHY!!!!!
+   - even the "good-ones" suck....
+   - Regex, as always, fail at rather trivial tasks.
+   - Hard to write correctly, hard to read and debug, horrible runtime performance (even worse at "no-match"))
+   - and catastrophic failures at rather small inputs.
+   - In less time i spent googling/debugging the regex, i have implemented the state machine.
 
 Benchmark                                                         (commentRate)  (numLines)  Mode  Cnt      Score       Error Units
 removeCommentsExtensibleStateMachine            0.0         100  avgt   18     42.435 ±     3.367 ns/op
