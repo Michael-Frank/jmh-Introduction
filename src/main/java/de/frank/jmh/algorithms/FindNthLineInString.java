@@ -4,7 +4,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -14,9 +13,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -66,26 +62,26 @@ public class FindNthLineInString {
 
     public static void main(String[] args) throws RunnerException {
 
-        System.out.printf("Expected: null       Actual: '%s'%n" , indexOfLoop(null,2));
-        System.out.printf("Expected: ''         Actual: '%s'%n" , indexOfLoop("",0));
-        System.out.printf("Expected: null       Actual: '%s'%n" , indexOfLoop("",1));
-        System.out.printf("Expected: null       Actual: '%s'%n" , indexOfLoop("",2));
-        System.out.printf("Expected: 'foo'      Actual: '%s'%n" , indexOfLoop("foo",0));
-        System.out.printf("Expected: null       Actual: '%s'%n" , indexOfLoop("foo",1));
-        System.out.printf("Expected: null       Actual: '%s'%n" , indexOfLoop("foo",2));
-        System.out.printf("Expected: 'foo'      Actual: '%s'%n" , indexOfLoop("foo\n",0));
-        System.out.printf("Expected: ''         Actual: '%s'%n" , indexOfLoop("foo\n",1));
-        System.out.printf("Expected: null       Actual: '%s'%n" , indexOfLoop("foo\n",2));
-        System.out.printf("Expected: 'foo'      Actual: '%s'%n" , indexOfLoop("foo\nbar",0));
-        System.out.printf("Expected: 'bar'      Actual: '%s'%n" , indexOfLoop("foo\nbar",1));
-        System.out.printf("Expected: null       Actual: '%s'%n" , indexOfLoop("foo\nbar",2));
+        System.out.printf("Expected: null       Actual: '%s'%n", indexOfLoop(null, 2));
+        System.out.printf("Expected: ''         Actual: '%s'%n", indexOfLoop("", 0));
+        System.out.printf("Expected: null       Actual: '%s'%n", indexOfLoop("", 1));
+        System.out.printf("Expected: null       Actual: '%s'%n", indexOfLoop("", 2));
+        System.out.printf("Expected: 'foo'      Actual: '%s'%n", indexOfLoop("foo", 0));
+        System.out.printf("Expected: null       Actual: '%s'%n", indexOfLoop("foo", 1));
+        System.out.printf("Expected: null       Actual: '%s'%n", indexOfLoop("foo", 2));
+        System.out.printf("Expected: 'foo'      Actual: '%s'%n", indexOfLoop("foo\n", 0));
+        System.out.printf("Expected: ''         Actual: '%s'%n", indexOfLoop("foo\n", 1));
+        System.out.printf("Expected: null       Actual: '%s'%n", indexOfLoop("foo\n", 2));
+        System.out.printf("Expected: 'foo'      Actual: '%s'%n", indexOfLoop("foo\nbar", 0));
+        System.out.printf("Expected: 'bar'      Actual: '%s'%n", indexOfLoop("foo\nbar", 1));
+        System.out.printf("Expected: null       Actual: '%s'%n", indexOfLoop("foo\nbar", 2));
 
         Options opt = new OptionsBuilder()//
                 .include(FindNthLineInString.class.getName() + ".*")//
-              // .result(String.format("%s_%s.json",
-              //         DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
-              //         FindNthLineInString.class.getSimpleName()))
-             //   .addProfiler(GCProfiler.class)//
+                // .result(String.format("%s_%s.json",
+                //         DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+                //         FindNthLineInString.class.getSimpleName()))
+                //   .addProfiler(GCProfiler.class)//
                 .build();
         new Runner(opt).run();
     }
@@ -110,8 +106,8 @@ public class FindNthLineInString {
         @Param({"VERY_LONG", "LONG", "SHORT"})
         public Match match = Match.SHORT;
 
-       // @Param({"0.0", "1.0", "0.5", "0.8"})
-        @Param({ "1.0"}) //in my special usecase a no-match is virtually non existent
+        // @Param({"0.0", "1.0", "0.5", "0.8"})
+        @Param({"1.0"}) //in my special usecase a no-match is virtually non existent
         public double matchRate = 1.0;
 
 
@@ -151,6 +147,7 @@ public class FindNthLineInString {
     public String bufferedReader(InputString s) {
         return bufferedReader(s.lines, s.lineNo);
     }
+
     @Benchmark
     public static String indexOfLoop(InputString s) {
         return indexOfLoop(s.lines, s.lineNo);
@@ -185,7 +182,7 @@ public class FindNthLineInString {
 
 
     public static String indexOfLoop(String str, int lineNumber) {
-        if(str ==null){
+        if (str == null) {
             return null;
         }
 

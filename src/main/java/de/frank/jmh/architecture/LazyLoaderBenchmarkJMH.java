@@ -254,8 +254,6 @@ public class LazyLoaderBenchmarkJMH {
                     }
                 }
             }
-
-
             return cachedObject;
         }
     }

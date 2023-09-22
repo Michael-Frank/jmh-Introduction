@@ -13,7 +13,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Java source/target to use for compilation.-->
-        <javac.target>15</javac.target>
+        <javac.target>17</javac.target>
         <!-- Name of the benchmark Uber-JAR to generate.-->
         <uberjar.name>benchmarks</uberjar.name>
 
@@ -454,8 +454,8 @@
                 <version>3.8.0</version>
                 <configuration>
                     <compilerVersion>${javac.target}</compilerVersion>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>14</source>
+                    <target>14</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.mapstruct</groupId>
