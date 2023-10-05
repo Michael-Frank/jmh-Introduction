@@ -3,10 +3,22 @@ package de.frank.jmh.algorithms;
 import com.yevdo.jwildcard.JWildcard;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.BenchmarkParams;
 import org.openjdk.jmh.infra.IterationParams;
 import org.openjdk.jmh.profile.GCProfiler;
+import org.openjdk.jmh.profile.ProfilerException;
 import org.openjdk.jmh.results.IterationResult;
 import org.openjdk.jmh.results.Result;
 import org.openjdk.jmh.results.RunResult;
@@ -19,7 +31,13 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -635,6 +653,10 @@ public class RecursiveVsIterativeJHM {
     }
 
     public static class NormalizedGcProfiler extends GCProfiler {
+        public NormalizedGcProfiler(String initLine) throws ProfilerException {
+            super(initLine);
+        }
+
         @Override
         public Collection<? extends Result> afterIteration(BenchmarkParams benchmarkParams,
                                                            IterationParams iterationParams, IterationResult iResult) {

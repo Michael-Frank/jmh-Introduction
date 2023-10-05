@@ -13,22 +13,22 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Java source/target to use for compilation.-->
-        <javac.target>17</javac.target>
+        <javac.target>20</javac.target>
         <!-- Name of the benchmark Uber-JAR to generate.-->
         <uberjar.name>benchmarks</uberjar.name>
 
 
         <!-- Benchmark support -->
-        <jmh.version>1.28</jmh.version>   <!--JMH version to use with this project.-->
-        <lombok.version>1.18.24</lombok.version>
+        <jmh.version>1.37</jmh.version>   <!--JMH version to use with this project.-->
+        <lombok.version>1.18.30</lombok.version>
         <jwildcard.version>1.4</jwildcard.version>
         <asciitable.version>0.3.2</asciitable.version>
 
         <!-- dependency versions for benchmarks-->
         <spring-core.version>5.3.14</spring-core.version>
 
-        <dsiutils.version>2.4.2</dsiutils.version>
-        <commons-codec.version>1.11</commons-codec.version>
+        <dsiutils.version>2.7.3</dsiutils.version>
+        <commons-codec.version>1.16.0</commons-codec.version>
 
         <net.openhft.lang.version>6.8.2</net.openhft.lang.version>
 
@@ -38,12 +38,12 @@
         <org.appache.commons-pool2.version>2.8.0</org.appache.commons-pool2.version>
 
         <!-- serializers-->
-        <jackson.version>2.11.2</jackson.version>
+        <jackson.version>2.15.2</jackson.version>
 
         <!-- JaxB-->
         <org.eclipse.persistence.moxy.version>3.0.1</org.eclipse.persistence.moxy.version>
         <threeten-jaxb-core.version>1.2</threeten-jaxb-core.version>
-        <protobuf.version>3.16.1</protobuf.version>
+        <protobuf.version>3.24.4</protobuf.version>
 
 
         <lucene.version>8.3.1</lucene.version>
@@ -52,7 +52,13 @@
         <chronicle-values.version>2.16.1</chronicle-values.version>
 
 
-        <org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
+        <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
+        <com.fasterxml.uuid_java-uuid-generator.version>4.0</com.fasterxml.uuid_java-uuid-generator.version>
+        <gson.version>2.10.1</gson.version>
+        <protostuff.version>1.7.4</protostuff.version>
+        <commons-collections4.version>4.4</commons-collections4.version> <!-- last update: 	Jul 09, 2019 :-/ -->
+        <commons-lang3.version>3.13.0</commons-lang3.version>
+        <commons-io.version>2.14.0</commons-io.version>
     </properties>
 
 
@@ -63,11 +69,21 @@
             <artifactId>jwildcard</artifactId>
             <version>${jwildcard.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.4</version> <!-- Check the latest version -->
+            <version>${commons-collections4.version}</version> <!-- Check the latest version -->
         </dependency>
 
         <!--********** Annotation processing dependencies *********-->
@@ -105,7 +121,7 @@
         <dependency>
             <groupId>com.fasterxml.uuid</groupId>
             <artifactId>java-uuid-generator</artifactId>
-            <version>4.0</version>
+            <version>${com.fasterxml.uuid_java-uuid-generator.version}</version>
         </dependency>
 
         <!-- Base64EncodersDecodersJMH-->
@@ -181,7 +197,7 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.7</version>
+            <version>${gson.version}</version>
         </dependency>
 
         <dependency>
@@ -317,13 +333,13 @@
         <dependency>
             <groupId>io.protostuff</groupId>
             <artifactId>protostuff-core</artifactId>
-            <version>1.7.4</version>
+            <version>${protostuff.version}</version>
         </dependency>
 
         <dependency><!--    For schemas generated at runtime -->
             <groupId>io.protostuff</groupId>
             <artifactId>protostuff-runtime</artifactId>
-            <version>1.7.4</version>
+            <version>${protostuff.version}</version>
         </dependency>
 
         <dependency>
@@ -454,8 +470,8 @@
                 <version>3.8.0</version>
                 <configuration>
                     <compilerVersion>${javac.target}</compilerVersion>
-                    <source>14</source>
-                    <target>14</target>
+                    <source>${javac.target}</source>
+                    <target>${javac.target}</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.mapstruct</groupId>

@@ -1,7 +1,16 @@
 package de.frank.jmh.algorithms;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -16,41 +25,57 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /*--
+Context:  Batch scan thousands of large code files. Embedded comments //... and  /*.. must be removed before downstream processing.
+A dev in my team's first approach was to throw a regex at the problem. With the result that parsing times increased 100x fold and terminated with a  StackOverflow exception in the regex.
 
-Statemachine: easy to write, easy to maintain and extend,fast and constant linear performance for arbitrary large texts.
-- removeCommentsFixedStateMachine: whole parser code is in approx 40 lines
-- removeCommentsExtensibleStateMachine: state machine logic is encapsulated, and custom "removers" can be easily written and added without manipulating the existing state machine. However, it is slightly slower than the fixed state machine.
-- regex: WHY!!!!!
-   - even the "good-ones" suck....
-   - Regex, as always, fail at rather trivial tasks.
-   - Hard to write correctly, hard to read and debug, horrible runtime performance (even worse at "no-match"))
-   - and catastrophic failures at rather small inputs.
-   - In less time i spent googling/debugging the regex, i have implemented the state machine.
 
-Benchmark                                                         (commentRate)  (numLines)  Mode  Cnt      Score       Error Units
-removeCommentsExtensibleStateMachine            0.0         100  avgt   18     42.435 ±     3.367 ns/op
-removeCommentsExtensibleStateMachine            0.0        1000  avgt   18    329.324 ±    21.762 ns/op
-removeCommentsExtensibleStateMachine            0.0       10000  avgt   18  4.209.228 ± 1.110.051 ns/op
-removeCommentsExtensibleStateMachine            0.0      100000  avgt   18 41.729.614 ± 3.661.110 ns/op
-removeCommentsExtensibleStateMachine            0.1         100  avgt   18     56.519 ±    10.517 ns/op
-removeCommentsExtensibleStateMachine            0.1        1000  avgt   18    553.379 ±    77.029 ns/op
-removeCommentsExtensibleStateMachine            0.1       10000  avgt   18  4.785.951 ±    86.831 ns/op
-removeCommentsExtensibleStateMachine            0.1      100000  avgt   18 47.327.133 ± 1.333.205 ns/op
 
-removeCommentsFixedStateMachine                 0.0         100  avgt   18     30.238 ±     7.085 ns/op
-removeCommentsFixedStateMachine                 0.0        1000  avgt   18    320.616 ±    67.027 ns/op
-removeCommentsFixedStateMachine                 0.0       10000  avgt   18  3.143.853 ±  .196.212 ns/op
-removeCommentsFixedStateMachine                 0.0      100000  avgt   18 38.678.668 ± 5.064.362 ns/op
-removeCommentsFixedStateMachine                 0.1         100  avgt   18     40.454 ±     8.001 ns/op
-removeCommentsFixedStateMachine                 0.1        1000  avgt   18    419.827 ±   169.381 ns/op
-removeCommentsFixedStateMachine                 0.1       10000  avgt   18  3.493.247 ±    98.450 ns/op
-removeCommentsFixedStateMachine                 0.1      100000  avgt   18 38.263.863 ± 5.400.565 ns/op
+- Statemachine: easy to write, easy to maintain and extend,fast and constant linear performance for arbitrary large texts.
+  - removeCommentsFixedStateMachine: whole parser code is in approx 40 lines
+  - removeCommentsExtensibleStateMachine: state machine logic is encapsulated, and custom "removers" can be easily written and added without manipulating the existing state machine. However, it is slightly slower than the fixed state machine.
+- Regex: WHY!? even the "good-ones" suck....
+   - With regex its easy to shoot yourself in the foot at rather trivial tasks:
+        - You have to take special care to avoid "catastrophic backtracking" or StackOverflowExceptions at around 6000 input chars.
+        - horrible runtime performance with (for most devs) un-intuitive worse case at "no-match" scenario.
+   - Regex are not easier, not faster and not maintainable - Admit it: you google the regex, Copy paste a random's code snippet and pray it works..
+        - Hard to write correctly: most devs stop developing their regex if it matches everything they want, but they typically over-match.
+        - Regex are much harder to read than the equivalent non-regex code
+        - Regex are hard to debug and  hard to extend and fix
+=> In less time i spent googling/crafting/debugging the regex, i have implemented the state machine, that is faster, predictable, easier to debug and extend and does not catastrophically fail.
 
-removeCommentsRegex                             0.0         100  avgt   12    105.699 ±     6.472 ns/op
-removeCommentsRegex                             0.1         100  avgt   18    124.663 ±     8.344 ns/op
-removeCommentsRegex                             0.1        1000  avgt   18  1.122.075 ±    94.503 ns/op
+Benchmark                                      (commentRate)  (numLines) Mode  Cnt       Score       Error Units
+removeCommentsExtensibleStateMachine                    0.0         100  avgt   18      42.435 ±     3.367 ns/op
+removeCommentsExtensibleStateMachine                    0.0        1000  avgt   18     329.324 ±    21.762 ns/op
+removeCommentsExtensibleStateMachine                    0.0       10000  avgt   18   4.209.228 ± 1.110.051 ns/op
+removeCommentsExtensibleStateMachine                    0.0      100000  avgt   18  41.729.614 ± 3.661.110 ns/op
+removeCommentsExtensibleStateMachine                    0.1         100  avgt   18      56.519 ±    10.517 ns/op
+removeCommentsExtensibleStateMachine                    0.1        1000  avgt   18     553.379 ±    77.029 ns/op
+removeCommentsExtensibleStateMachine                    0.1       10000  avgt   18   4.785.951 ±    86.831 ns/op
+removeCommentsExtensibleStateMachine                    0.1      100000  avgt   18  47.327.133 ± 1.333.205 ns/op
+
+removeCommentsFixedStateMachine                         0.0         100  avgt   18      30.238 ±     7.085 ns/op
+removeCommentsFixedStateMachine                         0.0        1000  avgt   18     320.616 ±    67.027 ns/op
+removeCommentsFixedStateMachine                         0.0       10000  avgt   18   3.143.853 ±  .196.212 ns/op
+removeCommentsFixedStateMachine                         0.0      100000  avgt   18  38.678.668 ± 5.064.362 ns/op
+removeCommentsFixedStateMachine                         0.1         100  avgt   18      40.454 ±     8.001 ns/op
+removeCommentsFixedStateMachine                         0.1        1000  avgt   18     419.827 ±   169.381 ns/op
+removeCommentsFixedStateMachine                         0.1       10000  avgt   18   3.493.247 ±    98.450 ns/op
+removeCommentsFixedStateMachine                         0.1      100000  avgt   18  38.263.863 ± 5.400.565 ns/op
+
+removeCommentsRegexHandCraftedAvoidBackTracking         0.0         100  avgt    6      149.371 ±      5.942  ns/op
+removeCommentsRegexHandCraftedAvoidBackTracking         0.0        1000  avgt    6    1.723.791 ±     40.747  ns/op
+removeCommentsRegexHandCraftedAvoidBackTracking         0.0       10000  avgt    6   20.015.487 ±  1.058.345  ns/op
+removeCommentsRegexHandCraftedAvoidBackTracking         0.0      100000  avgt    6  219.196.779 ± 91.407.004  ns/op
+removeCommentsRegexHandCraftedAvoidBackTracking         0.1         100  avgt    6      163.348 ±     16.892  ns/op
+removeCommentsRegexHandCraftedAvoidBackTracking         0.1        1000  avgt    6    1.125.343 ±    105.504  ns/op
+removeCommentsRegexHandCraftedAvoidBackTracking         0.1       10000  avgt    6   10.000.252 ±    712.070  ns/op
+removeCommentsRegexHandCraftedAvoidBackTracking         0.1      100000  avgt    6  118.513.457 ± 39.296.902  ns/op
+
+removeCommentsRegexBestFromGoogle                       0.0         100  avgt   12     105.699 ±     6.472 ns/op
+removeCommentsRegexBestFromGoogle                       0.1         100  avgt   18     124.663 ±     8.344 ns/op
+removeCommentsRegexBestFromGoogle                       0.1        1000  avgt   18   1.122.075 ±    94.503 ns/op
+removeCommentsRegexBestFromGoogle                       0.1       10000  avgt    6  14.646.311 ±  6.925.360 ns/op
 !!! removeCommentsRegex   fails with stackoverflow for comment rate 0.0 and more than 100 lines and for comment rate > 0.1 and more than 1000 lines!
-
 java.lang.StackOverflowError
     at java.base/java.lang.Character.codePointAt(Character.java:8910)
     at java.base/java.util.regex.Pattern$CharProperty.match(Pattern.java:3927)
@@ -63,11 +88,10 @@ java.lang.StackOverflowError
     at java.base/java.util.regex.Pattern$Branch.match(Pattern.java:4734)
     at java.base/java.util.regex.Pattern$GroupHead.match(Pattern.java:4789)
     at java.base/java.util.regex.Pattern$Loop.match(Pattern.java:4898)
-
  */
 @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 6, time = 1, timeUnit = TimeUnit.SECONDS)
-@Fork(value = 3
+@Fork(value = 1
 //        ,jvmArgsAppend = {"-XX:+UseParallelGC", "-Xms1g", "-Xmx1g"}
 )
 @BenchmarkMode(Mode.AverageTime)
@@ -109,7 +133,7 @@ public class RemoveCommentsFromStringJMH {
                 "0.0",
                 "0.1"
         })
-        public double commentRate = 1.0;
+        public double commentRate = 0.1;
 
 
         private String lines;
@@ -159,10 +183,24 @@ public class RemoveCommentsFromStringJMH {
     }
 
     @Benchmark
-    public String removeCommentsRegex(InputString s) {
+    public String removeCommentsRegexFromGoogle(InputString s) {
         return removeCommentsRegex(s.getLines());
     }
 
+    @Benchmark
+    public String removeCommentsRegexHandCraftedAvoidBackTracking(InputString s) {
+        return removeCommentsNoBacktracking(s.getLines());
+    }
+
+
+    static final Pattern LINE_AND_MULTILINE_BLOCK = Pattern.compile("/\\*(?:(?!\\*/)[\\s\\S])*\\*/|//.*(?=\\n|$)");
+
+    public static String removeCommentsNoBacktracking(String in) {
+        if (in == null || in.isEmpty()) {
+            return in;
+        }
+        return LINE_AND_MULTILINE_BLOCK.matcher(in).replaceAll("");
+    }
 
     /**
      * Statemachine based comment remove, which is fast enough for our purpose
@@ -209,16 +247,16 @@ public class RemoveCommentsFromStringJMH {
             switch (currentState) {
                 case outsideComment:
 
-                    if (stripIbmICLComment && curChar == '/' && iter.peekNext(0) == '*' //find: '/*
+                    if (curChar == '/' && iter.peekNext(0) == '*' //find: '/*
                         // IBM ICL block comments must be followed by '*' or a space to be valid!: e.g.:'/**' or '/* '
                         // '/*FOO' is NOT a valid comment!
                         && (iter.peekNext(1) == '*' || iter.peekNext(1) == ' ')) {
                         iter.next();//skip the peeked value
                         currentState = State.insideIbmICLComment;
-                    } else if (stripBlockComments && curChar == '/' && iter.peekNext() == '*') { //find: /*/
+                    } else if (curChar == '/' && iter.peekNext() == '*') { //find: /*/
                         iter.next();//skip the peeked value
                         currentState = State.insideBlockComment;
-                    } else if (stripLineComments && curChar == '/' && iter.peekNext() == '/') { //find: //
+                    } else if (curChar == '/' && iter.peekNext() == '/') { //find: //
                         iter.next();//skip the peeked value
                         currentState = State.insideLineComment;
                     } else {
@@ -295,7 +333,7 @@ public class RemoveCommentsFromStringJMH {
             CharIterator iter = new CharIterator(inputText);
             while (iter.hasNext()) {
                 char curChar = iter.next();
-                if (insideCommentState == null) {
+                if (insideCommentState == null) { //null==outside comment
                     for (CommentDetector candidate : detectors) {
                         if (candidate.isCommentStart(curChar, iter)) {
                             insideCommentState = candidate;
@@ -340,8 +378,8 @@ public class RemoveCommentsFromStringJMH {
                 // /n is the "end of comment marker" but we want to still include it - so we need to look ahead
                 return inspectNext.peekNext() != '\n';
             }
-
         }
+
 
         public static class BlockCommentDetector implements CommentDetector {
             public static final BlockCommentDetector INSTANCE = new BlockCommentDetector();

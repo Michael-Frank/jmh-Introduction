@@ -2,7 +2,19 @@ package de.frank.jmh.algorithms;
 
 import com.google.common.base.Splitter;
 import org.apache.commons.lang3.StringUtils;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Threads;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
@@ -203,12 +215,12 @@ public class StringSplitJMH {
 
     @Benchmark
     public String[] oneChar_apacheStringUtils(MyState s) {
-        return org.apache.commons.lang.StringUtils.split(s.commaString, ",");
+        return org.apache.commons.lang3.StringUtils.split(s.commaString, ",");
     }
 
     @Benchmark
     public String[] twoChars_apacheStringUtils(MyState s) {
-        return org.apache.commons.lang.StringUtils.split(s.commaDotString, ",.");
+        return org.apache.commons.lang3.StringUtils.split(s.commaDotString, ",.");
     }
 
     @Benchmark

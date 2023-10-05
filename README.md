@@ -9,7 +9,7 @@ The benchmarks are roughly organized into 4 different packages
 - intro: Examples form my basic introduction to JMH and why __you__ should start using JMH.
 
 ## Requirements
-- java >= 11
+- java >= 21
 - maven
  
 ## Run the Benchmarks 
