@@ -1,4 +1,4 @@
-package de.frank.jmh;
+package de.frank.jmh.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomUtils {
     //TEST-Helpers
-    private static String randomStringWithToken(int stringLength, String token) {
+    private static String randomStringWithTokenWord(int stringLength, String token) {
         Random r = ThreadLocalRandom.current();
         StringBuilder result = randomString(stringLength, r);
         if (StringUtils.isNotEmpty(token)) {

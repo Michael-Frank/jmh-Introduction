@@ -1,8 +1,17 @@
 package de.frank.jmh.algorithms;
 
-import de.frank.jmh.algorithms.UUIDFastImplsJMH.FastUUID;
+import de.frank.jmh.algorithms.UUIDFastImplsJMH.FastUUIDWithCustomToString;
 import org.jetbrains.annotations.NotNull;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Threads;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.results.RunResult;
 import org.openjdk.jmh.results.format.ResultFormatType;
@@ -25,10 +34,10 @@ import java.util.concurrent.TimeUnit;
 
 
 /*-
-Generating many secure UUID's fast has some pitfalls. The most common way is to simply call: java.util.UUID.randomUUID()
+Generating many secure UUID's fast has some pitfalls. The most common way is to simply call: java.util.UUID.secureRandomUUID()
 
 JDK 8 Contended Benchmark                             Score    Error Units  gc.alloc.rate.norm
-default java.util.UUID.randomUUID()
+default java.util.UUID.secureRandomUUID()
    *jdkUUID_default_egdDefault_16Threads              27775 ± 1545 ns/op 864 B/op
     jdkUUID_default_egdRandom_16Threads               27877 ± 1432 ns/op 864 B/op
     jdkUUID_default_egdUrandom_16Threads               9785 ±  150 ns/op 832 B/op
@@ -45,7 +54,7 @@ threadLocal of default new SecureRandom() - defaults to NativePRNG which should 
 
 
 Java 13 Contended Benchmark                                  Mode  Cnt  Score   Error  Units  gc.alloc.rate.norm
-default java.util.UUID.randomUUID()
+default java.util.UUID.secureRandomUUID()
    *jdkUUID_default_egdDefault_16Threads              28104 ± 1519 ns/op 176 B/op
     jdkUUID_default_egdRandom_16Threads               28411 ± 1717 ns/op 176 B/op
     jdkUUID_default_egdUrandom_16Threads              28248 ± 2012 ns/op 176 B/op
@@ -60,7 +69,7 @@ threadLocal of default new SecureRandom()
 
 Conclusion:
 - creation of new SecureRandom instances is expensive - Make sure to use a ThreadLocal<SecureRandom> to generate UUID's and other crypto stuff, especially in a webserver context!
-- Try to avoid plain java.util.UUID.randomUUID() - always inject a ThreadLocal<SecureRandom> instance
+- Try to avoid plain java.util.UUID.secureRandomUUID() - always inject a ThreadLocal<SecureRandom> instance
 - As we cannot change libraries to use ThreadLocal's, it is still god practice to start the jvm with: -Djava.security.egd=file:/dev/./urandom"
   - to speed up the creation of new SecureRandom instances
   - to avoid blocking if the random pool of the operating system is exhausted, as the default settings use the blocking /dev/random
@@ -72,7 +81,7 @@ Conclusion:
 
 
 JDK 8 Contended Benchmark                                       Mode  Cnt   Score    Error Units  gc.alloc.rate.norm
-    default java.util.UUID.randomUUID()
+    default java.util.UUID.secureRandomUUID()
        *jdkUUID_default_egdDefault_16Threads                    avgt   10   27775 ±   1545 ns/op   864 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
         jdkUUID_default_egdRandom_16Threads                     avgt   10   27877 ±   1432 ns/op   864 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
         jdkUUID_default_egdUrandom_16Threads                    avgt   10    9785 ±    150 ns/op   832 B/op # -||- but egd /dev/urandom really helps
@@ -89,7 +98,7 @@ JDK 8 Contended Benchmark                                       Mode  Cnt   Scor
 
 
 Java 13 Contended Benchmark                                  Mode  Cnt  Score   Error  Units  gc.alloc.rate.norm
-    default java.util.UUID.randomUUID()
+    default java.util.UUID.secureRandomUUID()
        *jdkUUID_default_egdDefault_16Threads                 avgt   10   28104 ±   1519 ns/op    176 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
         jdkUUID_default_egdRandom_16Threads                  avgt   10   28411 ±   1717 ns/op    176 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
         jdkUUID_default_egdUrandom_16Threads                 avgt   10   28248 ±   2012 ns/op    176 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
@@ -108,7 +117,7 @@ Java 13 Contended Benchmark                                  Mode  Cnt  Score   
 VM: JDK 12
 Benchmark                                                    Mode  Cnt  Score   Error  Units  gc.alloc.rate.norm
 Contended
-    default java.util.UUID.randomUUID()
+    default java.util.UUID.secureRandomUUID()
         jdkUUID_default_egdDefault_16Threads                 avgt   10   28104 ±   1519 ns/op    176 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
         jdkUUID_default_egdRandom_16Threads                  avgt   10   28411 ±   1717 ns/op    176 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
         jdkUUID_default_egdUrandom_16Threads                 avgt   10   28248 ±   2012 ns/op    176 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
@@ -123,7 +132,7 @@ Contended
         fastUuid_threadLocalDefault_egdDefault_16Threads     avgt   10   41114 ±   1381 ns/op    392 B/op #fastUuid obsolete in jdk13 because of JDK 13 string concatenation optimizations in java.util.UUID - default new SecureRandom() algo is very slow
         fastUuid_threadLocalDefault_egdUrand_16Threads       avgt   10   43666 ±   5049 ns/op    392 B/op #fastUuid obsolete in jdk13 because of JDK 13 string concatenation optimizations in java.util.UUID- default new SecureRandom() algo is very slow
 Single Thread
-    default java.util.UUID.randomUUID()
+    default java.util.UUID.secureRandomUUID()
         jdkUUID_default_egdDefault_1Thread                   avgt   10    1311 ±    140 ns/op    176 B/op
         jdkUUID_default_egdRandom_1Thread                    avgt   10    1274 ±     60 ns/op    176 B/op
         jdkUUID_default_egdUrandom_1Thread                   avgt   10    1259 ±     17 ns/op    176 B/op
@@ -142,7 +151,7 @@ Single Thread
 Single Shot Times (take with caution and see Error ± ns/ops!)
 Benchmark                                                    Mode  Cnt  Score   Error  Units  gc.alloc.rate.norm
 Contented
-    default java.util.UUID.randomUUID()
+    default java.util.UUID.secureRandomUUID()
         jdkUUID_default_egdRandom_16Threads                    ss   10  145004 ±  84358 ns/op    697 B/op
         jdkUUID_default_egdUrandom_16Threads                   ss   10  119047 ±  70141 ns/op    695 B/op
         jdkUUID_default_egdDefault_16Threads                   ss   10  122152 ± 100788 ns/op    698 B/op
@@ -157,7 +166,7 @@ Contented
         fastUuid_threadLocalDefault_egdDefault_16Threads       ss   10  264334 ± 160103 ns/op    883 B/op #fast uuid is becoming obsolete with new JDK's
         fastUuid_threadLocalDefault_egdUrand_16Threads         ss   10  238833 ± 173709 ns/op    879 B/op #fast uuid is becoming obsolete with new JDK's
 Single Thread
-    default java.util.UUID.randomUUID()
+    default java.util.UUID.secureRandomUUID()
         jdkUUID_default_egdRandom_1Thread                      ss   10   74492 ±  17443 ns/op    651 B/op
         jdkUUID_default_egdUrandom_1Thread                     ss   10   76133 ±  26322 ns/op    651 B/op
         jdkUUID_default_egdDefault_1Thread                     ss   10   75001 ±  29578 ns/op    651 B/op
@@ -182,7 +191,7 @@ There are a few differences between jdk13 and jdk1.8
 
 Benchmark                                                       Mode  Cnt   Score    Error Units  gc.alloc.rate.norm
 Contented
-    default java.util.UUID.randomUUID()
+    default java.util.UUID.secureRandomUUID()
         jdkUUID_default_egdDefault_16Threads                    avgt   10   27775 ±   1545 ns/op   864 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
         jdkUUID_default_egdRandom_16Threads                     avgt   10   27877 ±   1432 ns/op   864 B/op #heavy lock contention in SecureRandomSpi#engineNextBytes
         jdkUUID_default_egdUrandom_16Threads                    avgt   10    9785 ±    150 ns/op   832 B/op # -||- but egd /dev/urandom really helps
@@ -197,7 +206,7 @@ Contented
         fastUuid_threadLocalDefault_egdDefault_16Threads        avgt   10   45233 ±   2459 ns/op   424 B/op
         fastUuid_threadLocalDefault_egdUrand_16Threads          avgt   10    1047 ±     26 ns/op   328 B/op
 Single Thread
-    default java.util.UUID.randomUUID()
+    default java.util.UUID.secureRandomUUID()
         jdkUUID_default_egdDefault_1Thread                      avgt   10    1405 ±     38 ns/op   864 B/op
         jdkUUID_default_egdRandom_1Thread                       avgt   10    1423 ±     50 ns/op   864 B/op
         jdkUUID_default_egdUrandom_1Thread                      avgt   10     485 ±     26 ns/op   832 B/op
@@ -214,7 +223,7 @@ Single Thread
 
 Single Shot Times (take with caution and see Error ± ns/ops!)
 Contented
-    default java.util.UUID.randomUUID()
+    default java.util.UUID.secureRandomUUID()
         jdkUUID_default_egdDefault_16Threads                      ss   10  112142 ±  50139 ns/op  1636 B/op
         jdkUUID_default_egdRandom_16Threads                       ss   10   79360 ±  52899 ns/op  1634 B/op
         jdkUUID_default_egdUrandom_16Threads                      ss   10   41418 ±  26702 ns/op  1602 B/op
@@ -230,7 +239,7 @@ Contented
         fastUuid_threadLocalSHA1_egdUrand_16Threads               ss   10   22373 ±  24764 ns/op   833 B/op
 
 Single Thread
-    default java.util.UUID.randomUUID()
+    default java.util.UUID.secureRandomUUID()
         jdkUUID_default_egdDefault_1Thread                        ss   10  100311 ±  29318 ns/op  1595 B/op
         jdkUUID_default_egdRandom_1Thread                         ss   10  113475 ±  61072 ns/op  1595 B/op
         jdkUUID_default_egdUrandom_1Thread                        ss   10   44194 ±  22689 ns/op  1566 B/op
@@ -366,6 +375,7 @@ public class UUIDSecureRandomJVMSwitchesJMH {
     public String jdkUUID_threadLocalDefault_egdDefault_1Thread() {
         return randJDKUUID(SECURE_RAND_DEF.get());
     }
+
     @Benchmark
     @Fork(value = 1)
     @Threads(16)
@@ -392,6 +402,7 @@ public class UUIDSecureRandomJVMSwitchesJMH {
     public String jdkUUID_threadLocalDefault_egdUrand_1Thread() {
         return randJDKUUID(SECURE_RAND_DEF.get());
     }
+
     @Benchmark
     @Fork(value = 1, jvmArgsAppend = "-Djava.security.egd=file:/dev/./urandom")
     @Threads(16)
@@ -402,51 +413,53 @@ public class UUIDSecureRandomJVMSwitchesJMH {
     @Benchmark
     @Fork(value = 1)
     public String fastUuid_threadLocalSHA1_egdDefault_1Thread() {
-        return FastUUID.randomUUID(SECURE_RAND_SHA1.get());
+        return FastUUIDWithCustomToString.randomUUID(SECURE_RAND_SHA1.get());
     }
 
     @Benchmark
     @Fork(value = 1)
     @Threads(16)
     public String fastUuid_threadLocalSHA1_egdDefault_16Threads() {
-        return FastUUID.randomUUID(SECURE_RAND_SHA1.get());
+        return FastUUIDWithCustomToString.randomUUID(SECURE_RAND_SHA1.get());
     }
 
     @Benchmark
     @Fork(value = 1)
     public String fastUuid_threadLocalDefault_egdDefault_1Thread() {
-        return FastUUID.randomUUID(SECURE_RAND_DEF.get());
+        return FastUUIDWithCustomToString.randomUUID(SECURE_RAND_DEF.get());
     }
+
     @Benchmark
     @Fork(value = 1)
     @Threads(16)
     public String fastUuid_threadLocalDefault_egdDefault_16Threads() {
-        return FastUUID.randomUUID(SECURE_RAND_DEF.get());
+        return FastUUIDWithCustomToString.randomUUID(SECURE_RAND_DEF.get());
     }
 
     @Benchmark
     @Fork(value = 1, jvmArgsAppend = "-Djava.security.egd=file:/dev/./urandom")
     public String fastUuid_threadLocalSHA1_egdUrand_1Thread() {
-        return FastUUID.randomUUID(SECURE_RAND_SHA1.get());
+        return FastUUIDWithCustomToString.randomUUID(SECURE_RAND_SHA1.get());
     }
+
     @Benchmark
     @Fork(value = 1, jvmArgsAppend = "-Djava.security.egd=file:/dev/./urandom")
     @Threads(16)
     public String fastUuid_threadLocalSHA1_egdUrand_16Threads() {
-        return FastUUID.randomUUID(SECURE_RAND_SHA1.get());
+        return FastUUIDWithCustomToString.randomUUID(SECURE_RAND_SHA1.get());
     }
 
     @Benchmark
     @Fork(value = 1, jvmArgsAppend = "-Djava.security.egd=file:/dev/./urandom")
     public String fastUuid_threadLocalDefault_egdUrand_1Thread() {
-        return FastUUID.randomUUID(SECURE_RAND_DEF.get());
+        return FastUUIDWithCustomToString.randomUUID(SECURE_RAND_DEF.get());
     }
 
     @Benchmark
     @Fork(value = 1, jvmArgsAppend = "-Djava.security.egd=file:/dev/./urandom")
     @Threads(16)
     public String fastUuid_threadLocalDefault_egdUrand_16Threads() {
-        return FastUUID.randomUUID(SECURE_RAND_DEF.get());
+        return FastUUIDWithCustomToString.randomUUID(SECURE_RAND_DEF.get());
     }
 
 

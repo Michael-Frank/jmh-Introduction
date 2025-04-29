@@ -13,7 +13,15 @@ import com.rits.cloning.Cloner;
 import com.yevdo.jwildcard.JWildcard;
 import de.frank.impl.jaxb.CachedJaxbXmlMapper;
 import de.frank.jmh.model.HierarchicalMockModel;
-import de.javakaffee.kryoserializers.*;
+import de.javakaffee.kryoserializers.ArraysAsListSerializer;
+import de.javakaffee.kryoserializers.CollectionsEmptyListSerializer;
+import de.javakaffee.kryoserializers.CollectionsEmptyMapSerializer;
+import de.javakaffee.kryoserializers.CollectionsEmptySetSerializer;
+import de.javakaffee.kryoserializers.CollectionsSingletonListSerializer;
+import de.javakaffee.kryoserializers.CollectionsSingletonMapSerializer;
+import de.javakaffee.kryoserializers.CollectionsSingletonSetSerializer;
+import de.javakaffee.kryoserializers.SynchronizedCollectionsSerializer;
+import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
@@ -45,7 +53,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -233,7 +247,7 @@ public class DeepCopyJMH {
     public interface MapStructCloneMapper {
         MapStructCloneMapper INSTANCE = Mappers.getMapper(MapStructCloneMapper.class);
 
-        HierarchicalMockModel clone(HierarchicalMockModel model);
+        //HierarchicalMockModel clone(HierarchicalMockModel model);
     }
 
     // com.fasterxml.jackson.databind

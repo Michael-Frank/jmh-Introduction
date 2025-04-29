@@ -13,14 +13,16 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Java source/target to use for compilation.-->
-        <javac.target>21</javac.target>
+        <javac.source>24</javac.source>
+        <javac.target>24</javac.target>
+        <javac.compilerVersion>24</javac.compilerVersion>
         <!-- Name of the benchmark Uber-JAR to generate.-->
         <uberjar.name>benchmarks</uberjar.name>
 
 
         <!-- Benchmark support -->
         <jmh.version>1.37</jmh.version>   <!--JMH version to use with this project.-->
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
         <jwildcard.version>1.4</jwildcard.version>
         <asciitable.version>0.3.2</asciitable.version>
 
@@ -59,6 +61,8 @@
         <commons-collections4.version>4.4</commons-collections4.version> <!-- last update: 	Jul 09, 2019 :-/ -->
         <commons-lang3.version>3.13.0</commons-lang3.version>
         <commons-io.version>2.14.0</commons-io.version>
+
+
     </properties>
 
 
@@ -396,6 +400,25 @@
             <version>0.6.3</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.javamoney</groupId>
+            <artifactId>moneta</artifactId>
+            <version>1.4.5</version>
+            <type>pom</type>
+        </dependency>
+
+        <!-- <dependency>
+             <groupId>org.javamoney.lib</groupId>
+             <artifactId>javamoney-lib</artifactId>
+             <version>1.4.5</version>
+             <type>pom</type>
+         </dependency>
+         <dependency>
+             <groupId>org.javamoney.lib</groupId>
+             <artifactId>javamoney-calc</artifactId>
+             <version>1.4.5</version>
+         </dependency>-->
+
     </dependencies>
 
     <build>
@@ -469,12 +492,14 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <compilerVersion>${javac.target}</compilerVersion>
-                    <source>${javac.target}</source>
+                    <source>${javac.source}</source>
                     <target>${javac.target}</target>
-                    <enablePreview>true</enablePreview>
+                    <compilerVersion>${javac.compilerVersion}</compilerVersion>
+                    <enablePreview>false</enablePreview>
                     <compilerArgs>
-                        <arg>--enable-preview</arg>
+                        <!--
+                                                <arg>&#45;&#45;enable-preview</arg>
+                        -->
                         <arg>--add-modules</arg>
                         <arg>jdk.incubator.vector</arg>
 

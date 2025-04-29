@@ -1,7 +1,17 @@
 package de.frank.jmh.basic;
 
-import de.frank.jmh.BenchmarkFormatter;
-import org.openjdk.jmh.annotations.*;
+import de.frank.jmh.util.BenchmarkFormatter;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.profile.DTraceAsmProfiler;
 import org.openjdk.jmh.results.format.ResultFormatType;
 import org.openjdk.jmh.runner.Runner;
@@ -11,10 +21,9 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static java.lang.String.format;
 
 /*--
 Outdated - Just read the perfect article from Alexey: https://shipilev.net/blog/2016/arrays-wisdom-ancients/#_conclusion
