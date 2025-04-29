@@ -9,8 +9,11 @@ The benchmarks are roughly organized into 4 different packages
 - intro: Examples form my basic introduction to JMH and why __you__ should start using JMH.
 
 ## Requirements
-- java >= 21
+
+- java >= 24 (you can try downgrading the compiler version to e.g. 16 in pom.xml - most of the benchmarks where written
+  in a jdk 11 era)
 - maven
+- recommended: https://plugins.jetbrains.com/plugin/7529-jmh-java-microbenchmark-harness
  
 ## Run the Benchmarks 
 Run the `main` method in each benchmark class: 
