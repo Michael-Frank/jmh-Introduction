@@ -27,7 +27,7 @@
         <asciitable.version>0.3.2</asciitable.version>
 
         <!-- dependency versions for benchmarks-->
-        <spring-core.version>5.3.14</spring-core.version>
+        <spring-core.version>5.3.27</spring-core.version>
 
         <dsiutils.version>2.7.3</dsiutils.version>
         <commons-codec.version>1.16.0</commons-codec.version>
